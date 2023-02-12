@@ -25,9 +25,8 @@ If conda exists on your system, you can acquire Nextflow as follows:
 ```
 conda create --yes --name nflow python=3.9 && \
 conda install -n nflow -c bioconda nextflow=22.10.0-0 && \
-chmod -R 777 /usr/local/bin && \
-echo 'conda run -n nflow nextflow $@' > /usr/local/bin/nextflow && \
-chmod 777 /usr/local/bin/nextflow
+echo 'conda run -n nflow nextflow $@' > ./BatchConvert/bin/nextflow && \
+chmod 777 ./BatchConvert/bin/nextflow
 ```
 
 Otherwise, you can follow the instructions provided here: 
