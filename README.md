@@ -15,7 +15,7 @@ HPC with Slurm.
 
 Clone the repository and run the installation script:
 ```
-git clone [https://git.embl.de/oezdemir/batchconvert.git](https://github.com/Euro-BioImaging-Bio-Hub/BatchConvert.git) && ./BatchConvert/install.sh;
+git clone https://github.com/Euro-BioImaging-Bio-Hub/BatchConvert.git && ./BatchConvert/install.sh;
 ```
 
 The minimal dependency to run the tool is Nextflow, which should be installed and made accessible
