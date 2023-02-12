@@ -15,7 +15,7 @@ HPC with Slurm.
 
 Clone the repository and add batchconvert to the path:
 ```
-git clone https://github.com/Euro-BioImaging-Bio-Hub/BatchConvert.git; 
+git clone https://git.embl.de/oezdemir/batchconvert.git; 
 chmod -R 777 /usr/local/bin;
 echo $'#!/usr/bin/env bash\n<path/to/the/repo>/batchconvert.sh $@' > /usr/local/bin/batchconvert;
 chmod 777 /usr/local/bin/batchconvert
