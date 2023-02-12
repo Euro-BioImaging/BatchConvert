@@ -1,4 +1,6 @@
-SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; )
+
+SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
+
 mkdir -p $HOME/.batchconvert/bin;
 chmod -R 777 $HOME/.batchconvert;
 chmod -R 777 $SCRIPTPATH;
