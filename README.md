@@ -23,6 +23,7 @@ from the command line.
 
 If conda exists on your system, you can acquire Nextflow as follows:
 ```
+### First cd to the parent directory of BatchConvert
 conda create --yes --name nflow python=3.9 && \
 conda install -n nflow -c bioconda nextflow=22.10.0-0 && \
 echo 'conda run -n nflow nextflow $@' > ./BatchConvert/bin/nextflow && \
