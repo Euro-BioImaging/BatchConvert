@@ -16,6 +16,5 @@ then
 	echo "export PATH="$HOME/.batchconvert/bin:$PATH"" >> $HOME/.bashrc;
 fi;
 
-source $HOME/.bashrc && \
-cat $HOME/.bashrc;
-
+source $HOME/.bashrc;
+source $HOME/.bashrc;
