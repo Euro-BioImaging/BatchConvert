@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
