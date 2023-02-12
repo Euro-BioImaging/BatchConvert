@@ -1,6 +1,6 @@
 {
-  "in_path": "/home/oezdemir/PycharmProjects/nfprojects/data",
-  "out_path": "/home/oezdemir/PycharmProjects/nfprojects/results/tiff/res3",
+  "in_path": "placehold/data",
+  "out_path": "placehold/result",
   "pattern": "",
   "profile": "conda",
   "source_type": "local",
