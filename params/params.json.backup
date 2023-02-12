@@ -1,0 +1,17 @@
+{
+  "in_path": "placehold",
+  "out_path": "placehold",
+  "pattern": "",
+  "profile": "conda",
+  "source_type": "local",
+  "dest_type": "local",
+  "S3REMOTE": "s3",
+  "S3ENDPOINT": "https://s3.embl.de",
+  "S3BUCKET": "eosc-future",
+  "S3ACCESS": "eosc-future-user",
+  "S3SECRET": "w2xx9EatWwmtsrbewt3LEfiGB",
+  "BIA_REMOTE": "/17/596fcf-661c-4ed4-af91-c2354e7213e9-a24550",
+  "output_type": "ometiff",
+  "downsample_type": "SIMPLE",
+  "max_workers": "16"
+}

@@ -1,0 +1,20 @@
+{
+  "in_path": "placehold",
+  "out_path": "placehold",
+  "pattern": "",
+  "profile": "conda",
+  "source_type": "local",
+  "dest_type": "local",
+  "S3REMOTE": "s3embassy",
+  "S3ENDPOINT": "https://uk1s3.embassy.ebi.ac.uk",
+  "S3BUCKET": "EuBI",
+  "S3ACCESS": "O9DVX361SO07ZKOC39BX",
+  "S3SECRET": "LC5CunMDE2A3zErnfmMrfe2AIqyZvCoLbdZ3Nx8N",
+  "BIA_REMOTE": "/17/596fcf-661c-4ed4-af91-c2354e7213e9-a24550",
+  "downsample_type": "SIMPLE",
+  "max_workers": "16",
+  "queue_size": "20",
+  "submit_rate_limit": "asdaw",
+  "cluster_options": "daweas",
+  "time": "dawe"
+}

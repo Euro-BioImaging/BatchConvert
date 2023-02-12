@@ -1,0 +1,13 @@
+{
+  "in_path": "/home/oezdemir/PycharmProjects/nfprojects/data",
+  "out_path": "/home/oezdemir/PycharmProjects/nfprojects/results/tiff/res3",
+  "pattern": "",
+  "profile": "conda",
+  "source_type": "local",
+  "dest_type": "local",
+  "queue_size": "50",
+  "submit_rate_limit": "10/2min",
+  "cluster_options": "--mem-per-cpu=3140 --cpus-per-task=16",
+  "time": "6h",
+  "output_type": "ometiff"
+}
