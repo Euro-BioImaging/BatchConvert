@@ -6,7 +6,7 @@ chmod -R 777 $SCRIPTPATH;
 #echo $(ls $SCRIPTPATH);
 
 echo $'#!/usr/bin/env bash' > $HOME/.batchconvert/bin/batchconvert && \
-echo "$SCRIPTPATH/batchconvert.sh $@" >> $HOME/.batchconvert/bin/batchconvert && \
+echo "$SCRIPTPATH/batchconvert.sh '$@'" >> $HOME/.batchconvert/bin/batchconvert && \
 chmod 777 $HOME/.batchconvert/bin/batchconvert;
 
 #cat $HOME/.batchconvert/bin/batchconvert;
