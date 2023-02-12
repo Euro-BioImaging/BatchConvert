@@ -13,12 +13,9 @@ HPC with Slurm.
 
 **Important** note: The package has been so far only tested on Ubuntu 20.04.
 
-Clone the repository and add batchconvert to the path:
+Clone the repository and run the installation script:
 ```
-git clone https://git.embl.de/oezdemir/batchconvert.git; 
-chmod -R 777 /usr/local/bin;
-echo $'#!/usr/bin/env bash\n<path/to/the/repo>/batchconvert.sh $@' > /usr/local/bin/batchconvert;
-chmod 777 /usr/local/bin/batchconvert
+git clone https://git.embl.de/oezdemir/batchconvert.git && ./BatchConvert/install.sh;
 ```
 
 The minimal dependency to run the tool is Nextflow, which should be installed and made accessible
