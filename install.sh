@@ -2,7 +2,6 @@
 
 rel_SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
-# The function below was copied from:
 # https://stackoverflow.com/questions/3915040/how-to-obtain-the-absolute-path-of-a-file-via-shell-bash-zsh-sh
 function abspath() {
     # generate absolute path from relative path
