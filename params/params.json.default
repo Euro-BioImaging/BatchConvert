@@ -7,7 +7,7 @@
   "dest_type": "local",
   "S3REMOTE": "<yours3remote>",
   "S3ENDPOINT": "<yours3endpoint>",
-  "S3BUCKET": "EuBI",
+  "S3BUCKET": "<yourbucket>",
   "S3ACCESS": "<youraccess>",
   "S3SECRET": "<yoursecret>",
   "BIA_REMOTE": "<yourbiaremote>",
