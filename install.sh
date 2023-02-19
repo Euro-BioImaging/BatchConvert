@@ -23,20 +23,10 @@ function abspath() {
 }
 
 SCRIPTPATH=$(abspath $rel_SCRIPTPATH);
-
-#mkdir -p $HOME/.batchconvert/bin;
-#chmod -R 777 $HOME/.batchconvert;
+#printf SCRIPTPATH
 chmod -R 777 $SCRIPTPATH;
 
-#echo $(ls $SCRIPTPATH);
-
-#echo $'#!/usr/bin/env bash' > $HOME/.batchconvert/bin/batchconvert && \
-#echo "$SCRIPTPATH/batchconvert.sh \$@" >> $HOME/.batchconvert/bin/batchconvert && \
-#chmod 777 $HOME/.batchconvert/bin/batchconvert;
-
-#cat $HOME/.batchconvert/bin/batchconvert;
-
-if ! echo $PATH | tr ":" "\n" | grep "batchconvert" &> /dev/null;
+if ! echo $PATH | tr ":" "\n" | grep "BatchConvert" &> /dev/null;
 then
 	echo "export PATH="$SCRIPTPATH:$PATH"" >> $HOME/.bashrc;
 fi;
