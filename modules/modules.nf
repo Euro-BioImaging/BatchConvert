@@ -1,10 +1,8 @@
 #!/usr/bin/env nflow
 nextflow.enable.dsl=2
 
-// println "$baseDir"
 
 // Note that you can move the parameterise python scripts as a beforeScript directive
-// Give that a try and see if it works. But do it in the version 2
 
 process bfconvert {
     if ("${params.dest_type}"=="local") {
