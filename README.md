@@ -24,7 +24,8 @@ from the command line.
 
 If conda exists on your system, you can acquire Nextflow using the respective script file, which uses conda:
 ```
-source BatchConvert/install_nextflow.sh
+source BatchConvert/install_nextflow.sh && \
+mv BatchConvert/nextflow.sample BatchConvert/nextflow
 ```
 
 Otherwise, you can follow the instructions provided here: 
