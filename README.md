@@ -15,7 +15,7 @@ HPC with Slurm.
 
 Clone the repository and run the installation script:
 ```
-git clone https://github.com/Euro-BioImaging-Bio-Hub/BatchConvert.git && \ 
+git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
 source BatchConvert/install.sh
 ```
 
