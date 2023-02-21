@@ -22,13 +22,9 @@ source BatchConvert/install.sh
 The minimal dependency to run the tool is Nextflow, which should be installed and made accessible
 from the command line.
 
-If conda exists on your system, you can acquire Nextflow as follows:
+If conda exists on your system, you can acquire Nextflow using the respective script file, which uses conda:
 ```
-### First cd to the parent directory of BatchConvert
-conda create --yes --name nflow python=3.9 && \
-conda install -n nflow -c bioconda nextflow=22.10.0-0 && \
-echo "conda run -n nflow nextflow \$@" > BatchConvert/nextflow && \
-chmod 777 $HOME/.batchconvert/bin/nextflow
+source BatchConvert/install_nextflow.sh
 ```
 
 Otherwise, you can follow the instructions provided here: 
