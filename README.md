@@ -1,4 +1,4 @@
-# batchconvert
+# BatchConvert
 
 A command line tool for converting image data into either of the standard file formats OME-TIFF or OME-Zarr. 
 
@@ -27,7 +27,7 @@ If conda exists on your system, you can acquire Nextflow as follows:
 ### First cd to the parent directory of BatchConvert
 conda create --yes --name nflow python=3.9 && \
 conda install -n nflow -c bioconda nextflow=22.10.0-0 && \
-echo "conda run -n nflow nextflow \$@" > $HOME/.batchconvert/bin/nextflow && \
+echo "conda run -n nflow nextflow \$@" > BatchConvert/nextflow && \
 chmod 777 $HOME/.batchconvert/bin/nextflow
 ```
 
