@@ -4,7 +4,7 @@ condapath=$( which conda );
 while ! ls -a $condapath | grep etc &> /dev/null;
 do
   if ls -a $condapath | grep etc &> /dev/null; then
-    hhh="blabla"
+    message="etc folder not found"
   else
     condapath=$(dirname $condapath)
   fi
