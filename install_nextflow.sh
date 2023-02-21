@@ -28,7 +28,7 @@ chmod -R 777 $SCRIPTPATH;
 cd $SCRIPTPATH;
 
 conda create --yes --name nflow python=3.9 && \
-conda install -n nflow -c bioconda nextflow=22.10.0-0 && \
+conda install --yes -n nflow -c bioconda nextflow=22.10.0-0 && \
 echo "conda run -n nflow nextflow \$@" > nextflow && \
 chmod 777 nextflow
 cd -
