@@ -22,7 +22,8 @@ source BatchConvert/install.sh
 The minimal dependency to run the tool is Nextflow, which should be installed and made accessible
 from the command line.
 
-If conda exists on your system, you can acquire Nextflow using the respective script file, which uses conda:
+If conda exists on your system, you can acquire Nextflow using the respective script file, which installs Nextflow
+to a conda environment and makes it globally accessible:
 ```
 source BatchConvert/install_nextflow.sh && \
 mv BatchConvert/nextflow.sample BatchConvert/nextflow
