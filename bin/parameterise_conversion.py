@@ -89,6 +89,11 @@ if __name__ == "__main__":
                                                    "placehold"))  # you can update existing arguments with those from json file
     ometiff.add_argument('out_path', default=getdef('out_path', "placehold"))
     ometiff.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
+
+    ### specify whether the input files should be concatenated into a single ome-tiff file
+    ometiff.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
+    ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'infer_from_filenames'))
+
     ### specify the config profile
     ometiff.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
                          help="Specifies one of the three profiles: standard, no_container and cluster")
@@ -138,6 +143,11 @@ if __name__ == "__main__":
                                                    "placehold"))  # you can update existing arguments with those from json file
     omezarr.add_argument('out_path', default=getdef('out_path', "placehold"))
     omezarr.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
+
+    ### specify whether the input files should be concatenated into a single ome-tiff folder
+    omezarr.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
+    omezarr.add_argument('--concatenation_order', default=getdef("concatenation_order", 'infer_from_filenames'))
+
     ### specify the config profile
     omezarr.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
                          help="Specifies one of the three profiles: standard, no_container and cluster")
@@ -187,10 +197,14 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     keys = args.__dict__.keys()
+    for item in keys:
+        print("%s: %s" % (item, args.__dict__[item]))
     if (len(sys.argv) <= 1):
         raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
+        exit()
     elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm"]:
         raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
+        exit()
     prompt = str(sys.argv[1])
     # print(sys.argv[1])
     # print(subparsers)
@@ -373,9 +387,9 @@ if __name__ == "__main__":
                 pass
             elif value is None:
                 pass
-            elif str(value) == str("False"):
+            elif str(value) == str("False") and (key != "merge_files"):
                 pass
-            elif value is False:
+            elif value is False and (key != "merge_files"):
                 pass
             else:
                 cmd.append(cmdroot + ["--key", key, "--value", "%s" % value])

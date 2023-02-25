@@ -1,0 +1,48 @@
+#!/usr/bin/env python
+import os
+import argparse
+from PatternHandler import PatternHandler
+
+# handler = PatternHandler('MVI_1349')
+# rootDir = handler.rootDir
+# df = handler.df_rootDir
+# patterns = 'test_C'
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('input_path')
+    parser.add_argument('--concatenation_order', default = 'infer_from_filenames')
+
+    args = parser.parse_args()
+
+    # rootDir = '/home/oezdemir/PycharmProjects/bfconvert/test'
+    # conc_order = 'cz'
+    rootDir = args.input_path
+    if args.concatenation_order == 'infer_from_filenames':
+        conc_order = None
+    else:
+        conc_order = args.concatenation_order
+
+    print('concatenation_order is %s' % conc_order)
+    # outpath = args.output_path
+    filenames = os.listdir(rootDir)
+    pattern_file = None
+    for filename in filenames:
+        if filename.endswith('pattern'):
+            pattern_file = filename
+            print('Existing pattern file found')
+            break
+
+    if pattern_file is None:
+        handler = PatternHandler(rootDir)
+        if conc_order is None:
+            handler.dump_inferred_pattern()
+        else:
+            patterns = []
+            for letter in conc_order:
+                pattern = 'test_%s' % letter.capitalize()
+                patterns.append(pattern)
+            handler.dump_inserted_pattern(patterns)
+
+

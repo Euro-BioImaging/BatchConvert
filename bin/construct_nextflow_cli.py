@@ -20,13 +20,14 @@ if __name__ == '__main__':
     # keys = args.__dict__.keys()
     cmd = ["#!/usr/bin/env bash\n"]
     cmd += ["SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );\n"]
-    cmd += ["nextflow -C $SCRIPTPATH/../configs/bftools.config"]
+    cmd += ["nextflow -C $SCRIPTPATH/../configs/bftools.config -log $SCRIPTPATH/../WorkDir/logs/.nextflow.log"]
     if args.output_type == 'ometiff':
         cmd += [" run $SCRIPTPATH/../pff2ometiff.nf"]
     elif args.output_type == 'omezarr':
         cmd += [" run $SCRIPTPATH/../pff2omezarr.nf"]
     cmd += [" -params-file $SCRIPTPATH/../params/params.json"]
-    cmd += [" -profile %s" % args.profile]
+    cmd += [" -profile %s;\n" % args.profile]
+    cmd += ["nextflow clean but none -n -f;"]
     # cmd += ["cd - && \\\n"]
     cmdstr = ''.join(cmd)
     sys.stdout.write(cmdstr)

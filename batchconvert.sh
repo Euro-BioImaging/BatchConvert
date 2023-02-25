@@ -45,6 +45,10 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
   then
     rm $SCRIPTPATH/bin/.process
 fi
+
+rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
+rm -rf /scratch/bugra/work &> /dev/null;
+
 # this runs the nextflow workflow which will consume the updated command line in the bin:
 
 # sudo rm -r work
