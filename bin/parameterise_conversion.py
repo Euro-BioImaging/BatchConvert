@@ -197,8 +197,8 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     keys = args.__dict__.keys()
-    for item in keys:
-        print("%s: %s" % (item, args.__dict__[item]))
+    # for item in keys:
+    #     print("%s: %s" % (item, args.__dict__[item]))
     if (len(sys.argv) <= 1):
         raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
         exit()
@@ -237,7 +237,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent = 2)
             f.truncate()
-        print("Configuration of the default s3 credentials is complete")
+        # print("Configuration of the default s3 credentials is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_s3')
         #sys.stdout.write('configured_s3') ### VERY IMPORTANT STEP
@@ -251,7 +251,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-        print("Configuration of the default bia credentials is complete")
+        # print("Configuration of the default bia credentials is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_bia')
         #sys.stdout.write('configured_bia') ### VERY IMPORTANT STEP
@@ -284,7 +284,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-        print("Configuration of the default parameters for slurm is complete")
+        # print("Configuration of the default parameters for slurm is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_slurm')
     elif prompt == 'configure_ometiff':
@@ -316,7 +316,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-        print("Configuration of the default parameters for 'bfconvert' is complete")
+        # print("Configuration of the default parameters for 'bfconvert' is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_ometiff')
         #sys.stdout.write('configured_ometiff\n') ### VERY IMPORTANT STEP
@@ -349,7 +349,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-        print("Configuration of the default parameters for 'bioformats2raw' is complete")
+        # print("Configuration of the default parameters for 'bioformats2raw' is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_omezarr')
         #sys.stdout.write('configured_omezarr\n') ### VERY IMPORTANT STEP - BU STEPI DEGISTIRMEK LAZIM
