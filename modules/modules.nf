@@ -3,19 +3,9 @@ nextflow.enable.dsl=2
 
 // Note that you can move the parameterise python scripts as a beforeScript directive
 
-process createPatternFile {
-    input:
-        path inpath
-    output:
-        path "${inpath}/new.pattern", optional: true
-        path "${inpath}/tempdir/new.pattern", optional: true
-    script:
-    """
-    create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    """
-}
+// Conversion processes
 
-process bfconvert {
+process Convert_EachFile2SeparateOMETIFF {
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -34,7 +24,7 @@ process bfconvert {
     """
 }
 
-process bfconvert_fromPattern {
+process Convert_Concatenate2SingleOMETIFF {
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -61,7 +51,7 @@ process bfconvert_fromPattern {
     """
 }
 
-process bioformats2raw {
+process Convert_EachFile2SeparateOMEZARR {
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -79,7 +69,7 @@ process bioformats2raw {
     """
 }
 
-process bioformats2raw_fromPattern {
+process Convert_Concatenate2SingleOMEZARR{
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -106,7 +96,10 @@ process bioformats2raw_fromPattern {
     """
 }
 
-process mirror2s3 {
+
+// Transfer processes:
+
+process Transfer_Local2S3Storage {
     input:
         path local
     output:
@@ -124,6 +117,83 @@ process mirror2s3 {
     """
 }
 
+
+process Transfer_S3Storage2Local {
+    input:
+        val source
+    output:
+        path "transferred/${source}"
+    script:
+    """
+    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
+    """
+}
+
+
+process Transfer_Local2PrivateBiostudies {
+    input:
+        path local
+    output:
+        path "./transfer_report.txt", emit: tfr
+    script:
+    """
+    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d $local bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/${params.out_path};
+    echo "${params.BIA_REMOTE}"/"${params.out_path}" > "./transfer_report.txt";
+    """
+}
+
+process Transfer_PrivateBiostudies2Local {
+    input:
+        val source
+    output:
+        path transferred
+    script:
+    // source un basename ini ascp nin output kismina yerlestir
+    """
+    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/$source transferred;
+    """
+}
+
+process Transfer_PublicBiostudies2Local {
+    input:
+        val source
+    output:
+        path transferred
+    script:
+    // source un basename ini ascp nin output kismina yerlestir
+    """
+    ascp -P33001 -i $BIA_SSH_KEY bsaspera@fasp.ebi.ac.uk:$source transferred;
+    """
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// EXPERIMENTAL PROCESSES
+
+process createPatternFile {
+    input:
+        path inpath
+    output:
+        path "${inpath}/new.pattern", optional: true
+        path "${inpath}/tempdir/new.pattern", optional: true
+    script:
+    """
+    create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
+    """
+}
+
 process mirror2local {
     input:
         val source
@@ -136,17 +206,15 @@ process mirror2local {
     """
 }
 
-process mirror2loc {
+process cleanup {
     input:
-        val source
-    output:
-        path "transferred/${source}"
+        path inpath
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
+    rm -rf "${inpath}/tempdir" &> /dev/null
     """
 }
+
 
 process stageLocal {
     input:
@@ -172,45 +240,6 @@ process stageLocalPublish {
     """
 }
 
-process mirror2bia {
-    input:
-        path local
-    output:
-        path "./transfer_report.txt", emit: tfr
-    script:
-    """
-    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d $local bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/${params.out_path};
-    echo "${params.BIA_REMOTE}"/"${params.out_path}" > "./transfer_report.txt";
-    """
-}
-
-process mirror_bia2local {
-    input:
-        val source
-    output:
-        path transferred
-    script:
-    // source un basename ini ascp nin output kismina yerlestir
-    """
-    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/$source transferred;
-    """
-}
-
-
-
-
-
-
-// EXPERIMENTAL PROCESSES
-
-process cleanup {
-    input:
-        path inpath
-    script:
-    """
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    """
-}
 
 process bioformats2raw_experimental {
     if ("${params.dest_type}"=="local") {
@@ -244,3 +273,6 @@ process bioformats2raw_experimental {
     rm -rf "${inpath}/new.pattern" &> /dev/null
     """
 }
+
+
+

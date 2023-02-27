@@ -2,7 +2,7 @@
 nextflow.enable.dsl=2
 // nextflow.enable.moduleBinaries = true
 
-include { bfconvert_fromPattern; bfconvert; mirror2s3; mirror2local; mirror2loc; mirror2bia; mirror_bia2local; stageLocal } from "./modules/modules.nf"
+include { Convert_Concatenate2SingleOMETIFF; Convert_EachFile2SeparateOMETIFF; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local } from "./modules/modules.nf"
 
 // TODO: add an optional remove-workdir parameter and a remove-workdir script to the end of the workflow (in Groovy)
 
@@ -11,17 +11,24 @@ workflow {
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
         ch0 = Channel.of(params.in_path)
-        mirror2loc(ch0)
-        ch1 = mirror2loc.out.map { file(it).listFiles() }.flatten()
+        Transfer_S3Storage2Local(ch0)
+        ch1 = Transfer_S3Storage2Local.out.map { file(it).listFiles() }.flatten()
         ch = ch1.filter { it.toString().contains(params.pattern) }
     }
     else if ( params.source_type == "bia" ) {
         ch0 = Channel.of(params.in_path)
-        mirror_bia2local(ch0)
-        ch1 = mirror_bia2local.out.map { file(it).listFiles() }.flatten()
+        Transfer_PrivateBiostudies2Local(ch0)
+        ch1 = Transfer_PrivateBiostudies2Local.out.map { file(it).listFiles() }.flatten()
         ch2 = ch1.map { file(it).listFiles() }.flatten()
         ch = ch2.filter { it.toString().contains(params.pattern) }
     }
+//    else if ( params.source_type == "public_bia" ) {
+//        ch0 = Channel.of(params.in_path)
+//        Transfer_PublicBiostudies2Local(ch0)
+//        ch1 = Transfer_PublicBiostudies2Local.out.map { file(it).listFiles() }.flatten()
+//        ch2 = ch1.map { file(it).listFiles() }.flatten()
+//        ch = ch2.filter { it.toString().contains(params.pattern) }
+//    }
     else if ( params.source_type == "local" ) {
         def fpath = file(params.in_path)
         // Note the above assignment yields either a list of files (with globbing), a single file (if the parameter in_path corresponds to a file path) a directory (if the parameter in_path corresponds to a directory path)
@@ -42,36 +49,36 @@ workflow {
     // Once the channel is created, run the conversion. Conversion is either kept local or transferred to s3 depending on the dest parameter.
     if ( params.source_type == "local" ) {
         if ( params.merge_files == "True" ) {
-            output = bfconvert_fromPattern(params.in_path)
+            output = Convert_Concatenate2SingleOMETIFF(params.in_path)
         }
         else {
-            output = bfconvert(ch)
+            output = Convert_EachFile2SeparateOMETIFF(ch)
         }
     }
     else if ( params.source_type == "s3" ) {
         if ( params.merge_files == "True" ) {
-            output = bfconvert_fromPattern(mirror2loc.out)
+            output = Convert_Concatenate2SingleOMETIFF(Transfer_S3Storage2Local.out)
         }
         else {
-            output = bfconvert(ch)
+            output = Convert_EachFile2SeparateOMETIFF(ch)
         }
     }
     else if ( params.source_type == "bia" ) {
         if ( params.merge_files == "True" ) {
-            output = bfconvert_fromPattern(mirror_bia2local.out)
+            output = Convert_Concatenate2SingleOMETIFF(Transfer_PrivateBiostudies2Local.out)
         }
         else {
-            output = bfconvert(ch)
+            output = Convert_EachFile2SeparateOMETIFF(ch)
         }
     }
     if ( params.dest_type == "s3" ) {
         // Note that if the dest_type is s3, the output must be uploaded to the s3 bucket.
         // If dest_type is local, no need to do anything. module will do the publishDir.
-        mirror2s3(output)
+        Transfer_Local2S3Storage(output)
     }
     if ( params.dest_type == "bia" ) {
         // Note that if the dest_type is bia, the output must be uploaded to the bia bucket.
         // If dest_type is local, no need to do anything. module will do the publishDir.
-        mirror2bia(output)
+        Transfer_Local2PrivateBiostudies(output)
     }
 }
