@@ -56,9 +56,22 @@ workflow {
             output = bioformats2raw(ch)
         }
     }
+    else if ( params.source_type == "bia" ) {
+        if ( params.merge_files == "True" ) {
+            output = bioformats2raw_fromPattern(mirror_bia2local.out)
+        }
+        else {
+            output = bioformats2raw(ch)
+        }
+    }
     if ( params.dest_type == "s3" ) {
         // Note that if the dest_type is s3, the output must be uploaded to the s3 bucket.
         // If dest_type is local, no need to do anything. module will do the publishDir.
         mirror2s3(output)
+    }
+    if ( params.dest_type == "bia" ) {
+        // Note that if the dest_type is bia, the output must be uploaded to the bia bucket.
+        // If dest_type is local, no need to do anything. module will do the publishDir.
+        mirror2bia(output)
     }
 }
