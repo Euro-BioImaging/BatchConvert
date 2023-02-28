@@ -68,7 +68,7 @@ Run the interactive configuration command:
 `batchconvert configure_s3_remote`
 
 This will start a sequence of requests for s3 credentials such as name, url, access, etc. Provide each requested credential and click
-enter. Continue this cycle until the process is finished. The full set of instructions should look like this:
+enter. Continue this cycle until the process is finished. The terminal should roughly look like this:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_s3_remote
@@ -93,7 +93,7 @@ Run the interactive configuration command:
 `batchconvert configure_bia_remote`
 
 This will prompt a request for the secret directory to connect to. Enter the secret directory for your user space and click enter. The terminal
-should look like this:
+should roughly look like this:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_bia_remote
