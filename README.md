@@ -61,7 +61,7 @@ BatchConvert can be configured to have default options for file conversion and t
 to be configured include credentials for the remote ends. The easiest way to configure remote locations is by running the interactive 
 configuration command as indicated below.
 
-### Configuration of s3 object stores
+### Configuration of the s3 object store
 
 Run the interactive configuration command: 
 
@@ -86,7 +86,7 @@ Configuration of default s3 credentials is complete
 ```
 
 
-### Configuration of BioStudies user space
+### Configuration of the BioStudies user space
 
 Run the interactive configuration command: 
 
