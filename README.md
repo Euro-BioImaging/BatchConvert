@@ -70,7 +70,20 @@ Run the interactive configuration command:
 This will start a sequence of requests for s3 credentials such as name, url, access, etc. Provide each requested credential and click
 enter. Continue this cycle until the process is finished. The full set of instructions should look like this:
 
-![s3.png](data/examples/s3.png)
+```
+oezdemir@pc-ellenberg108:~$ batchconvert configure_s3_remote
+enter remote name (for example s3)
+s3
+enter url:
+https://s3.embl.de
+enter access key:
+<your-access-key>
+enter secret key:
+<your-secret-key>
+enter bucket name:
+<your-bucket>
+Configuration of default s3 credentials is complete
+```
 
 
 ### Configuration of BioStudies user space
@@ -82,7 +95,12 @@ Run the interactive configuration command:
 This will prompt a request for the secret directory to connect to. Enter the secret directory for your user space and click enter. The terminal
 should look like this:
 
-![bia.png](data/examples/bia.png)
+```
+oezdemir@pc-ellenberg108:~$ batchconvert configure_bia_remote
+enter the secret directory for BioImage Archive user space:
+<your-secret-directory>
+Configuration of default bia credentials is complete
+```
 
 
 ## Examples
