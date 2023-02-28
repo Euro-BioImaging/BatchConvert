@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 
-# Ileride scriptpath ROOT adi altinda environment variable yapilacak
+# make SCRIPTPATH an environment variable TODO
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
 set -f && \
-#python $SCRIPTPATH/bin/parameterise_conversion.py $@;
-python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
@@ -33,8 +32,8 @@ elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    python construct_cli.py > batchconvert_cli.sh && \
-    python construct_nextflow_cli.py > nextflow_cli.sh && \
+    pythonexe construct_cli.py > batchconvert_cli.sh && \
+    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
     printf "Nextflow script has been created. Workflow is beginning.\n"
     cd - && \
 
