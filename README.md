@@ -82,7 +82,7 @@ Run the interactive configuration command:
 This will prompt a request for the secret directory to connect to. Enter the secret directory for your user space and click enter. The terminal
 should look like this:
 
-![img.png](img.png)
+![bia.png](data/examples/bia.png)
 
 
 ## Examples
