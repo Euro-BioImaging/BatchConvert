@@ -33,13 +33,13 @@ VP=${v_info:7:1}
 
 if [[ $VP == 3 ]];
   then
-    printf "Python command refers to python3, which will be used for executing the python commands in the batchconvert script. \n"
+    printf "The following python will be used to execute python commands in batchconvert script: $( which python ) \n"
     if ! [ -f $SCRIPTPATH/pythonexe ];then
-	ln -s $( which python3 ) $SCRIPTPATH/pythonexe;
+	ln -s $( which python ) $SCRIPTPATH/pythonexe;
     fi
-elif ! [[ $v_python == 3 ]];
+elif ! [[ $VP == 3 ]];
   then
-    printf "Python command refers to python2, which cannot be used in the batchconvert script \nWill search the system for python3 \n";
+    printf "Python command refers to the following python: $( which python ), which cannot be used in the batchconvert script \nWill search the system for python3 \n";
     if command -v python3 &> /dev/null;
       then
 	printf "python3 was found at $( which python3 ) \n";
@@ -49,7 +49,7 @@ elif ! [[ $v_python == 3 ]];
         fi
         printf "$(pythonexe --version) \n"
       else
-        printf "Looks like python 3 does not exist on your system. BatchConvert expects python 3. \n"
+        printf "Looks like python 3 does not exist on your system. Please install python3 and reinstall BatchConvert. \n"
         exit
     fi
 fi
