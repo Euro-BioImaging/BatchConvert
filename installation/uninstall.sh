@@ -34,5 +34,7 @@ export PATH=`echo $PATH | tr ":" "\n" | grep -v "BatchConvert" | tr "\n" ":"`;
 rm -rf $HOME/bashrc_replace;
 source $HOME/.bashrc;
 
-rm -rf $SCRIPTPATH
+cd $CRIPTPATH/..
+rm -rf BatchConvert
+cd -
 
