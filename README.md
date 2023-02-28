@@ -22,8 +22,8 @@ source BatchConvert/installation/install_with_nextflow.sh
 ```
 
 
-If you already have NextFlow installed and accessible from the command line, or if you prefer to install it manually (e.g., as shown [here](https://www.nextflow.io/docs/latest/getstarted.html)), 
-you can also install BatchConvert alone, using the following script:
+If you already have NextFlow installed and accessible from the command line (or if you prefer to install it manually 
+e.g., as shown [here](https://www.nextflow.io/docs/latest/getstarted.html)), you can also install BatchConvert alone, using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
 source BatchConvert/installation/install.sh
@@ -53,6 +53,37 @@ your system. If singularity is being used, a cache directory will be created at 
 Finally, you can still choose to install the dependencies manually and use your own installations to run
 the workflow. In this case, you should specify ``--profile standard`` and make sure the entrypoints
 specified above are recognised by your shell.  
+
+
+## Configuration
+
+BatchConvert can be configured to have default options for file conversion and transfer. Probably, the most important sets of parameters
+to be configured include credentials for the remote ends. The easiest way to configure remote locations is by running the interactive 
+configuration command as indicated below.
+
+### Configuration of s3 object stores
+
+Run the interactive configuration command: 
+
+`batchconvert configure_s3_remote`
+
+This will start a sequence of requests for s3 credentials such as name, url, access, etc. Provide each requested credential and click
+enter. Continue this cycle until the process is finished. The full set of instructions should look like this:
+
+![img_1.png](img_1.png)
+
+
+### Configuration of BioStudies user space
+
+Run the interactive configuration command: 
+
+`batchconvert configure_bia_remote`
+
+This will prompt a request for the secret directory to connect to. Enter the secret directory for your user space and click enter. The terminal
+should look like this:
+
+![img.png](img.png)
+
 
 ## Examples
 
