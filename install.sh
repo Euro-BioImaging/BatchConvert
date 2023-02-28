@@ -22,9 +22,35 @@ function abspath() {
     fi
 }
 
+
+### Make sure that python3 is being used in the batchconvert script.
+
 SCRIPTPATH=$(abspath $rel_SCRIPTPATH);
 #printf SCRIPTPATH
 chmod -R 777 $SCRIPTPATH;
+
+v_info=$( python --version )
+VP=${v_info:7:1}
+
+if [[ $VP == 3 ]];
+  then
+    printf "Python 3 exists and will be used for executing the python commands in the batchconvert script."
+    ln -s $( which python ) $SCRIPTPATH/pythonexe
+elif ! [[ $v_python == 3 ]];
+  then
+    if command -v python3 &> /dev/null;
+      then
+        if ! [ -f $SCRIPTPATH/pythonexe ];then
+          ln -s $( which python3 ) $SCRIPTPATH/pythonexe;
+        fi
+        printf "$(pythonexe --version) \n"
+      else
+        printf "Looks like python 3 does not exist on your system. BatchConvert expects python 3."
+        exit
+    fi
+fi
+
+### Add BatchConvert directory to the PATH.
 
 if ! echo $PATH | tr ":" "\n" | grep "BatchConvert" &> /dev/null;
 then
@@ -32,3 +58,5 @@ then
 fi;
 
 source $HOME/.bashrc;
+
+
