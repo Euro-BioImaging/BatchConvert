@@ -33,14 +33,17 @@ VP=${v_info:7:1}
 
 if [[ $VP == 3 ]];
   then
-    printf "Python 3 exists and will be used for executing the python commands in the batchconvert script. \n"
+    printf "Python command refers to python3, which will be used for executing the python commands in the batchconvert script. \n"
     ln -s $( which python ) $SCRIPTPATH/pythonexe
 elif ! [[ $v_python == 3 ]];
   then
+    printf "Python command refers to python2, which cannot be used in the batchconvert script \nWill search the system for python3 \n";
     if command -v python3 &> /dev/null;
       then
+	printf "python3 was found at $( which python3 ) \n";
+	printf "This python will be used in the batchconvert script \n "
         if ! [ -f $SCRIPTPATH/pythonexe ];then
-          ln -s $( which python3 ) $SCRIPTPATH/pythonexe;
+	   ln -s $( which python3 ) $SCRIPTPATH/pythonexe;
         fi
         printf "$(pythonexe --version) \n"
       else
