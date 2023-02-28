@@ -22,7 +22,6 @@ function abspath() {
     fi
 }
 
-
 ### Make sure that python3 is being used in the batchconvert script.
 
 SCRIPTPATH=$(abspath $rel_SCRIPTPATH);
@@ -34,7 +33,7 @@ VP=${v_info:7:1}
 
 if [[ $VP == 3 ]];
   then
-    printf "Python 3 exists and will be used for executing the python commands in the batchconvert script."
+    printf "Python 3 exists and will be used for executing the python commands in the batchconvert script. \n"
     ln -s $( which python ) $SCRIPTPATH/pythonexe
 elif ! [[ $v_python == 3 ]];
   then
@@ -45,7 +44,7 @@ elif ! [[ $v_python == 3 ]];
         fi
         printf "$(pythonexe --version) \n"
       else
-        printf "Looks like python 3 does not exist on your system. BatchConvert expects python 3."
+        printf "Looks like python 3 does not exist on your system. BatchConvert expects python 3. \n"
         exit
     fi
 fi
