@@ -154,7 +154,7 @@ option `-p` for selecting a subset:\
 ### Conversion on slurm
 
 The examples given above can also be run on slurm by specifying `-pf cluster` option. 
-Note that this option automatically uses singularity container:\
+Note that this option automatically uses singularity profile:\
 `batchconvert omezarr -pf cluster -p .oir <input_path> <output_path>`
 
 
