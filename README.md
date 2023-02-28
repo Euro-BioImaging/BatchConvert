@@ -22,8 +22,8 @@ source BatchConvert/installation/install_with_nextflow.sh
 ```
 
 
-If you already have NextFlow installed and accessible from the command line, or if you prefer to install it manually (e.g., as shown [here](tps://www.nextflow.io/docs/latest/getstarted.html
-)), 
+If you already have NextFlow installed and accessible from the command line, or if you prefer to install it manually (e.g., as shown [here](tps://www.nextflow.io/docs/latest/getstarted.html)
+), 
 you can also install BatchConvert alone, using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
