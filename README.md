@@ -13,35 +13,31 @@ HPC with Slurm.
 
 **Important** note: The package has been so far only tested on Ubuntu 20.04.
 
-Clone the repository and run the installation script:
+The minimal dependency to run the tool is NextFlow, which should be installed and made accessible from the command line.
+
+If conda exists on your system, you can install BatchConvert together with NextFlow using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
-source BatchConvert/install.sh
+source BatchConvert/installation/install_with_nextflow.sh && \
 ```
 
-The minimal dependency to run the tool is NextFlow, which should be installed and made accessible
-from the command line.
 
-If conda exists on your system, you can install BatchConvert together with NextFlow using the respective script file, which uses conda:
+If you already have NextFlow installed and accessible from the command line, or if you prefer to install it manually (e.g., as shown [here](tps://www.nextflow.io/docs/latest/getstarted.html)), 
+you can also install BatchConvert alone, using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
-source BatchConvert/install.sh & \
-source BatchConvert/install_nextflow.sh && \
-mv BatchConvert/nextflow.sample BatchConvert/nextflow
+source BatchConvert/installation/install.sh
 ```
 
-Otherwise, you can follow the instructions provided here: 
-https://www.nextflow.io/docs/latest/getstarted.html
 
-Other dependencies (which do **NOT** have to be manually installed):
+Other dependencies (which will be **automatically** installed):
 - bioformats2raw (entrypoint bioformats2raw)
 - bftools (entrypoint bfconvert)
 - go-mc (entrypoint mc)
 - aspera-cli (entrypoint ascp)
 
-These dependencies can be installed and cached automatically at the first execution time by using the command 
-line option ``--profile`` or `-pf`. This option can be specified in different ways to acquire the dependencies
-via conda or via docker/singularity containers. 
+These dependencies will be installed and cached automatically at the first execution of the conversion command. The mode of installation can be specified by using the 
+command line option ``--profile`` or `-pf`. Depending on how this option is specified, the dependencies can be acquired via conda or docker/singularity containers. 
 
 Specifying ``--profile conda`` (default) will install the dependencies to an 
 environment at ``./.condaCache`` and use this environment to run the workflow. This option 
@@ -53,7 +49,7 @@ These options require that the respective container runtime (docker or singulari
 your system. If singularity is being used, a cache directory will be created at the path 
 ``./.singularityCache`` where the singularity image is stored. 
 
-Finally, you can choose to install the dependencies manually and use your own installations to run
+Finally, you can still choose to install the dependencies manually and use your own installations to run
 the workflow. In this case, you should specify ``--profile standard`` and make sure the entrypoints
 specified above are recognised by your shell.  
 
