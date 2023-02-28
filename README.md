@@ -36,8 +36,9 @@ Other dependencies (which will be **automatically** installed):
 - go-mc (entrypoint mc)
 - aspera-cli (entrypoint ascp)
 
-These dependencies will be installed and cached automatically at the first execution of the conversion command. The mode of installation can be specified by using the 
-command line option ``--profile`` or `-pf`. Depending on how this option is specified, the dependencies can be acquired via conda or docker/singularity containers. 
+These dependencies will be pulled and cached automatically at the first execution of the conversion command. 
+The mode of dependency management can  be specified by using the command line option ``--profile`` or `-pf`. Depending 
+on how this option is specified, the dependencies will be acquired / run either via conda or via docker/singularity containers. 
 
 Specifying ``--profile conda`` (default) will install the dependencies to an 
 environment at ``./.condaCache`` and use this environment to run the workflow. This option 
@@ -45,7 +46,7 @@ requires that miniconda/anaconda is installed on your system.
 
 Alternatively, specifying ``--profile docker`` or ``--profile singularity`` will pull a docker or 
 singularity image with the dependencies, respectively, and use this image to run the workflow.
-These options require that the respective container runtime (docker or singularity) is available on 
+These options assume that the respective container runtime (docker or singularity) is available on 
 your system. If singularity is being used, a cache directory will be created at the path 
 ``./.singularityCache`` where the singularity image is stored. 
 
