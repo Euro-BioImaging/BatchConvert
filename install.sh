@@ -22,11 +22,12 @@ function abspath() {
     fi
 }
 
-### Make sure that python3 is being used in the batchconvert script.
-
 SCRIPTPATH=$(abspath $rel_SCRIPTPATH);
 #printf SCRIPTPATH
 chmod -R 777 $SCRIPTPATH;
+
+
+### Make sure the correct python is used in the batchconvert script
 
 v_info=$( python --version )
 VP=${v_info:7:1}
