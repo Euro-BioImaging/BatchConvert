@@ -70,7 +70,7 @@ Run the interactive configuration command:
 This will start a sequence of requests for s3 credentials such as name, url, access, etc. Provide each requested credential and click
 enter. Continue this cycle until the process is finished. The full set of instructions should look like this:
 
-![data/s3.png](s3.png)
+![s3.png](data/s3.png)
 
 
 ### Configuration of BioStudies user space
