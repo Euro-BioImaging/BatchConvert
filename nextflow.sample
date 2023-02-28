@@ -11,5 +11,6 @@ do
 done
 
 source $condapath/etc/profile.d/conda.sh && \
+conda deactivate && \
 conda activate nflow && \
 nextflow "$@"
