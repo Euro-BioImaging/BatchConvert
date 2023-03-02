@@ -242,7 +242,7 @@ if __name__ == "__main__":
             writer.write('configured_s3')
         #sys.stdout.write('configured_s3') ### VERY IMPORTANT STEP
     elif prompt == 'configure_bia_remote':
-        secret_dir_prompt = 'enter the secret directory for BioImage Archive user space:\n'
+        secret_dir_prompt = 'enter the secret directory for your BioStudies user space:\n'
         if args.secret_dir is None:
             args.secret_dir = input(secret_dir_prompt)
         with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
