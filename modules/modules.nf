@@ -51,7 +51,7 @@ process Convert_Concatenate2SingleOMETIFF {
             batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.tiff"
     fi
     rm -rf $inpath/tempdir &> /dev/null
-    rm -rf $inpath/*pattern
+    rm -rf $inpath/*pattern &> /dev/null
     """
 }
 
