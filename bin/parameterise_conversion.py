@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import subprocess
 import argparse
-import os, sys
+import os, sys, shutil
 import json
 
 def intlist(s):
@@ -154,7 +154,7 @@ if __name__ == "__main__":
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
-                         help='Specifies resolution levels of the pyramidal image for bioformats2raw. Defaults to 3')
+                         help='Specifies resolution levels of the pyramidal image for bioformats2raw.')
     omezarr.add_argument('--chunk_h', '-ch', default=getdef('chunk_h', None), type=int, help='Specifies chunk height')
     omezarr.add_argument('--chunk_w', '-cw', default=getdef('chunk_w', None), type=int, help='Specifies chunk width')
     omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
@@ -194,6 +194,10 @@ if __name__ == "__main__":
     omezarr.add_argument('--cluster_options', default = getdef('cluster_options', '--mem-per-cpu=3140 --cpus-per-task=16'))
     omezarr.add_argument('--time', default = getdef('time', '6h'))
     # print(subparsers.choices.keys())
+    #####################################################################################################
+    #################################### RESET DEFAULTS SUBPARSER #######################################
+    #####################################################################################################
+    reset = subparsers.add_parser('reset_defaults')
 
     args = parser.parse_args()
     keys = args.__dict__.keys()
@@ -202,8 +206,8 @@ if __name__ == "__main__":
     if (len(sys.argv) <= 1):
         raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
         exit()
-    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm"]:
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
+    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults"]:
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"')
         exit()
     prompt = str(sys.argv[1])
     # print(sys.argv[1])
@@ -434,3 +438,9 @@ if __name__ == "__main__":
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('converted')
         #sys.stdout.write('converted') ### VERY IMPORTANT STEP
+    elif (prompt == 'reset_defaults'):
+        backup_params = os.path.join(scriptpath, '..', 'params', 'params.json.backup')
+        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
+        shutil.copy(backup_params, default_params)
+        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+            writer.write('resetted')
