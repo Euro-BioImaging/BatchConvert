@@ -28,6 +28,9 @@ elif [[ $process == 'configured_ometiff' ]];
 elif [[ $process == 'configured_omezarr' ]];
   then
     printf "Configuration of the default parameters for 'bioformats2raw' is complete\n";
+elif [[ $process == 'resetted' ]];
+  then
+    printf "Default parameters were resetted.\n";
 elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
