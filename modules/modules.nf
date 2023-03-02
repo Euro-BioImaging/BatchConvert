@@ -38,16 +38,20 @@ process Convert_Concatenate2SingleOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    if [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
-        then
-            batchconvert_cli.sh $inpath/new.pattern "${inpath.baseName}.ome.tiff"
-    elif ! [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
-        then
-            batchconvert_cli.sh $inpath/tempdir/new.pattern "${inpath.baseName}.ome.tiff"
+    if [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
     fi
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/new.pattern" &> /dev/null
+    if [[ "${params.concatenation_order}" == "auto" ]];
+        then
+            batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.tiff"
+    elif ! [[ "${params.concatenation_order}" == "auto" ]];
+        then
+            batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.tiff"
+    fi
+    rm -rf $inpath/tempdir &> /dev/null
+    rm -rf $inpath/*pattern
     """
 }
 
@@ -83,16 +87,20 @@ process Convert_Concatenate2SingleOMEZARR{
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    if [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
+    if [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
+    fi
+    if [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/new.pattern "${inpath.baseName}.ome.zarr"
-    elif ! [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
+            batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+    elif ! [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/tempdir/new.pattern "${inpath.baseName}.ome.zarr"
+            batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
     fi
     rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/new.pattern" &> /dev/null
+    rm -rf "${inpath}/*pattern" &> /dev/null
     """
 }
 
@@ -186,11 +194,11 @@ process createPatternFile {
     input:
         path inpath
     output:
-        path "${inpath}/new.pattern", optional: true
-        path "${inpath}/tempdir/new.pattern", optional: true
+        path "${inpath}/*pattern", optional: true
+        path "${inpath}/tempdir/*pattern", optional: true
     script:
     """
-    create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
+    create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
     """
 }
 
@@ -257,20 +265,20 @@ process bioformats2raw_experimental {
     """
     if [[ "${params.merge_files}" == "True" ]];
         then
-            create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath};
-            if [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
+            create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath};
+            if [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/new.pattern "${inpath.baseName}.ome.zarr"
-            elif ! [[ "${params.concatenation_order}" == "infer_from_filenames" ]];
+                    batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+            elif ! [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/tempdir/new.pattern "${inpath.baseName}.ome.zarr"
+                    batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
             fi
     elif [[ "${params.merge_files}" == "False" ]];
         then
             batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
     fi
     rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/new.pattern" &> /dev/null
+    rm -rf "${inpath}/*pattern" &> /dev/null
     """
 }
 
