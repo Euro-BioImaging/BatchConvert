@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
     ### specify whether the input files should be concatenated into a single ome-tiff file
     ometiff.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
-    ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'infer_from_filenames'))
+    ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
     ometiff.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
@@ -146,7 +146,7 @@ if __name__ == "__main__":
 
     ### specify whether the input files should be concatenated into a single ome-tiff folder
     omezarr.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
-    omezarr.add_argument('--concatenation_order', default=getdef("concatenation_order", 'infer_from_filenames'))
+    omezarr.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
     omezarr.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
@@ -242,7 +242,7 @@ if __name__ == "__main__":
             writer.write('configured_s3')
         #sys.stdout.write('configured_s3') ### VERY IMPORTANT STEP
     elif prompt == 'configure_bia_remote':
-        secret_dir_prompt = 'enter the secret directory for BioImage Archive user space:\n'
+        secret_dir_prompt = 'enter the secret directory for your BioStudies user space:\n'
         if args.secret_dir is None:
             args.secret_dir = input(secret_dir_prompt)
         with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
