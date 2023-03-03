@@ -141,6 +141,7 @@ def proofread_group_patterns(filelist):
 def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
     assert isinstance(concatenation_axes, type('')), 'concatenation_axes must be in type str.'
     assert isinstance(rootDir, type('')), 'rootDir must be in type str.'
+    filelist.sort()
     last = filelist[-1]
     zonelists = []
     zonelist_ids = []
@@ -156,20 +157,28 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
         zonelist_ids.append(zonelistidx)
         zonelists.append(zonelist)
     zonelistlen = len(zonelist)
+    flatlistdict = {}
     zonelistdict = {}
     zonelist_ids_dict = {}
     for i in range(zonelistlen):
+        flatlistdict[i] = []
         zonelistdict[i] = []
         zonelist_ids_dict[i] = []
     for zonelist, zonelistidx in zip(zonelists, zonelist_ids): ### TODO Change this to a (faster) transpose_dict function
         for i in range(zonelistlen):
             zonelistdict[i].append(zonelist[i])
             zonelist_ids_dict[i].append(zonelistidx[i])
+            flatlistdict[i].append(int(zonelist[i]))
     variable_zones = []
     patterns = []
     variable_zone_ids = []
     reg = last
     for i in range(zonelistlen):
+        uqs, count_dict = __find_uniques(flatlistdict[i])
+        if len(uqs) > 1:
+            increment = uqs[1] - uqs[0]
+        else:
+            increment = None
         dictitem = zonelistdict[i]
         dictitem.sort()
         minval = dictitem[0]
@@ -179,7 +188,10 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
             pass
         else:
             variable_zones.append((minval, maxval))
-            pattern = '<%s-%s>' % (minval, maxval)
+            if increment is None:
+                pattern = '<%s-%s>' % (minval, maxval)
+            else:
+                pattern = '<%s-%s:%s>' % (minval, maxval, increment)
             variable_zone_ids.append(zonelist_ids[-1])
             patterns.append(pattern)
 
