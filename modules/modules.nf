@@ -32,26 +32,23 @@ process Convert_Concatenate2SingleOMETIFF {
         )
     }
     input:
-        path inpath
+        path pattern_file
+    input:
+        val inpath
     output:
-        path "${inpath.baseName}.ome.tiff", emit: conv
+        path "${pattern_file.baseName}.ome.tiff", emit: conv
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "${params.pattern}" == '' ]];then
-        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    else
-        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
-    fi
     if [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.tiff"
+            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
     elif ! [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.tiff"
+            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
     fi
-    rm -rf $inpath/tempdir &> /dev/null
-    rm -rf $inpath/*pattern &> /dev/null
+    # rm -rf "${inpath}/tempdir" &> /dev/null
+    # rm -rf "${inpath}/*pattern" &> /dev/null
     """
 }
 
@@ -74,6 +71,7 @@ process Convert_EachFile2SeparateOMEZARR {
 }
 
 process Convert_Concatenate2SingleOMEZARR{
+    // This process will be probably changed completely. Create hyperstack will probably be a different process
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -81,29 +79,25 @@ process Convert_Concatenate2SingleOMEZARR{
         )
     }
     input:
-        path inpath
+        path pattern_file
+    input:
+        val inpath
     output:
-        path "${inpath.baseName}.ome.zarr", emit: conv
+        path "${pattern_file.baseName}.ome.zarr", emit: conv
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "${params.pattern}" == '' ]];then
-        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    else
-        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
-    fi
     if [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
     elif ! [[ "${params.concatenation_order}" == "auto" ]];
         then
-            batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
+            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
     fi
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/*pattern" &> /dev/null
+    # rm -rf "${inpath}/tempdir" &> /dev/null
+    # rm -rf "${inpath}/*pattern" &> /dev/null
     """
 }
-
 
 // Transfer processes:
 
@@ -155,11 +149,11 @@ process Transfer_PrivateBiostudies2Local {
     input:
         val source
     output:
-        path transferred
+        path "${source}"
     script:
     // source un basename ini ascp nin output kismina yerlestir
     """
-    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/$source transferred;
+    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/$source ".";
     """
 }
 
@@ -190,17 +184,37 @@ process Transfer_PublicBiostudies2Local {
 
 // EXPERIMENTAL PROCESSES
 
-process createPatternFile {
+process createPatternFile1 {
     input:
         path inpath
     output:
-        path "${inpath}/*pattern", optional: true
-        path "${inpath}/tempdir/*pattern", optional: true
+        path "${inpath}/*"
     script:
     """
-    create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
+    if [[ "${params.pattern}" == '' ]];then
+        create_hyperstack ${inpath}
+    else
+        create_hyperstack --select_by ${params.pattern} ${inpath}
+    fi
     """
 }
+
+
+process createPatternFile2 {
+    input:
+        path inpath
+    output:
+        path "${inpath}/tempdir/*"
+    script:
+    """
+    if [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
+    fi
+    """
+}
+
 
 process mirror2local {
     input:
@@ -220,9 +234,9 @@ process cleanup {
     script:
     """
     rm -rf "${inpath}/tempdir" &> /dev/null
+    rm -rf "${inpath}/*pattern" &> /dev/null
     """
 }
-
 
 process stageLocal {
     input:
