@@ -249,6 +249,24 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
             shutil.copy(oldpath, newpath)
     return reg, newDir
 
+
+def _create_pattern_filename(reg):
+    splitleft = reg.split('<')
+    items = []
+    for item in splitleft:
+        rightitem = item.split('>')
+        if len(rightitem) > 1:
+            items.append(rightitem[1])
+        else:
+            items.append(rightitem[0])
+    string = ''.join(items)
+    string = string.split('.')
+    if len(string) > 1:
+        string = ''.join(string[:-1])
+    else:
+        string = ''.join(string)
+    return string
+
 def save_pattern_file_per_group(rootDir, concatenation_axes = ['auto'], select_by = ''):
     assert isinstance(rootDir, type('')), 'rootDir must be in type str.'
     assert isinstance(select_by, type('')), 'select_by must be in type str.'
@@ -268,7 +286,15 @@ def save_pattern_file_per_group(rootDir, concatenation_axes = ['auto'], select_b
     for i, (idx, gr) in enumerate(proofread.items()):
         axes = axes_set[i]
         reg, newDir = save_pattern_file(rootDir, gr, axes)
-        with open(newDir + '/gr%s.pattern' % idx, 'w') as writer:
+        baseName = _create_pattern_filename(reg)
+        name = '/' + baseName + '.pattern'
+        with open(newDir + name, 'w') as writer:
             writer.write(reg)
         regs.append(reg)
     return regs
+
+
+
+
+
+
