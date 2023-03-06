@@ -47,8 +47,8 @@ process Convert_Concatenate2SingleOMETIFF {
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
     fi
-    # rm -rf "${inpath}/tempdir" &> /dev/null
-    # rm -rf "${inpath}/*pattern" &> /dev/null
+    rm -rf ${inpath}/tempdir &> /dev/null
+    rm -rf ${inpath}/*pattern &> /dev/null
     """
 }
 
@@ -94,8 +94,8 @@ process Convert_Concatenate2SingleOMEZARR{
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
     fi
-    # rm -rf "${inpath}/tempdir" &> /dev/null
-    # rm -rf "${inpath}/*pattern" &> /dev/null
+    rm -rf ${inpath}/tempdir &> /dev/null
+    rm -rf ${inpath}/*pattern &> /dev/null
     """
 }
 
@@ -170,19 +170,7 @@ process Transfer_PublicBiostudies2Local {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-// EXPERIMENTAL PROCESSES
+// Other utilities
 
 process createPatternFile1 {
     input:
@@ -216,6 +204,35 @@ process createPatternFile2 {
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// EXPERIMENTAL PROCESSES THAT ARE CURRENTLY NOT NEEDED
+process cleanup {
+    input:
+        path inpath
+    script:
+    """
+    rm -rf "${inpath}/tempdir" &> /dev/null
+    rm -rf "${inpath}/*pattern" &> /dev/null
+    """
+}
+
+
+
 process mirror2local {
     input:
         val source
@@ -228,15 +245,6 @@ process mirror2local {
     """
 }
 
-process cleanup {
-    input:
-        path inpath
-    script:
-    """
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/*pattern" &> /dev/null
-    """
-}
 
 process stageLocal {
     input:
