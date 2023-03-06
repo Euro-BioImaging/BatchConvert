@@ -197,11 +197,16 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
 
     ### Make sure that the user inserted the fitting number of concatenation axes
     if concatenation_axes != 'auto':
+        if concatenation_axes == 'a':
+            concatenation_axes = concatenation_axes * len(patterns)
         assert len(concatenation_axes) == len(patterns), "The specified number of axes does not match the number of detected variable zones, which is %s." % len(patterns)
 
     ### Modify the pattern files to make sure the user-specified axes are inserted
         for i in range(len(patterns)):
-            patterns[i] = '%s' % concatenation_axes[i].capitalize() + patterns[i]
+            if concatenation_axes[i] == 'a':
+                pass
+            else:
+                patterns[i] = '%s' % concatenation_axes[i].capitalize() + patterns[i]
 
     ### Create the regex according to the detected variable zones
     oldreg = reg
@@ -219,6 +224,13 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
 
     if concatenation_axes == 'auto':
         newDir = rootDir
+    elif concatenation_axes == 'a' * len(patterns):
+        newfilelist = copy.deepcopy(filelist)
+        newDir = rootDir + '/tempdir'
+        for olditem, newitem in zip(filelist, newfilelist):
+            oldpath = os.path.join(rootDir, olditem)
+            newpath = os.path.join(newDir, newitem)
+            shutil.copy(oldpath, newpath)
     else:
         newfilelist = copy.deepcopy(filelist)
         for i, file in enumerate(newfilelist):
@@ -257,8 +269,8 @@ def _create_pattern_filename(reg, idx):
         string = ''.join(string[:-1])
     else:
         string = ''.join(string)
-    string = string.replace('<', '_')
-    string = string.replace('>', '_')
+    string = string.replace('<', 'Range{')
+    string = string.replace('>', '}')
     string = string.replace(':', '-')
     return string
 
@@ -272,7 +284,13 @@ def save_pattern_file_per_group(rootDir, concatenation_axes = ['auto'], select_b
 
     gr_num = len(proofread.keys())
     if (len(concatenation_axes) == 1) & (concatenation_axes[0] == 'auto'):
-            axes_set = concatenation_axes * gr_num
+        axes_set = concatenation_axes * gr_num
+    elif (len(concatenation_axes) > 1):
+        axes_set = copy.deepcopy(concatenation_axes)
+        if any([item != 'auto' for item in concatenation_axes]):
+            for i in range(len(concatenation_axes)):
+                if concatenation_axes[i] == 'auto':
+                    axes_set[i] = 'a'
     else:
         axes_set = concatenation_axes
 
