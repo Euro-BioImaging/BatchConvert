@@ -106,10 +106,12 @@ Configuration of default bia credentials is complete
 ## Examples
 
 ### Local conversion
-Convert a batch of images on your local storage into OME-TIFF format. Note that the `input_path`
-in the command given below is typically a directory with multiple image files but a single image file
-can also be passed:\
-`batchconvert ometiff -pf conda <input_path> <output_path>`
+
+#### Parallel conversion of files to separate OME-TIFFs / OME-Zarrs:
+Convert a batch of images on your local storage into OME-TIFF format. 
+Note that the `input_path` in the command given below is typically a 
+directory with multiple image files but a single image file can also be passed:\
+`batchconvert ometiff -pf conda <input_path> <output_path>` \
 
 As conda is the default profile, (specified in the file `params/params.json.default`), it does not have to be 
 explicitly included in the command line. Thus the command can be shortened to:\
@@ -131,7 +133,7 @@ Select a subset of images with a matching string such as "mutation":\
 `batchconvert omezarr -p mutation <input_path> <output_path>`
 
 Select a subset of images using wildcards. Note that the use of "" around 
-the input path is necessary with wildcards:\
+the input path is necessary when using wildcards:\
 `batchconvert omezarr "<input_path>/*D3*.oir" <output_path>`
 
 Convert by using a singularity container instead of conda environment (requires
@@ -142,18 +144,142 @@ Convert by using a docker container instead of conda environment (requires docke
 to be installed on your system):\
 `batchconvert omezarr -pf docker "<input_path>/*D3*.oir" <output_path>`
 
-Convert and upload the output to an s3 bucket. Note that the output path is 
-created relative to the bucket specified in your s3 parameters:\
+Convert local data and upload the output to an s3 bucket. Note that the output 
+path is created relative to the bucket specified in your s3 parameters:\
 `batchconvert omezarr -dt s3 <input_path> <output_path>`
 
-Receive an input from an s3 bucket, convert locally and upload to the same bucket.
-Note that wildcards cannot be used when the input is from s3. Use pattern matching
-option `-p` for selecting a subset:\
+Receive input files from an s3 bucket, convert locally and upload the output to 
+the same bucket. Note that wildcards cannot be used when the input is from s3. 
+Use pattern matching option `-p` for selecting a subset of input files:\
 `batchconvert omezarr -p mutation -st s3 -dt s3 <input_path> <output_path>`
+
+Receive input files from your private BioStudies user space and convert them locally.
+Use pattern matching option `-p` for selecting a subset of input files:\
+`batchconvert omezarr -p mutation -st bia <input_path> <output_path>`
+
+Receive an input from an s3 bucket, convert locally and upload the output to your 
+private BioStudies user space. Use pattern matching option `-p` for selecting a subset 
+of input files:\
+`batchconvert omezarr -p mutation -st s3 -dt bia <input_path> <output_path>`
+
+
+Note that in all the examples shown above, BatchConvert treats each input file as separate,
+standalone data point, disregarding the possibility that some of the input files might belong to 
+the same multidimensional array. Thus, each input file is converted to an independent 
+OME-TIFF / OME-Zarr and the number of outputs will thus equal the number of selected input files.
+An alternative scenario is discussed below.
+
+#### Parallel conversion of file groups by stacking multiple files into single OME-TIFFs / OME-Zarrs:
+
+When the flag `--merge_files` is specified, BatchConvert tries to find out which input files might 
+belong to the same multidimensional array based on the patterns in the filenames. Then a "grouped conversion" 
+is performed, meaning that the files belonging to the same dataset will be converted together into 
+a single OME-TIFF / OME-Zarr stack, in that files will be concatenated along specific dimension(s) 
+during the conversion. Multiple file groups in the input directory can thus be grouped and converted 
+in parallel. 
+
+This feature uses Bio-Formats's pattern files as described [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
+However, BatchConvert generates pattern files automatically, allowing the user to directly use the 
+input directory in the conversion command. BatchConvert also has the option of specifying the 
+concatenation axes in the command line, which is especially useful in cases where the file names 
+do not contain dimension information.  
+
+To be able to use the `--merge files` flag, the input file names must obey certain rules:
+1. File names in the same group must be consistent, except for one or more **"variable field(s)"**. 
+2. The variable field(s) must be numeric and incremental within a group.
+3. The length of variable fields must be uniform within the group. For instance, if the
+variable field has values reaching multi-digit numbers, leading "0"s should be included where needed 
+in the file names to make the variable field length uniform within the group.
+4. Typically, each variable field should follow a dimension specifier. What patterns can be used as 
+dimension specifiers are explained here: [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
+However, BatchConvert also has the option `--concatenation_order`, which allows the user to
+specify from the command line, the dimension(s), along which the files must be concatenated.
+
+Below are some examples of grouped conversion commands, together with acceptable and unacceptable
+filenames:
+
+**Example 1:**
+```
+time-series/test_img_T2
+time-series/test_img_T4
+time-series/test_img_T6
+time-series/test_img_T8
+time-series/test_img_T10
+time-series/test_img_T12
+```
+In this example, leading zeroes are missing in the variable field in some of the file names. 
+Here is the corrected version for the above example:
+```
+time-series/test_img_T02
+time-series/test_img_T04
+time-series/test_img_T06
+time-series/test_img_T08
+time-series/test_img_T10
+time-series/test_img_T12
+```
+Convert this folder to a single OME-TIFF: \
+`batchconvert --ometiff --merge_files <input_path>/time-series <output_path>`
+
+**Example 2**: 
+```
+test_img_T2
+test_img_T4
+test_img_T5
+test_img_T7
+```
+In this example, the increments in the variable field are non-uniform. BatchConvert does not 
+accept this fileset as a valid group.
+
+**Example 3**
+```
+multichannel_time-series/test_img_C1-T1
+multichannel_time-series/test_img_C1-T2
+multichannel_time-series/test_img_C1-T3
+multichannel_time-series/test_img_C2-T1
+multichannel_time-series/test_img_C2-T2
+```
+In this example the channel-2 does not have the same number of timeframes as channel-1. 
+BatchConvert will also reject this fileset as a valid group. The corrected version should 
+look like:
+```
+multichannel_time-series/test_img_C1-T1
+multichannel_time-series/test_img_C1-T2
+multichannel_time-series/test_img_C1-T3
+multichannel_time-series/test_img_C2-T1
+multichannel_time-series/test_img_C2-T2
+multichannel_time-series/test_img_C2-T3
+```
+
+Convert this folder to a single OME-Zarr: \
+`batchconvert --omezarr --merge_files <input_path>/multichannel_time-series <output_path>`
+
+**Example 4**
+```
+folder_with_multiple_groups/test_img_C1-T1
+folder_with_multiple_groups/test_img_C1-T2
+folder_with_multiple_groups/test_img_C2-T1
+folder_with_multiple_groups/test_img_C2-T2
+folder_with_multiple_groups/test_img_T1-Z1
+folder_with_multiple_groups/test_img_T1-Z2
+folder_with_multiple_groups/test_img_T1-Z3
+folder_with_multiple_groups/test_img_T2-Z1
+folder_with_multiple_groups/test_img_T2-Z2
+folder_with_multiple_groups/test_img_T2-Z3
+```
+
+This is an example of a case, where there are multiple filename patterns in the input folder. 
+BatchConvert will detect the two patterns in this folder and perform two grouped conversions. 
+The output folders will be named as `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and 
+`test_img_TRange{1-2-1}-ZRange{1-3-1}.ome.zarr`. 
+
+Convert this folder: \
+`batchconvert --omezarr --merge_files <input_path>/folder_with_multiple_groups <output_path>`
+ 
+
 
 ### Conversion on slurm
 
-The examples given above can also be run on slurm by specifying `-pf cluster` option. 
+All the examples given above can also be run on slurm by specifying `-pf cluster` option. 
 Note that this option automatically uses singularity profile:\
 `batchconvert omezarr -pf cluster -p .oir <input_path> <output_path>`
 
