@@ -50,6 +50,8 @@ fi
 
 rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
 rm -rf /scratch/bugra/work &> /dev/null;
+pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+
 
 # this runs the nextflow workflow which will consume the updated command line in the bin:
 
