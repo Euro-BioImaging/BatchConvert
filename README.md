@@ -175,7 +175,7 @@ When the flag `--merge_files` is specified, BatchConvert tries to find out which
 belong to the same multidimensional array based on the patterns in the filenames. Then a "grouped conversion" 
 is performed, meaning that the files belonging to the same dataset will be converted together into 
 a single OME-TIFF / OME-Zarr stack, in that files will be concatenated along specific dimension(s) 
-during the conversion. Multiple file groups in the input directory can thus be grouped and converted 
+during the conversion. Multiple file groups in the input directory can thus be detected and converted 
 in parallel. 
 
 This feature uses Bio-Formats's pattern files as described [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
@@ -191,9 +191,11 @@ To be able to use the `--merge files` flag, the input file names must obey certa
 variable field has values reaching multi-digit numbers, leading "0"s should be included where needed 
 in the file names to make the variable field length uniform within the group.
 4. Typically, each variable field should follow a dimension specifier. What patterns can be used as 
-dimension specifiers are explained here: [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
+dimension specifiers are explained [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
 However, BatchConvert also has the option `--concatenation_order`, which allows the user to
 specify from the command line, the dimension(s), along which the files must be concatenated.
+5. File names that are unique and cannot be associated with any group will be excluded from 
+grouped conversion. In other words, BatchConvert assumes a group must consist of 2 or more files. 
 
 Below are some examples of grouped conversion commands, together with acceptable and unacceptable
 filenames:
@@ -274,8 +276,34 @@ The output folders will be named as `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.za
 
 Convert this folder: \
 `batchconvert --omezarr --merge_files <input_path>/folder_with_multiple_groups <output_path>`
- 
 
+**Example 5**
+```
+folder_with_multiple_groups/test_img_1-1
+folder_with_multiple_groups/test_img_1-2
+folder_with_multiple_groups/test_img_2-1
+folder_with_multiple_groups/test_img_2-2
+folder_with_multiple_groups/test_img_T1-Z1
+folder_with_multiple_groups/test_img_T1-Z2
+folder_with_multiple_groups/test_img_T1-Z3
+folder_with_multiple_groups/test_img_T2-Z1
+folder_with_multiple_groups/test_img_T2-Z2
+folder_with_multiple_groups/test_img_T2-Z3
+```
+
+This example uses the same filesets as in the example 4, except that the file names in
+the first group lack any dimension specifier. In such a possible scenario, BatchConvert 
+allows the user to specify the concatenation axes via `--concatenation_order` option. This
+option expects comma-separated strings of dimensions for each group. In this example, 
+the user must provide a string of 2 characters, such as `ct` for channel and time, for group 1, 
+since there are two variable fields for this group. Since group 2 already has dimension specifiers,
+the user does not need to specify anything for this group, and can enter `auto` for automatic
+detection of the specifiers. 
+
+So the following line can be used to convert this folder: \
+`batchconvert --omezarr --merge_files --concatenation_order ct,auto <input_path>/folder_with_multiple_groups <output_path>`
+
+Note that `--concatenation_order` will override any existing dimension specifiers.
 
 ### Conversion on slurm
 
