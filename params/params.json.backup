@@ -1,0 +1,20 @@
+{
+  "in_path": "placehold",
+  "out_path": "placehold",
+  "pattern": "",
+  "profile": "conda",
+  "source_type": "local",
+  "dest_type": "local",
+  "S3REMOTE": "<yours3remote>",
+  "S3ENDPOINT": "<yours3endpoint>",
+  "S3BUCKET": "<yourbucket>",
+  "S3ACCESS": "<youraccess>",
+  "S3SECRET": "<yoursecret>",
+  "BIA_REMOTE": "<yourbiaremote>",
+  "downsample_type": "SIMPLE",
+  "max_workers": "16",
+  "queue_size": "20",
+  "submit_rate_limit": "<yourlimit>",
+  "cluster_options": "<youroptions>",
+  "time": "dawe"
+}
