@@ -53,7 +53,7 @@ workflow {
             else {
                 pattern_files = createPatternFile2(params.in_path).flatten()
             }
-            println pattern_files
+            pattern_files.view()
             ch = pattern_files.filter { it.toString().contains(".pattern") }
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
         }
