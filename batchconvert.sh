@@ -49,7 +49,10 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
 fi
 
 rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-rm -rf /scratch/bugra/work &> /dev/null;
+rm -rf /scratch/.batchconvert/work &> /dev/null;
+rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
+rm -rf /scratch/.batchconvert/logs &> /dev/null;
+
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
