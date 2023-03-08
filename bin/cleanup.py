@@ -10,6 +10,7 @@ if __name__ == "__main__":
     scriptpath = os.path.dirname(os.path.realpath(__file__))
     with open(os.path.join(scriptpath, '..', 'params', 'params.json'), 'r+') as f:
         jsonfile = json.load(f)
+        # keep_workdir = jsonfile['keep_workdir']
         inpath = jsonfile['in_path']
         removal = os.path.join(inpath, 'tempdir')
         try:
