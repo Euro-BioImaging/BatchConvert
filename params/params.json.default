@@ -11,10 +11,8 @@
   "S3ACCESS": "<youraccess>",
   "S3SECRET": "<yoursecret>",
   "BIA_REMOTE": "<yourbiaremote>",
-  "downsample_type": "SIMPLE",
-  "max_workers": "16",
-  "queue_size": "20",
+  "queue_size": "yourqueuesize",
   "submit_rate_limit": "<yourlimit>",
   "cluster_options": "<youroptions>",
-  "time": "dawe"
+  "time": "<yourtime>"
 }
