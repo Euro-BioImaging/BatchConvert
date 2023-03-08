@@ -94,7 +94,10 @@ def group_filelist(filelist):
 
 
 def proofread_group(filegroup):
-    # filegroup = groups[1]
+    # filegroup = groups[1] #
+    if len(filegroup) < 2:
+        print("Group must consist of at least 2 files. Group with single file detected and will be rejected.")
+        return False
     numeric_fields = []
     for file in filegroup:
         numerical = list(map(int, re.findall(r'\d+', file)))
@@ -237,14 +240,15 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
             oldfile = file
             diff = 0
             for j, variable_zone_idx in enumerate(variable_zone_ids):
-                idx0, idx1 = variable_zone_idx
-                idx0 += diff
-                idx1 += diff
-                listing = list(file)
-                listing.insert(idx0, concatenation_axes[j].capitalize())
-                file = ''.join(listing)
-                diff = len(file) - len(oldfile)
-                oldfile = file
+                if concatenation_axes[j] != 'a':
+                    idx0, idx1 = variable_zone_idx
+                    idx0 += diff
+                    idx1 += diff
+                    listing = list(file)
+                    listing.insert(idx0, concatenation_axes[j].capitalize())
+                    file = ''.join(listing)
+                    diff = len(file) - len(oldfile)
+                    oldfile = file
             newfilelist[i] = file
         assert len(newfilelist) == len(filelist), 'newfilelist and filelist do not have the same length.'
 
