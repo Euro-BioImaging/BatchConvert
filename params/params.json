@@ -5,7 +5,7 @@
   "profile": "conda",
   "source_type": "local",
   "dest_type": "local",
-  "queue_size": "yourqueuesize",
+  "queue_size": "<yourqueuesize>",
   "submit_rate_limit": "<yourlimit>",
   "cluster_options": "<youroptions>",
   "time": "<yourtime>",
