@@ -158,13 +158,13 @@ if __name__ == "__main__":
     omezarr.add_argument('--chunk_h', '-ch', default=getdef('chunk_h', None), type=int, help='Specifies chunk height')
     omezarr.add_argument('--chunk_w', '-cw', default=getdef('chunk_w', None), type=int, help='Specifies chunk width')
     omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
-    omezarr.add_argument('--downsample_type', default=getdef('downsample_type', "SIMPLE"), type=str,
+    omezarr.add_argument('--downsample_type', default=getdef('downsample_type', None), type=str,
                          help='Specifies downsampling algorithm')
     # omezarr.add_argument('--compression_tiff', '-ctiff', default=getdef('compression_tiff', None), type=str,
     #                     help='Specifies compression algorithm for bfconvert')
     omezarr.add_argument('--compression_zarr', '-czarr', default=getdef('compression_zarr', None), type=str,
                          help='Specifies compression algorithm for bioformats2raw')
-    omezarr.add_argument('--max_workers', default=getdef('max_workers', 16), type=int,
+    omezarr.add_argument('--max_workers', default=getdef('max_workers', None), type=int,
                          help='Specifies maximum number of processors used')
     omezarr.add_argument('--no_nested', default=getdef('no_nested', False), action='store_true',
                          help='Specifies path type.')
@@ -295,18 +295,22 @@ if __name__ == "__main__":
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        for key in bftoolsParams:
-            value = argsdict[key]
-            # print(value)
-            if value is None:
-                keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to leave this parameter as is\n' % key)
-                # print(keyprompt)
-                if keyprompt is None:
-                    pass
-                else:
-                    args.__dict__[key] = keyprompt
         with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
             jsonfile = json.load(f)
+            for key in bftoolsParams:
+                value = argsdict[key]
+                try:
+                    current = jsonfile[key]
+                except:
+                    current = "<bfconvert defaults>"
+                # print(value)
+                if value is None:
+                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
+                    # print(keyprompt)
+                    if keyprompt is None:
+                        pass
+                    else:
+                        args.__dict__[key] = keyprompt
             for key, value in args.__dict__.items():
                 if (value == 's') | (value == 'skip'):
                     pass
@@ -320,7 +324,7 @@ if __name__ == "__main__":
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-        # print("Configuration of the default parameters for 'bfconvert' is complete")
+            # print("Configuration of the default parameters for 'bfconvert' is complete")
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('configured_ometiff')
         #sys.stdout.write('configured_ometiff\n') ### VERY IMPORTANT STEP
@@ -328,18 +332,22 @@ if __name__ == "__main__":
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        for key in bf2rawParams:
-            value = argsdict[key]
-            # print(value)
-            if value is None:
-                keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to leave this parameter as is\n' % key)
-                # print(keyprompt)
-                if keyprompt is None:
-                    pass
-                else:
-                    args.__dict__[key] = keyprompt
         with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
             jsonfile = json.load(f)
+            for key in bf2rawParams:
+                value = argsdict[key]
+                try:
+                    current = jsonfile[key]
+                except:
+                    current = "<bioformats2raw defaults>"
+                # print(value)
+                if value is None:
+                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
+                    # print(keyprompt)
+                    if keyprompt is None:
+                        pass
+                    else:
+                        args.__dict__[key] = keyprompt
             for key, value in args.__dict__.items():
                 if (value == 's') | (value == 'skip'):
                     pass
