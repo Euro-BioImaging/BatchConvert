@@ -111,7 +111,7 @@ Configuration of default bia credentials is complete
 Convert a batch of images on your local storage into OME-TIFF format. 
 Note that the `input_path` in the command given below is typically a 
 directory with multiple image files but a single image file can also be passed:\
-`batchconvert ometiff -pf conda <input_path> <output_path>` \
+`batchconvert ometiff -pf conda <input_path> <output_path>` 
 
 As conda is the default profile, (specified in the file `params/params.json.default`), it does not have to be 
 explicitly included in the command line. Thus the command can be shortened to:\
