@@ -40,12 +40,12 @@ process Convert_Concatenate2SingleOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "${params.concatenation_order}" == "auto" ]];
-        then
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
-    elif ! [[ "${params.concatenation_order}" == "auto" ]];
+    if [[ -d "${inpath}/tempdir" ]];
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
+    elif ! [[ "${params.concatenation_order}" == "auto" ]];
+        then
+            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -87,12 +87,12 @@ process Convert_Concatenate2SingleOMEZARR{
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "${params.concatenation_order}" == "auto" ]];
-        then
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
-    elif ! [[ "${params.concatenation_order}" == "auto" ]];
+    if [[ -d "${inpath}/tempdir" ]];
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
+    elif ! [[ "${params.concatenation_order}" == "auto" ]];
+        then
+            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -172,6 +172,29 @@ process Transfer_PublicBiostudies2Local {
 
 // Other utilities
 
+def verify_axes(axes) {
+    truth = true
+    for (i in 0 .. axes.length() - 1) {
+        if (axes[i] == "x") {
+            truth = true
+        }
+        else if (axes[i] == "a") {
+            truth = true
+        }
+        else if (axes[i] == ",") {
+            truth = true
+        }
+        else if (axes == "auto") {
+            truth = true
+        }
+        else {
+            truth = false
+        }
+    }
+    return truth
+}
+
+
 process createPatternFile1 {
     input:
         path inpath
@@ -202,13 +225,6 @@ process createPatternFile2 {
     fi
     """
 }
-
-
-
-
-
-
-
 
 
 
