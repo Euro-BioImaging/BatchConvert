@@ -3,244 +3,201 @@ import os, re
 import shutil
 import copy
 from collections import Counter
-
+import itertools
 
 transpose_list = lambda l: list(map(list, zip(*l)))
+get_numerics = lambda string: list(re.findall(r'\d+', string))
+get_alpha = lambda string: ''.join([i for i in string if not i.isnumeric()])
 
-def __verify_regular_increments(flatlist):
-    # flatlist = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5]
-    diff = flatlist[1] - flatlist[0]
-    for i in range(1, len(flatlist)):
-        item0 = flatlist[i - 1]
-        item1 = flatlist[i]
-        if (item1 - item0) != diff:
-            print("The increment within one of the numeric fields is not unique. Verification fails.")
-            return False
-        else:
-            diff = item1 - item0
-    return True
+def flatten_list(l):
+    return list(itertools.chain.from_iterable(l))
 
+def get_elnum(listoflist):
+    """
+    Finds the number of elements in a list of list.
+    This function assumes that the listoflist is two-dimensional.
+    """
+    flatlist = []
+    for l in listoflist:
+        flatlist += l
+    return len(flatlist)
 
-def __find_uniques(flatlist):
+def find_uniques(flatlist):
     count_dict = Counter(flatlist)
     uqs = list(dict.fromkeys(count_dict))
     return uqs, count_dict
 
-def __verify_incrementation(flatlist):
-    # flatlist = field
-    uqs, count_dict = __find_uniques(flatlist)
-    if len(uqs) <= 1:
-        print("A numeric field with single unique value detected.")
-        return True
-    regularity = __verify_regular_increments(uqs)
-    counts = transpose_list(count_dict.items())[1]
-    count_uniqueness, _ = __find_uniques(counts)
-    if regularity:
-        if len(count_uniqueness) > 1:
-            print("Increment groups have variable sizes. The size should be unique. Verification fails.")
-            return False
+def get_size_grps(ilist):
+    """ First process in filename regrouping. """
+    grps = [[ilist[0]]]
+    hold = len(ilist[0])
+    for i in range(1, len(ilist)):
+        if len(ilist[i]) == hold:
+            grps[-1].append(ilist[i])
         else:
-            return True
+            grps.append([ilist[i]])
+            hold = len(ilist[i])
+    return grps
+
+def group_by_alpha(filelist):
+    """ Second process in filename regrouping. """
+    ############## group by sizes first:
+    alphas = []
+    for item in filelist:
+        alpha = get_alpha(item)
+        alphas.append(alpha)
+    uqs, count_dict = find_uniques(alphas)
+    cts = [count_dict[key] for key in uqs]
+    start = 0
+    alphagrps = []
+    ############### then group also by alphabetical part of the string:
+    for i in cts:
+        alphagrps.append(filelist[start:start + i])
+        start = start + i
+    return alphagrps
+
+def get_slices_from_list(ilist):
+    start = 0
+    slcs = []
+    for i in range(0, len(ilist)):
+        item = ilist[i]
+        slc = slice(start, start + len(item))
+        slcs.append(slc)
+        start = start + len(item)
+    return slcs
+
+def group_preliminary(filelist):
+    sizegrps = get_size_grps(filelist)
+    fin = []
+    for i, grp in enumerate(sizegrps):
+        alphagrps = group_by_alpha(grp)
+        fin += alphagrps
+    return fin
+
+def get_numeric_fields(group):
+    ### This can only be applied to an alpha group
+    nums = []
+    for item in group:
+        numerics = get_numerics(item)
+        nums.append(numerics)
+    numlists = transpose_list(nums)
+    return numlists
+
+def unify_identical_groups(slist):
+    out = [slist[0]]
+    for i in range(1, len(slist)):
+        if slist[i] == slist[i - 1]:
+            out[-1] += slist[i]
+        else:
+            out.append(slist[i])
+    return out
+
+def get_incremental_groups(slist, increment):
+    grps = [[slist[0]]]
+    for i in range(1, len(slist)):
+        if int(slist[i]) - int(slist[i - 1]) == increment:
+            grps[-1].append(slist[i])
+        else:
+            grps.append([])
+            grps[-1].append(slist[i])
+    return grps
+
+def get_identity_groups(slist, get_slices = False):
+    out = get_incremental_groups(slist, 0)
+    if get_slices:
+        out = get_slices_from_list(out)
+    return out
+
+def get_dynamic_incremental_groups(slist):
+    # slist = [2, 2, 2, 4, 4, 4, 6, 6, 6, 2, 2, 2, 4, 4, 4, 6, 6, 6, 13, 1, 1, 1, 2, 2, 3, 3, 8, 8, 9, 9, 10, 10, 10, 11, 11, 11, 1, 2, 3, 4, 5]
+    # slist = [2, 4, 6, 2, 4, 6, 1, 2, 3, 8, 9, 10]
+    # slist = [0, 2, 4, 6, 0, 4]
+    if len(slist) == 1:
+        grps = [slist]
     else:
-        return False
-
-def isin_same_group(file0, file1):
-    """
-    To be grouped together, there are certain criteria:
-    1. The two filenames must have the same length.
-    2. The non-numerical part of the filenames must exactly match
-    3. If there are multiple non-numerical fields, their numbers must match for both filenames
-    """
-    if not len(file0) == len(file1):
-        return False
-    numerical0 = [item for item in file0 if item.isnumeric()]
-    numerical1 = [item for item in file1 if item.isnumeric()]
-    newfile0 = file0
-    newfile1 = file1
-    for item in numerical0:
-        newfile0 = newfile0.replace(str(item), '')
-    for item in numerical1:
-        newfile1 = newfile1.replace(str(item), '')
-    if newfile0 != newfile1:
-        return False
-    numerical0 = list(map(int, re.findall(r'\d+', file0)))
-    numerical1 = list(map(int, re.findall(r'\d+', file1)))
-    if len(numerical0) == len(numerical1):
-        return True
-    else:
-        return False
-
-def group_filelist(filelist):
-    groups = []
-    group = []
-    for i in range(1, len(filelist)):
-        file0 = filelist[i-1]
-        file1 = filelist[i]
-        if isin_same_group(file0, file1):
-            group.append(file0)
-            if i == (len(filelist) - 1):
-                group.append(file1)
-        else:
-            group.append(file0)
-            groups.append(group)
-            group = []
-            if i == (len(filelist) - 1):
-                group.append(file1)
-    groups.append(group)
-    if len(groups) == 0:
-        if len(group) > 0:
-            groups.append(group)
-    return groups
-
-
-def proofread_group(filegroup):
-    # filegroup = groups[1] #
-    if len(filegroup) < 2:
-        print("Group must consist of at least 2 files. Group with single file detected and will be rejected.")
-        return False
-    numeric_fields = []
-    for file in filegroup:
-        numerical = list(map(int, re.findall(r'\d+', file)))
-        if not len(numerical):
-            print("At least one of the group files contains no numeric field.")
-            return False
-        numeric_fields.append(numerical)
-    numeric_fields = transpose_list(numeric_fields)
-    for i, field in enumerate(numeric_fields):
-        is_verified = __verify_incrementation(field)
-        if is_verified:
-            pass
-        else:
-            print("At least one of the numeric fields fails to follow a regular incrementation pattern.")
-            print("Check the numeric field corresponding to index %s" % i)
-            return False
-    return True
-
-
-def proofread_group_patterns(filelist):
-    # filelist = os.listdir(rootDir)
-    filelist.sort()
-    groups = group_filelist(filelist)
-    proofread = {}
-    failed_groups = {}
-    print("%s groups detected" % len(groups))
-    print("####################################################################################")
-    for i, gr in enumerate(groups):
-        print("Group no %s is being investigated" % i)
-        is_proofread = proofread_group(gr)
-        if is_proofread:
-            proofread[i] = gr
-            print("Group no %s passes proofreading." % i)
-            print("####################################################################################")
-        elif not is_proofread:
-            failed_groups[i] = gr
-            print("Group no %s fails proofreading and will be excluded from the pattern file creation." % i)
-            print("####################################################################################")
-    return proofread, failed_groups
-
-# flatlist = [1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 5, 7, 7, 7]
-# __verify_incrementation(flatlist)
-
-def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
-    assert isinstance(concatenation_axes, type('')), 'concatenation_axes must be in type str.'
-    assert isinstance(rootDir, type('')), 'rootDir must be in type str.'
-    filelist.sort()
-    last = filelist[-1]
-    zonelists = []
-    zonelist_ids = []
-    for file in filelist:
-        # zonelist = list(map(int, re.findall(r'\d+', file)))
-        # zoneids = [(m.start(0), m.end(0)) for m in re.finditer(r'\d+', file)]
-        zonelist, zonelistidx = [], []
-        for m in re.finditer(r'\d+', file):
-            zoneidx = (m.start(0), m.end(0))
-            zone = file[zoneidx[0]:zoneidx[1]]
-            zonelistidx.append(zoneidx)
-            zonelist.append(zone)
-        zonelist_ids.append(zonelistidx)
-        zonelists.append(zonelist)
-    zonelistlen = len(zonelist)
-    flatlistdict = {}
-    zonelistdict = {}
-    zonelist_ids_dict = {}
-    for i in range(zonelistlen):
-        flatlistdict[i] = []
-        zonelistdict[i] = []
-        zonelist_ids_dict[i] = []
-    for zonelist, zonelistidx in zip(zonelists, zonelist_ids): ### TODO Change this to a (faster) transpose_dict function
-        for i in range(zonelistlen):
-            zonelistdict[i].append(zonelist[i])
-            zonelist_ids_dict[i].append(zonelistidx[i])
-            flatlistdict[i].append(int(zonelist[i]))
-    variable_zones = []
-    patterns = []
-    variable_zone_ids = []
-    reg = last
-    for i in range(zonelistlen):
-        uqs, count_dict = __find_uniques(flatlistdict[i])
-        if len(uqs) > 1:
-            increment = uqs[1] - uqs[0]
-        else:
-            increment = None
-        dictitem = zonelistdict[i]
-        dictitem.sort()
-        minval = dictitem[0]
-        maxval = dictitem[-1]
-        zonelist_ids = zonelist_ids_dict[i]
-        if (len(filelist) > 1) and (minval == maxval):
-            pass
-        else:
-            variable_zones.append((minval, maxval))
-            if increment is None:
-                pattern = '<%s-%s>' % (minval, maxval)
+        grps = [[slist[0]]]
+        increment = int(slist[1]) - int(slist[0])
+        next = False
+        for i in range(1, len(slist)):
+            if int(slist[i]) - int(slist[i - 1]) == increment:
+                grps[-1].append(slist[i])
+                next = False
             else:
-                pattern = '<%s-%s:%s>' % (minval, maxval, increment)
-            variable_zone_ids.append(zonelist_ids[-1])
-            patterns.append(pattern)
+                grps.append([])
+                if next:
+                    increment = int(slist[i]) - int(slist[i - 1])
+                grps[-1].append(slist[i])
+                next = True
+        ### Do the corrections
+        grps_cp = copy.deepcopy(grps)
+        i = 1; iters = len(grps)
+        while i < iters:
+            ### Correct the falsely separated unit groups that typically emerge from the process above
+            if len(grps[i]) > 1:
+                if int(grps[i][0]) - int(grps[i - 1][-1]) == int(grps[i][1]) - int(grps[i][0]):
+                    grps[i] = grps[i - 1] + grps[i]
+                    grps.pop(i - 1)
+                    i = i - 1
+                    iters -= 1
+            i += 1
+        ### Regroup if two groups are identical
+        grps = unify_identical_groups(grps)
+    return grps
 
-    ### Make sure that the user inserted the fitting number of concatenation axes
-    if concatenation_axes != 'auto':
-        if concatenation_axes == 'a':
-            concatenation_axes = concatenation_axes * len(patterns)
-        assert len(concatenation_axes) == len(patterns), "The specified number of axes does not match the number of detected variable zones, which is %s." % len(patterns)
-
-    ### Modify the pattern files to make sure the user-specified axes are inserted
-        for i in range(len(patterns)):
-            if concatenation_axes[i] == 'a':
-                pass
-            else:
-                patterns[i] = '%s' % concatenation_axes[i].capitalize() + patterns[i]
-
-    ### Create the regex according to the detected variable zones
-    oldreg = reg
-    diff = 0
-    for pattern, variable_zone_idx in zip(patterns, variable_zone_ids):
-        idx0, idx1 = variable_zone_idx
-        idx0 += diff; idx1 += diff
-        reg = reg[:idx0] + pattern + reg[idx1:]
-        diff = len(reg) - len(oldreg)
-        oldreg = reg
-
-    #################################################################################################################################
-    ################ So the pattern file is thus generated. Now, the real file names must be modified if needed #####################
-    #################################################################################################################################
-
-    if concatenation_axes == 'auto':
-        newDir = rootDir
-    elif concatenation_axes == 'a' * len(patterns):
-        newfilelist = copy.deepcopy(filelist)
-        newDir = rootDir + '/tempdir'
-        for olditem, newitem in zip(filelist, newfilelist):
-            oldpath = os.path.join(rootDir, olditem)
-            newpath = os.path.join(newDir, newitem)
-            shutil.copy(oldpath, newpath)
+def get_slices(nfield):
+    # nfield = [2, 2, 2, 4, 4, 4, 6, 6, 6]
+    # numfield1 = [2, 2, 2, 4, 4, 4, 6, 6, 6, 2, 2, 2]
+    # nfield = [2, 2, 2, 4, 4, 4, 6, 6, 6, 2, 2, 2, 4, 4, 4, 6, 6, 6, 1, 1, 2, 2, 3, 3, 8, 8, 9, 9, 10, 10]
+    # nfield = [0, 0, 0, 0, 1, 1]
+    # nfield = [0, 0, 0, 0, 0, 0]
+    # nfield = [None, None, None, None, None]
+    uqs = Counter(nfield)
+    if len(uqs) == 1:
+        rslcs = [slice(0, len(nfield), None)]
     else:
-        newfilelist = copy.deepcopy(filelist)
-        for i, file in enumerate(newfilelist):
+        idgrps = get_incremental_groups(nfield, 0)
+        idsizegrps = get_size_grps(idgrps)
+        rslcs, jnslcflt = [], []
+        sliceds = []
+        for sizegrp in idsizegrps:
+            uqs = [item[0] for item in sizegrp]
+            dyngrps = get_dynamic_incremental_groups(uqs)
+            # print(dyngrps)
+            slcs = get_slices_from_list(dyngrps)
+            sliced = [sizegrp[slc] for slc in slcs]
+            sliceds.append(sliced)
+            slcflt = [flatten_list(item) for item in sliced]
+            jnslcflt += slcflt
+        rslcs = get_slices_from_list(jnslcflt)
+    return rslcs
+
+def __get_numfield_intervals(grp):
+    file = grp[-1]
+    numfields, numfield_intervals = [], []
+    for m in re.finditer(r'\d+', file):
+        zoneidx = (m.start(0), m.end(0))
+        zone = file[zoneidx[0]:zoneidx[1]]
+        numfield_intervals.append(zoneidx)
+        numfields.append(zone)
+    return numfields, numfield_intervals
+
+def _insert_dimension_specifiers(grp, concatenation_axes):
+    numfields, nfintervals = __get_numfield_intervals(grp)
+    newnames = copy.deepcopy(grp)
+    if concatenation_axes is None:
+        pass
+    elif concatenation_axes == 'auto':
+        pass
+    else:
+        for i, file in enumerate(grp):
             oldfile = file
             diff = 0
-            for j, variable_zone_idx in enumerate(variable_zone_ids):
-                if concatenation_axes[j] != 'a':
+            for j, variable_zone_idx in enumerate(nfintervals):
+                if concatenation_axes[j] == 'x':
+                    pass
+                elif concatenation_axes[j] == 'a':
+                    pass
+                else:
                     idx0, idx1 = variable_zone_idx
                     idx0 += diff
                     idx1 += diff
@@ -249,69 +206,377 @@ def save_pattern_file(rootDir, filelist, concatenation_axes = 'auto'):
                     file = ''.join(listing)
                     diff = len(file) - len(oldfile)
                     oldfile = file
-            newfilelist[i] = file
-        assert len(newfilelist) == len(filelist), 'newfilelist and filelist do not have the same length.'
+            newnames[i] = file
+    return newnames
 
-        newDir = rootDir + '/tempdir'
+def check_if_auto(axes):
+    # axes = ['aa', 'xaa', 'aa']
+    if isinstance(axes, type('')):
+        axes = [axes]
+    if all([item == 'auto' for item in axes]):
+        is_auto = True
+    else:
+        is_auto = True
+        flattened = ''.join(tuple(axes))
+        for i in flattened:
+            if (i == 'x') | (i == 'a'):
+                pass
+            else:
+                is_auto = False
+    return is_auto
 
-        try:
-            os.makedirs(newDir)
-        except:
+def parse_axes(axes, nfields):
+    # axes = ['aa', 'xaa', 'xxxx']
+    # axes = 'auto'
+    # nfields = [[['23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022'], ['3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3', '3'], ['0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009', '0010', '0011', '0012', '0013', '0014']], [['23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022'], ['26', '26', '26', '26', '26', '26', '26', '26'], ['7', '7', '7', '7', '7', '7', '7', '7'], ['0000', '0001', '0002', '0003', '0004', '0005', '0006', '0007']], [['23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022', '23052022'], ['26', '26', '26', '26', '26', '26', '26', '26', '26', '26'], ['4', '4', '4', '4', '4', '4', '4', '4', '4', '4'], ['0000', '0001', '0002', '0003', '0004', '0005', '0006', '0007', '0008', '0009']]]
+    nfieldsize = [len(item) for item in nfields]
+    newaxes = []
+    if isinstance(axes, list):
+        newaxes = copy.deepcopy(axes)
+    else:
+        newaxes = [axes]
+    if len(newaxes) == 1:
+        newaxes = newaxes * len(nfieldsize)
+    # print(newaxes)
+    ####################################################################
+    if len(newaxes) != len(nfieldsize):
+        raise ValueError("Length of the axes list %s does not match the number of groups, which is %s." % (len(newaxes), len(nfieldsize)))
+    final = []
+    for axitem, size in zip(newaxes, nfieldsize):
+        assert isinstance(axitem, str), "axis type must be string."
+        if axitem == 'auto':
+            axitem = 'a' * size
+        if len(axitem) > size:
+            raise ValueError("Axis number %s cannot be greater than the number of relevant numeric fields, which is %s" % (len(axitem), size))
+        while len(axitem) != size: axitem = 'x' + axitem
+        final.append(axitem)
+    is_auto = check_if_auto(final)
+    print(final, is_auto)
+    return final, is_auto
+
+class FilelistGrouper:
+    def __init__(self, rootDir, concatenation_order = None, selby = None):
+        filelist = os.listdir(rootDir)
+        self.rootDir = rootDir
+        fl = copy.deepcopy(filelist)
+        self.selby = selby
+        if selby is not None:
+            fl = [item for item in fl if selby in item]
+        self.fl = sorted(fl)
+        self.__group_by_alpha()
+        self.__get_numeric_fields()
+        self.__reindex_numeric_fields(concatenation_order)
+        self.scoreboard = {}
+        self.patterns = {}
+        self.nf_intervals = {}
+        self.regex_filenames, self.regexes = {}, {}
+        self.__setup_filenames()
+    def __group_by_alpha(self):
+        filelist = copy.deepcopy(self.fl)
+        self.alphagrps = group_preliminary(filelist)
+        self.grps = copy.deepcopy(self.alphagrps)
+    def __get_numeric_fields(self):
+        self.numfields_global = []
+        for alphagrp in self.alphagrps:
+            numfields = get_numeric_fields(alphagrp)
+            self.numfields_global.append(numfields)
+        self.numfields_original = copy.deepcopy(self.numfields_global)
+        # print(self.numfields_original)
+    def __reindex_numeric_fields(self, axes):
+        if axes is None:
+            axes = 'auto'
+        axes, self.is_auto = parse_axes(axes, self.numfields_original)
+        replacement = []
+        for i, axpattern in enumerate(axes):
+            nfield_repl = []
+            nfields = copy.deepcopy(self.numfields_global[i])
+            if len(nfields) == len(axpattern):
+                for j, sign in enumerate(axpattern):
+                    if sign == 'x':
+                        nfield_repl.append([None] * len(nfields[j]))
+                    else:
+                        nfield_repl.append(nfields[j])
+            replacement.append(nfield_repl)
+        self.numfields_global = replacement
+        self.concatenation_order = axes
+        if self.is_auto:
+            self.newDir = self.rootDir
+        else:
+            self.newDir = self.rootDir + '/tempdir'
+    def __setup_filenames(self):
+        is_auto = self.is_auto
+        oldDir = self.rootDir
+        newDir = self.newDir
+        axes = self.concatenation_order
+        if not is_auto:  ### The default scenario where user chooses the automatic detection of axes.
+            try:
+                os.makedirs(newDir)
+            except:
+                pass
+            for i, grp in enumerate(self.grps):
+                newnames = _insert_dimension_specifiers(grp, axes[i])
+                for olditem, newitem in zip(grp, newnames):
+                    oldpath = os.path.join(oldDir, olditem)
+                    newpath = os.path.join(newDir, newitem)
+                    # print(oldpath)
+                    # print(newpath)
+                    shutil.copy(oldpath, newpath)
+        filelist = os.listdir(newDir)
+        fl = copy.deepcopy(filelist)
+        if self.selby is not None:
+            fl = [item for item in fl if self.selby in item]
+        self.fl = sorted(fl)
+        self.__group_by_alpha()
+        self.__get_numeric_fields()
+        self.__reindex_numeric_fields(self.concatenation_order)
+    def regroup(self, grp_no, nf_no):
+        numfield = self.numfields_global[grp_no][nf_no]
+        numfield_ = self.numfields_original[grp_no][nf_no]
+        if numfield[0] is None:
+            slices = get_identity_groups(numfield_, True)
+        else:
+            slices = get_slices(numfield)
+        score = len(slices)
+        if score > 1:
+            self.scoreboard[(grp_no, nf_no)] = (score, slices)
+    def cycle(self):
+        for i, nfgrp in enumerate(self.numfields_global):
+            nfgrp = self.numfields_global[i]
+            for j in range(len(nfgrp)):
+                self.regroup(i, j)
+    def apply_index(self): # TO BE APPLIED FOR A SINGLE ALPHAGRP
+        if len(self.scoreboard) == 0:
+            print("Iterations must end. No new indices found.")
             pass
+        else:
+            items = transpose_list(self.scoreboard.items())
+            ids = items[0]
+            scores, slices = transpose_list(items[1])
+            score_best = min(scores)
+            idx_best = scores.index(score_best)
+            grp_no, numf_no = ids[idx_best]
+            slcs = slices[idx_best]
+            grp = self.grps[grp_no]
+            numfields = self.numfields_global[grp_no]
+            numfields_ = self.numfields_original[grp_no]
+            sliced_numfields, sliced_numfields_, sliced_grp = [], [], []
+            for slc in slcs:
+                sliced_grp.append(grp[slc])
+                sliced_nf_pergr = [nf[slc] for nf in numfields]
+                sliced_nf_pergr_ = [nf[slc] for nf in numfields_]
+                sliced_numfields.append(sliced_nf_pergr)
+                sliced_numfields_.append(sliced_nf_pergr_)
+            self.grps.pop(grp_no)
+            self.numfields_global.pop(grp_no)
+            self.numfields_original.pop(grp_no)
+            axes_grp = self.concatenation_order
+            axes = axes_grp[grp_no]
+            self.concatenation_order.insert(grp_no, axes)
+            for grp, nf, nf_ in zip(sliced_grp, sliced_numfields, sliced_numfields_):
+                # print(len(self.scoreboard))
+                if len(grp) > 0:
+                    self.grps.insert(grp_no, grp)
+                if len(nf) > 0:
+                    elnum = get_elnum(nf)
+                    if elnum > 0:
+                        # print(elnum)
+                        self.numfields_global.insert(grp_no, nf)
+                        self.numfields_original.insert(grp_no, nf_)
+            self.scoreboard = {}
+    def group_files(self):
+        for i in range(2):
+            if i > 0: split_by_increments = True
+            oldres = None
+            while True:
+                # print(split_by_increments)
+                self.cycle()
+                self.apply_index()
+                res = len(self.grps)
+                if res == oldres:
+                    break
+                oldres = res
+        return self.grps
+    ####################### Above methods divide filelist into groups. Below we create pattern files for each group using respective numeric field.
+    def __get_numfield_intervals(self, grp_no):
+        grp = self.grps[grp_no]
+        file = grp[-1]
+        numfields, numfield_intervals = [], []
+        for m in re.finditer(r'\d+', file):
+            zoneidx = (m.start(0), m.end(0))
+            zone = file[zoneidx[0]:zoneidx[1]]
+            numfield_intervals.append(zoneidx)
+            numfields.append(zone)
+        return numfields, numfield_intervals
+    def __create_pattern_perNumfield(self, grp_no, nf_no):
+        nf = sorted(copy.deepcopy(self.numfields_global[grp_no][nf_no]))
+        # nf = ['00', '02', '04', '06', '00', '02', '04', '06']
+        # nf = ['1349', '1349', '1349', '1349', '1349']
+        # nf.sort()
+        uqs, _ = find_uniques(nf)
+        minvalstr = nf[0]; maxvalstr =nf[-1]
+        if nf[0] is None:
+            pattern = None
+        elif len(nf) == 1:
+            pattern = '<%s>' % maxvalstr
+        elif len(uqs) > 1:
+            increment = int(uqs[1]) - int(uqs[0])
+            if increment > 0:
+                pattern = '<%s-%s:%s>' % (minvalstr, maxvalstr, increment)
+            elif increment == 0: ### THIS IS AN IMPOSSIBLE OPTION
+                pattern = '<%s>' % maxvalstr
+            elif increment < 0:
+                print("Something is seriously wrong. Increment within a group cannot be below zero.")
+        elif len(uqs) == 1:
+            pattern = '<%s>' % maxvalstr
+        return pattern
+    def __create_patternfilename_perNumfield(self, grp_no, nf_no):
+        nf = sorted(copy.deepcopy(self.numfields_global[grp_no][nf_no]))
+        # nf = ['00', '02', '04', '06', '00', '02', '04', '06']
+        # nf = ['1349', '1349', '1349', '1349', '1349']
+        # nf.sort()
+        uqs, _ = find_uniques(nf)
+        minvalstr = nf[0]; maxvalstr =nf[-1]
+        if nf[0] is None:
+            pattern = None
+        elif len(nf) == 1:
+            pattern = '%s' % maxvalstr
+        elif len(uqs) > 1:
+            increment = int(uqs[1]) - int(uqs[0])
+            if increment > 0:
+                pattern = 'Range{%s-%s:%s}' % (minvalstr, maxvalstr, increment)
+            elif increment == 0: ### THIS IS AN IMPOSSIBLE OPTION
+                pattern = '%s' % maxvalstr
+            elif increment < 0:
+                print("Something is seriously wrong. Increment within a group cannot be below zero.")
+        elif len(uqs) == 1:
+            pattern = '%s' % maxvalstr
+        return pattern
+    def find_patterns(self):
+        grps = self.grps
+        numfields_global = self.numfields_global
+        fnames = {}
+        filenames = {}
+        regexes = {}
+        for grp_no in range(len(grps)):
+            self.patterns[grp_no] = []
+            fnames[grp_no] = []
+            _, intervals = self.__get_numfield_intervals(grp_no)
+            nfields = numfields_global[grp_no]
+            self.nf_intervals[grp_no] = intervals
+            for i, nfield in enumerate(nfields):
+                if nfield[0] is None:
+                    pattern = None
+                    fname = None
+                else:
+                    pattern = self.__create_pattern_perNumfield(grp_no, i)
+                    fname = self.__create_patternfilename_perNumfield(grp_no, i)
+                fnames[grp_no].append(fname)
+                self.patterns[grp_no].append(pattern)
+        patterns = self.patterns
+        self.fnames = fnames
+        for grp_no in patterns:
+            grp = grps[grp_no]
+            intervals = self.nf_intervals[grp_no]
+            reg = copy.deepcopy(grp[-1])
+            pgrp = patterns[grp_no]
+            reconst = [reg[:intervals[0][0]]]
+            for i in range(1, len(intervals)):
+                idx0, idx1 = intervals[i - 1]; idx2, idx3 = intervals[i]
+                if pgrp[i - 1] is None:
+                    reconst.append(reg[idx0:idx1])
+                elif pgrp[i - 1] is not None:
+                    reconst.append(pgrp[i - 1])
+                reconst.append(reg[idx1:idx2])
+            reconst.append(pgrp[i])
+            reconst.append(reg[idx3:])
+            reg = ''.join(tuple(reconst))
+            regexes[grp_no] = reg
+            ####################################################################
+            reg = copy.deepcopy(grp[-1])
+            oldreg = copy.deepcopy(reg)
+            fngrp = copy.deepcopy(fnames[grp_no])
+            diff = 0
+            for fname, variable_zone_idx in zip(fngrp, intervals):
+                # print('here is a pattern %s' % fname)
+                if fname is None:
+                    pass
+                else:
+                    idx0, idx1 = variable_zone_idx
+                    idx0 += diff; idx1 += diff
+                    reg = reg[:idx0] + fname + reg[idx1:]
+                    diff = len(reg) - len(oldreg)
+                    oldreg = reg
+            string = reg.split('.')
+            if len(string) > 1:
+                string = ''.join((*string[:-1], '.pattern'))
+            else:
+                string = ''.join((*string, '.pattern'))
+            filenames[grp_no] = string
+        self.regexes = transpose_list(regexes.items())[1]
+        self.regex_filenames = transpose_list(filenames.items())[1]
+    def write(self):
+        newDir = self.newDir
+        if len(self.regexes) == 0:
+            raise ValueError("No pattern files were generated.")
+        for fname, reg in zip(self.regex_filenames, self.regexes):
+            fpath = os.path.join(newDir, fname)
+            with open(fpath, 'w') as writer:
+                writer.write(reg)
 
-        for olditem, newitem in zip(filelist, newfilelist):
-            oldpath = os.path.join(rootDir, olditem)
-            newpath = os.path.join(newDir, newitem)
-            shutil.copy(oldpath, newpath)
-    return reg, newDir
-
-def _create_pattern_filename(reg, idx):
-    assert '<' in reg
-    assert '>' in reg
-    string = reg.split('.')
-    if len(string) > 1:
-        string = ''.join(string[:-1])
-    else:
-        string = ''.join(string)
-    string = string.replace('<', 'Range{')
-    string = string.replace('>', '}')
-    string = string.replace(':', '-')
-    return string
-
-def save_pattern_file_per_group(rootDir, concatenation_axes = ['auto'], select_by = ''):
-    assert isinstance(rootDir, type('')), 'rootDir must be in type str.'
-    assert isinstance(select_by, type('')), 'select_by must be in type str.'
-    filelist_unfiltered = os.listdir(rootDir)
-    filelist = list(filter(lambda iterable: select_by in iterable, filelist_unfiltered))
-    proofread, failed_groups = proofread_group_patterns(filelist)
-    regs = []
-
-    gr_num = len(proofread.keys())
-    if (len(concatenation_axes) == 1) & (concatenation_axes[0] == 'auto'):
-        axes_set = concatenation_axes * gr_num
-    elif (len(concatenation_axes) > 1):
-        axes_set = copy.deepcopy(concatenation_axes)
-        if any([item != 'auto' for item in concatenation_axes]):
-            for i in range(len(concatenation_axes)):
-                if concatenation_axes[i] == 'auto':
-                    axes_set[i] = 'a'
-    else:
-        axes_set = concatenation_axes
-
-    # print(proofread.items())
-    # print(axes_set)
-    for i, (idx, gr) in enumerate(proofread.items()):
-        axes = axes_set[i]
-        reg, newDir = save_pattern_file(rootDir, gr, axes)
-        baseName = _create_pattern_filename(reg, idx)
-        name = '/' + baseName + '.pattern'
-        with open(newDir + name, 'w') as writer:
-            writer.write(reg)
-        regs.append(reg)
-    return regs
 
 
 
 
+# ''.join(('a', 'b'))
 
+
+# fl = ['23052022_D3_0001.oir', '23052022_D3_0002.oir', '23052022_D3_0003.oir', '23052022_D3_0004.oir',
+#       '23052022_D3_0005.oir', '23052022_D3_0006.oir', '23052022_D3_0007.oir', '23052022_D3_0009.oir',
+#       '23052022_D3_0010.oir', '23052022_D3_0011.oir', '23052022_D3_0012.oir', '23052022_D3_0013.oir',
+#       '23052022_D3_0014.oir',
+#       '23052022_T26IG4_0000.oir', '23052022_T26IG4_0001.oir', '23052022_T26IG4_0002.oir','23052022_T26JG4_0002.oir',
+#       '23052022_T26IG4_0003.oir', '23052022_T26IG4_0004.oir', '23052022_T26IG4_0005.oir', '23052022_T26IG4_0006.oir',
+#       '23052022_T26IG4_0007.oir', '23052022_T26IG4_0008.oir', '23052022_T26IG4_0009.oir', '23052022_T26IG7_0000.oir',
+#       '23052022_T26IG7_0001.oir', '23052022_T26IG7_0002.oir', '23052022_T26IG7_0004.oir', '23052022_T26IG7_0005.oir',
+#       '23052022_T26IG7_0006.oir', '23052022_T26IG7_0007.oir','23052022_T26IG7_0008.oir',
+#       '23052022_T26IG7_00010.oir', '23052022_T26IG7_00011.oir', '23052022_T26IG7_00012.oir']
+# h = group_by_size(fl)
+#
+# fl.sort()
+# filelist = copy.deepcopy(fl)
+# items = transpose_list(grouper.scoreboard.items())
+# # h = [h] * 4
+
+
+# grouper.scoreboard.items()
+#
+# fl = os.listdir("/home/oezdemir/PycharmProjects/nfprojects/test1")
+
+# grouper = FilelistGrouper(fl)
+# /home/oezdemir/PycharmProjects/nfprojects/test2/multidimensional_sequence
+
+
+#################################################################
+# axes = ['a']
+# grouper = FilelistGrouper("/home/oezdemir/PycharmProjects/nfprojects/test1", concatenation_order = axes, selby = 'Z')
+# grps = grouper.group_files()
+# grouper.find_patterns()
+# grouper.write()
+#################################################################
+
+
+
+# grouper.write()
+
+# get_slices([0, 0, 0, 0, 1, 1])
+
+# for item in grps:
+#     if '23052022_T26JG4_0002.oir' in item:
+#         print(item)
+
+# grouper.cycle()
+# grouper.apply_index()
+
+# nf = grouper.numfields_global[39][3]
+# nf[slice(0, None, None)]
 

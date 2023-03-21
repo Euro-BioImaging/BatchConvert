@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 import argparse
-from PatternHandler import save_pattern_file_per_group
+from PatternHandler import FilelistGrouper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('input_path')
     parser.add_argument('--concatenation_order', default = 'auto')
-    parser.add_argument('--select_by', default='')
+    parser.add_argument('--select_by', default = None)
 
     args = parser.parse_args()
 
@@ -16,6 +16,11 @@ if __name__ == '__main__':
     selby = args.select_by
 
     conc_order = conc_order.split(',')
-
-    save_pattern_file_per_group(rootDir, conc_order, select_by = selby)
+    print(conc_order)
+    grouper = FilelistGrouper(rootDir,
+                              concatenation_order = conc_order,
+                              selby = selby)
+    grps = grouper.group_files()
+    grouper.find_patterns()
+    grouper.write()
 
