@@ -190,8 +190,8 @@ it will take a while for a conda environment with the dependencies to be
 created. All the subsequent conversion commands with the profile `conda`,
 however, will use this environment, and thus show no such delay.
 
-As conda is the default profile, (specified in the file `params/params.json.default`), it does not have to be 
-explicitly included in the command line. Thus the command can be shortened to:\
+Since conda is the default profile, it does not have to be 
+explicitly included in the command line. Thus, the command can be shortened to:\
 `batchconvert ometiff <input_path> <output_path>`
 
 Convert only the first channel of the images:\
@@ -252,17 +252,17 @@ An alternative scenario is discussed below.
 
 #### Parallel conversion of file groups by stacking multiple files into single OME-TIFFs / OME-Zarrs:
 
-When the flag `--merge_files` is specified, BatchConvert tries to find out which input files might 
+When the flag `--merge_files` is specified, BatchConvert tries to detect which input files might 
 belong to the same multidimensional array based on the patterns in the filenames. Then a "grouped conversion" 
 is performed, meaning that the files belonging to the same dataset will be incorporated into 
-a single OME-TIFF / OME-Zarr stack, in that files will be concatenated along specific dimension(s) 
+a single OME-TIFF / OME-Zarr series, in that files will be concatenated along specific dimension(s) 
 during the conversion. Multiple file groups in the input directory can be detected and converted 
 in parallel. 
 
 This feature uses Bio-Formats's pattern files as described [here](https://docs.openmicroscopy.org/bio-formats/6.6.0/formats/pattern-file.html).
 However, BatchConvert generates pattern files automatically, allowing the user to directly use the 
 input directory in the conversion command. BatchConvert also has the option of specifying the 
-concatenation axes in the command line, which is especially useful in cases where the file names 
+concatenation axes in the command line, which is especially useful in cases where the filenames 
 may not contain dimension information.  
 
 To be able to use the `--merge files` flag, the input file names must obey certain rules:
@@ -279,8 +279,7 @@ specify from the command line, the dimension(s), along which the files must be c
 4. File names that are unique and cannot be associated with any group will be assumed as
 standalone images and converted accordingly. 
 
-Below are some examples of grouped conversion commands, together with acceptable and unacceptable
-filenames:
+Below are some examples of grouped conversion commands in the context of different possible use-case scenarios:
 
 **Example 1:**
 
@@ -318,13 +317,12 @@ Executing the same command on this folder would result in a single OME-Zarr with
 
 **Example 2**: 
 
-In this example, the filename lengths are uniform but they indicate an irregular incrementation 
-pattern.
+In this example, the filename lengths are uniform but the incrementation within the variable field is not.
 ```
-test_img_T2
-test_img_T4
-test_img_T5
-test_img_T7
+time-series/test_img_T2
+time-series/test_img_T4
+time-series/test_img_T5
+time-series/test_img_T7
 ```
 
 A typical command to convert this folder to a single OME-Zarr would look like: \
@@ -427,6 +425,10 @@ detection of the specifiers.
 So the following line can be used to convert this folder: \
 `batchconvert --omezarr --merge_files --concatenation_order ct,aa <input_path>/folder_with_multiple_groups <output_path>`
 
+The resulting OME-Zarrs will have the names:
+`test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and
+`test_img_TRange{1-2-1}-ZRange{1-3-1}.ome.zarr`
+
 Note that `--concatenation_order` will override any dimension specifiers already
 existing in the filenames.
 
@@ -457,14 +459,14 @@ One may try the following command to convert this folder:
 
 `batchconvert --omezarr --merge_files <input_path>/filenames_with_dates <output_path>`
 
-Since the concatenation axes are not specified, this command will try to create
+Since the concatenation axes are not specified, this command would try to create
 a single OME-Zarr with name: `test_data_dateRange{03-04:1}.03.2023_imageZRange{1-2:1}-TRange{1-3:1}`.
 
 In order to force BatchConvert to ignore the date field, the user can restrict the concatenation 
 axes to the last two numeric fields. This can be done by using a command such as: \
 `batchconvert --omezarr --merge_files --concatenation_order aa <input_path>/filenames_with_dates <output_path>` \
 This command will avoid concatenation along the date field, and therefore, there will be two
-OME-Zarrs corresponding to each date. The number of characters being passed to the 
+OME-Zarrs corresponding to the two dates. The number of characters being passed to the 
 `--concatenation_order` option specifies the number of numeric fields (starting from the right 
 end of the filename) that are recognised by the BatchConvert as valid concatenation axes. 
 Passing `aa`, therefore, means that the last two numeric fields must be recognised as 
