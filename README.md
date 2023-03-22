@@ -58,7 +58,7 @@ specified above are recognised by your shell.
 ## Configuration
 
 BatchConvert can be configured to have default options for file conversion and transfer. Probably, the most important sets of parameters
-to be configured include credentials for the remote ends. The easiest way to configure remote locations is by running the interactive 
+to be configured include credentials for the remote ends. The easiest way to configure remote stores is by running the interactive 
 configuration command as indicated below.
 
 ### Configuration of the s3 object store
@@ -137,7 +137,7 @@ configuration of the default slurm parameters is complete
 While all conversion parameters can be specified as command line arguments, it can
 be useful for the users to set their own default parameters to avoid re-entering those
 parameters for subsequent executions. BatchConvert allows for interactive configuration of 
-conversion in the same way as configuration of the remote locations described above.
+conversion in the same way as configuration of the remote stores described above.
 
 To configure the conversion into OME-TIFF, run the following command:
 
