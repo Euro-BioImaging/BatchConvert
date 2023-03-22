@@ -82,7 +82,7 @@ enter secret key:
 <your-secret-key>
 enter bucket name:
 <your-bucket>
-Configuration of default s3 credentials is complete
+Configuration of the default s3 credentials is complete
 ```
 
 
@@ -99,7 +99,37 @@ Upon completing the configuration, the terminal should roughly look like this:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_bia_remote
 enter the secret directory for BioImage Archive user space:
 <your-secret-directory>
-Configuration of default bia credentials is complete
+configuration of the default bia credentials is complete
+```
+
+### Configuration of the slurm options
+
+BatchConvert can also run on slurm clusters. In order to configure the slurm parameters, run the interactive configuration command: 
+
+`batchconvert configure_slurm`
+
+This will start a sequence of requests for slurm credentials. Provide each requested credential and click enter. 
+Continue this cycle until the process is finished. Upon completing the configuration, the terminal should roughly look like this:
+
+```
+oezdemir@pc-ellenberg108:~$ batchconvert configure_slurm
+Please enter value for queue_size
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the current value ´50´
+s
+Please enter value for submit_rate_limit
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the current value ´10/2min´
+s
+Please enter value for cluster_options
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the current value ´--mem-per-cpu=3140 --cpus-per-task=16´
+s
+Please enter value for time
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the current value ´6h´
+s
+configuration of the default slurm parameters is complete
 ```
 
 ### Configuration of the default conversion parameters
@@ -132,6 +162,11 @@ Click enter if this parameter is not applicable
 Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
 s
 ...
+...
+...
+...
+...
+...
 Configuration of the default parameters for 'bfconvert' is complete
 ```
 
@@ -157,6 +192,11 @@ s
 Please enter value for chunk_w
 Click enter if this parameter is not applicable
 Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+...
+...
+...
+...
+...
 ...
 Configuration of the default parameters for 'bioformats2raw' is complete
 ```
