@@ -11,8 +11,8 @@
   "S3ACCESS": "<youraccess>",
   "S3SECRET": "<yoursecret>",
   "BIA_REMOTE": "<yourbiaremote>",
-  "queue_size": "yourqueuesize",
-  "submit_rate_limit": "<yourlimit>",
-  "cluster_options": "<youroptions>",
-  "time": "<yourtime>"
+  "queue_size": "50",
+  "submit_rate_limit": "10/2min",
+  "cluster_options": "--mem-per-cpu=3140 --cpus-per-task=16",
+  "time": "6h"
 }
