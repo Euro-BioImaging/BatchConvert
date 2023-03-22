@@ -72,7 +72,7 @@ if __name__ == "__main__":
     configure_omezarr.add_argument('--compression_zarr', default = None)
     configure_omezarr.add_argument('--max_workers', default = None)
     configure_omezarr.add_argument('--no_nested', default = None)
-    configure_omezarr.add_argument('--drop_series', default = None) ### BU PARAMETREYI DÜZELT SU ANDA KULLANILAMIYOR. MUHTEMELEN DIGER FLAGLAR DA OYLE
+    configure_omezarr.add_argument('--drop_series', default = None)
     configure_omezarr.add_argument('--dimension_order', default = None)
     configure_omezarr.add_argument('--overwrite', default = None)
     configure_slurm = subparsers.add_parser('configure_slurm')
@@ -263,18 +263,21 @@ if __name__ == "__main__":
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        for key in slurm_params:
-            value = argsdict[key]
-            # print(value)
-            if value is None:
-                keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to leave this parameter as is\n' % key)
-                # print(keyprompt)
-                if keyprompt is None:
-                    pass
-                else:
-                    args.__dict__[key] = keyprompt
-        with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
             jsonfile = json.load(f)
+            for key in slurm_params:
+                current = jsonfile[key]
+                value = argsdict[key]
+                # print(value)
+                if value is None:
+                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the current value ´%s´\n' % (key,current))
+                    # print(keyprompt)
+                    if keyprompt is None:
+                        pass
+                    else:
+                        args.__dict__[key] = keyprompt
+        # with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
+        #     jsonfile = json.load(f)
             for key, value in args.__dict__.items():
                 if (value == 's') | (value == 'skip'):
                     pass
