@@ -146,7 +146,7 @@ To configure the conversion into OME-TIFF, run the following command:
 
 This will prompt the user to enter a series of parameters, which will then be saved as the 
 default parameters to be passed to the `batchconvert ometiff` command. Upon completing the 
-configuration the sequence of commands should look like:
+configuration, the sequence of commands should look similar to:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
@@ -177,8 +177,8 @@ To configure the conversion into OME-Zarr, run the following command:
 `batchconvert configure_omezarr`
 
 Similarly, this will prompt the user to enter a series of parameters, which will then be saved as the 
-default parameters to be passed to the `batchconvert omezarr` command. Upon completing the configuration 
-the sequence of commands should look like:
+default parameters to be passed to the `batchconvert omezarr` command. Upon completing the configuration, 
+the sequence of commands should look similar to:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
