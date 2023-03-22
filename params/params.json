@@ -5,11 +5,11 @@
   "profile": "conda",
   "source_type": "local",
   "dest_type": "local",
-  "queue_size": "<yourqueuesize>",
-  "submit_rate_limit": "<yourlimit>",
-  "cluster_options": "<youroptions>",
-  "time": "<yourtime>",
   "output_type": "omezarr",
   "merge_files": "False",
-  "concatenation_order": "auto"
+  "concatenation_order": "auto",
+  "queue_size": "50",
+  "submit_rate_limit": "10/2min",
+  "cluster_options": "--mem-per-cpu=3140 --cpus-per-task=16",
+  "time": "6h"
 }
