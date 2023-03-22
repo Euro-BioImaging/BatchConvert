@@ -443,7 +443,7 @@ class FilelistGrouper:
         elif len(uqs) > 1:
             increment = int(uqs[1]) - int(uqs[0])
             if increment > 0:
-                pattern = 'Range{%s-%s:%s}' % (minvalstr, maxvalstr, increment)
+                pattern = 'Range{%s-%s-%s}' % (minvalstr, maxvalstr, increment)
             elif increment == 0: ### THIS IS AN IMPOSSIBLE OPTION
                 pattern = '%s' % maxvalstr
             elif increment < 0:
