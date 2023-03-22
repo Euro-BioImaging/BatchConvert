@@ -204,7 +204,7 @@ if __name__ == "__main__":
     # for item in keys:
     #     print("%s: %s" % (item, args.__dict__[item]))
     if (len(sys.argv) <= 1):
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"')
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"')
         exit()
     elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults"]:
         raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"')
