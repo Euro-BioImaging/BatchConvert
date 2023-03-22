@@ -102,6 +102,78 @@ enter the secret directory for BioImage Archive user space:
 Configuration of default bia credentials is complete
 ```
 
+### Configuration of the default conversion parameters
+
+While all conversion parameters can be specified as command line arguments, it can
+be useful for the users to set their own default parameters to avoid re-entering those
+parameters for subsequent executions. BatchConvert allows for interactive configuration of 
+conversion in the same way as configuration of the remote locations described above.
+
+To configure the conversion into OME-TIFF, run the following command:
+
+`batchconvert configure_ometiff`
+
+This will prompt the user to enter a series of parameters, which will then be saved as the 
+default parameters to be passed to the `batchconvert ometiff` command. During the process of 
+interactive configuration the terminal will appear as follows:
+
+```
+oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
+Please enter value for noflat
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+s
+Please enter value for series
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+s
+Please enter value for timepoint
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+s
+...
+Configuration of the default parameters for 'bfconvert' is complete
+```
+
+
+To configure the conversion into OME-Zarr, run the following command:
+
+`batchconvert configure_omezarr`
+
+Similarly, this will prompt the user to enter a series of parameters, which will then be saved as the 
+default parameters to be passed to the `batchconvert omezarr` command. During the process of 
+interactive configuration the terminal will appear similar to the following:
+
+```
+oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
+Please enter value for resolutions_zarr
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+s
+Please enter value for chunk_h
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+s
+Please enter value for chunk_w
+Click enter if this parameter is not applicable
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+...
+Configuration of the default parameters for 'bioformats2raw' is complete
+```
+
+It is important to note that the initial defaults for the conversion parameters are the same as the defaults
+of the backend tools bfconvert and bioformats2raw, as noted in the prompt excerpt above. Through interactive configuration, 
+the user is overriding these initial defaults and setting their own defaults. It is possible to reset to these initial
+default parameters by running the following command.
+
+`batchconvert reset_defaults`
+
+Another important point is that any of these configured parameters can be overridden by passing a value to that
+parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_h` parameter 
+even if the value for the same parameter might be different in the configuration file. 
+
+`batchconvert omezarr --chunk_h 20 <path/to/input> <path/to/output>`
+
 
 ## Examples
 
@@ -361,7 +433,7 @@ existing in the filenames.
 
 **Example 6**
 
-There can be scenarios where user may want to have further control over the axes along 
+There can be scenarios where the user may want to have further control over the axes along 
 which to concatenate the images. For example, the filenames might contain the data acquisition
 date, which can be recognised by BatchConvert as a concatenation axis in the automatic 
 detection mode. An example of such a fileset might look like:
@@ -397,8 +469,8 @@ OME-Zarrs corresponding to each date. The number of characters being passed to t
 end of the filename) that are recognised by the BatchConvert as valid concatenation axes. 
 Passing `aa`, therefore, means that the last two numeric fields must be recognised as 
 concatenation axes and the dimension type should be automatically detected (`a` for automatic). 
-In the same logic, one could, for example, collect each Z section as a separate OME-Zarr by specifying 
-`--concatenation_order a`.
+In the same logic, one could, for example, convert each Z section into a separate OME-Zarr by 
+specifying `--concatenation_order a`.
 
 
 
