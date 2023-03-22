@@ -204,8 +204,8 @@ Configuration of the default parameters for 'bioformats2raw' is complete
 
 It is important to note that the initial defaults for the conversion parameters are the same as the defaults
 of the backend tools bfconvert and bioformats2raw, as noted in the prompt excerpt above. Through interactive configuration, 
-the user is overriding these initial defaults and setting their own defaults. It is possible to reset to these initial
-default parameters by running the following command.
+the user is overriding these initial defaults and setting their own defaults. It is possible to reset the initial
+defaults by running the following command.
 
 `batchconvert reset_defaults`
 
