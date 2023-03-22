@@ -68,7 +68,7 @@ Run the interactive configuration command:
 `batchconvert configure_s3_remote`
 
 This will start a sequence of requests for s3 credentials such as name, url, access, etc. Provide each requested credential and click
-enter. Continue this cycle until the process is finished. Upon completing the configuration, terminal should roughly look like this:
+enter. Continue this cycle until the process is finished. Upon completing the configuration, the sequence of commands should roughly look like this:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_s3_remote
@@ -93,7 +93,7 @@ Run the interactive configuration command:
 `batchconvert configure_bia_remote`
 
 This will prompt a request for the secret directory to connect to. Enter the secret directory for your user space and click enter. 
-Upon completing the configuration, the terminal should roughly look like this:
+Upon completing the configuration, the sequence of commands should roughly look like this:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_bia_remote
@@ -108,8 +108,9 @@ BatchConvert can also run on slurm clusters. In order to configure the slurm par
 
 `batchconvert configure_slurm`
 
-This will start a sequence of requests for slurm credentials. Provide each requested credential and click enter. 
-Continue this cycle until the process is finished. Upon completing the configuration, the terminal should roughly look like this:
+This will start a sequence of requests for slurm options. Provide each requested option and click enter. 
+Continue this cycle until the process is finished. Upon completing the configuration, the sequence of commands should 
+roughly look like this:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_slurm
@@ -144,8 +145,8 @@ To configure the conversion into OME-TIFF, run the following command:
 `batchconvert configure_ometiff`
 
 This will prompt the user to enter a series of parameters, which will then be saved as the 
-default parameters to be passed to the `batchconvert ometiff` command. During the process of 
-interactive configuration the terminal will appear as follows:
+default parameters to be passed to the `batchconvert ometiff` command. Upon completing the 
+configuration the sequence of commands should look like:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
@@ -176,8 +177,8 @@ To configure the conversion into OME-Zarr, run the following command:
 `batchconvert configure_omezarr`
 
 Similarly, this will prompt the user to enter a series of parameters, which will then be saved as the 
-default parameters to be passed to the `batchconvert omezarr` command. During the process of 
-interactive configuration the terminal will appear similar to the following:
+default parameters to be passed to the `batchconvert omezarr` command. Upon completing the configuration 
+the sequence of commands should look like:
 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
