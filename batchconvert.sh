@@ -15,13 +15,13 @@ fi
 
 if [[ $process == 'configured_s3' ]];
   then
-    printf "Configuration of default s3 credentials is complete\n";
+    printf "Configuration of the default s3 credentials is complete\n";
 elif [[ $process == 'configured_bia' ]];
   then
-    printf "Configuration of default bia credentials is complete\n";
+    printf "Configuration of the default bia credentials is complete\n";
 elif [[ $process == 'configured_slurm' ]];
   then
-    printf "Configuration of default slurm credentials is complete\n";
+    printf "Configuration of the default slurm parameters is complete\n";
 elif [[ $process == 'configured_ometiff' ]];
   then
     printf "Configuration of the default parameters for 'bfconvert' is complete\n";
