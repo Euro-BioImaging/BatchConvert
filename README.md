@@ -3,7 +3,7 @@
 A command line tool for converting image data into either of the standard file formats OME-TIFF or OME-Zarr. 
 
 The tool wraps the dedicated file converters bfconvert and bioformats2raw to convert into OME-TIFF or OME-Zarr,
-respectively. The workflow management system Nextflow is used to perform conversion in parallel for batches of images. 
+respectively. The workflow management system NextFlow is used to perform conversion in parallel for batches of images. 
 
 The tool also wraps s3 and Aspera clients (go-mc and aspera-cli, respectively). Therefore, input and output locations can 
 be specified as local or remote storage and file transfer will be performed automatically. The conversion can be run on 
