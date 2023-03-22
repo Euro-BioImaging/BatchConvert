@@ -203,9 +203,9 @@ process createPatternFile1 {
     script:
     """
     if [[ "${params.pattern}" == '' ]];then
-        create_hyperstack ${inpath}
+        create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
     else
-        create_hyperstack --select_by ${params.pattern} ${inpath}
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
     fi
     """
 }
