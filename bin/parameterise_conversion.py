@@ -89,6 +89,7 @@ if __name__ == "__main__":
                                                    "placehold"))  # you can update existing arguments with those from json file
     ometiff.add_argument('out_path', default=getdef('out_path', "placehold"))
     ometiff.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
+    ometiff.add_argument('--reject_pattern', '-rp', default=getdef('reject_pattern', ""), type=str)
 
     ### specify whether the input files should be concatenated into a single ome-tiff file
     ometiff.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
@@ -143,6 +144,7 @@ if __name__ == "__main__":
                                                    "placehold"))  # you can update existing arguments with those from json file
     omezarr.add_argument('out_path', default=getdef('out_path', "placehold"))
     omezarr.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
+    omezarr.add_argument('--reject_pattern', '-rp', default=getdef('reject_pattern', ""), type=str)
 
     ### specify whether the input files should be concatenated into a single ome-tiff folder
     omezarr.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
