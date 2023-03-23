@@ -39,9 +39,27 @@ def get_size_grps(ilist):
             hold = len(ilist[i])
     return grps
 
+###############################################################################################################################
+################################# Should the initial grouping be based on filename length ????? ###############################
+###############################################################################################################################
+
+# def get_size_grps(ilist):
+#     # ilist = ['A1--W00001--P00001--Z00000--T00000--488nm.tif', 'A1--W00001--P00001--Z00000--T00000--561nm.tif', 'A1--W00001--P00001--Z00000--T00000--Transmission-CSU.tif', 'A1--W00001--P00002--Z00000--T00000--488nm.tif', 'A1--W00001--P00002--Z00000--T00000--561nm.tif', 'A1--W00001--P00002--Z00000--T00000--Transmission-CSU.tif', 'A2--W00002--P00001--Z00000--T00000--488nm.tif', 'A2--W00002--P00001--Z00000--T00000--561nm.tif', 'A2--W00002--P00001--Z00000--T00000--Transmission-CSU.tif', 'A2--W00002--P00002--Z00000--T00000--488nm.tif', 'A2--W00002--P00002--Z00000--T00000--561nm.tif', 'A2--W00002--P00002--Z00000--T00000--Transmission-CSU.tif']
+#     """ First process in filename regrouping. """
+#     ilist = sorted(ilist, key = len)
+#     grps = [[ilist[0]]]
+#     hold = len(ilist[0])
+#     for i in range(1, len(ilist)):
+#         if len(ilist[i]) == hold:
+#             grps[-1].append(ilist[i])
+#         else:
+#             grps.append([ilist[i]])
+#             hold = len(ilist[i])
+#     return grps
+
 def group_by_alpha(filelist):
     """ Second process in filename regrouping. """
-    ############## group by sizes first:
+    filelist.sort()
     alphas = []
     for item in filelist:
         alpha = get_alpha(item)
@@ -50,7 +68,6 @@ def group_by_alpha(filelist):
     cts = [count_dict[key] for key in uqs]
     start = 0
     alphagrps = []
-    ############### then group also by alphabetical part of the string:
     for i in cts:
         alphagrps.append(filelist[start:start + i])
         start = start + i
@@ -237,7 +254,7 @@ def parse_axes(axes, nfields):
         newaxes = [axes]
     if len(newaxes) == 1:
         newaxes = newaxes * len(nfieldsize)
-    # print(newaxes)
+    print(newaxes)
     ####################################################################
     if len(newaxes) != len(nfieldsize):
         raise ValueError("Length of the axes list %s does not match the number of groups, which is %s." % (len(newaxes), len(nfieldsize)))
@@ -255,14 +272,20 @@ def parse_axes(axes, nfields):
     return final, is_auto
 
 class FilelistGrouper:
-    def __init__(self, rootDir, concatenation_order = None, selby = None):
+    def __init__(self, rootDir, concatenation_order = None, selby = None, rejby = None):
+        # rootDir = "/home/oezdemir/PycharmProjects/nfprojects/daja"
+        # selby, rejby = None, "Transmission"
         filelist = os.listdir(rootDir)
         self.rootDir = rootDir
         fl = copy.deepcopy(filelist)
         self.selby = selby
+        self.rejby = rejby
         if selby is not None:
             fl = [item for item in fl if selby in item]
+        if rejby is not None:
+            fl = [item for item in fl if not rejby in item]
         self.fl = sorted(fl)
+        self.fname_is_repaired = False
         self.__group_by_alpha()
         self.__get_numeric_fields()
         self.__reindex_numeric_fields(concatenation_order)
@@ -286,6 +309,8 @@ class FilelistGrouper:
         if axes is None:
             axes = 'auto'
         axes, self.is_auto = parse_axes(axes, self.numfields_original)
+        if self.fname_is_repaired:
+            self.is_auto = False
         replacement = []
         for i, axpattern in enumerate(axes):
             nfield_repl = []
@@ -303,7 +328,24 @@ class FilelistGrouper:
             self.newDir = self.rootDir
         else:
             self.newDir = self.rootDir + '/tempdir'
+    def __proofread_filenames(self): ### check if filenames contain space
+        names_fixed = []
+        self.fname_is_repaired = False
+        for i, grp in enumerate(self.grps):
+            grp_fixed = []
+            for fname in grp:
+                if ' ' in fname:
+                    self.is_auto = False
+                    self.newDir = self.rootDir + '/tempdir'
+                    fname_fixed = fname.replace(' ', '-')
+                    self.fname_is_repaired = True
+                else:
+                    fname_fixed = fname
+                grp_fixed.append(fname_fixed)
+            names_fixed.append(grp_fixed)
+        return names_fixed
     def __setup_filenames(self):
+        newgrps = self.__proofread_filenames()
         is_auto = self.is_auto
         oldDir = self.rootDir
         newDir = self.newDir
@@ -314,7 +356,8 @@ class FilelistGrouper:
             except:
                 pass
             for i, grp in enumerate(self.grps):
-                newnames = _insert_dimension_specifiers(grp, axes[i])
+                newgrp = newgrps[i]
+                newnames = _insert_dimension_specifiers(newgrp, axes[i])
                 for olditem, newitem in zip(grp, newnames):
                     oldpath = os.path.join(oldDir, olditem)
                     newpath = os.path.join(newDir, newitem)
@@ -325,6 +368,8 @@ class FilelistGrouper:
         fl = copy.deepcopy(filelist)
         if self.selby is not None:
             fl = [item for item in fl if self.selby in item]
+        if self.rejby is not None:
+            fl = [item for item in fl if not self.rejby in item]
         self.fl = sorted(fl)
         self.__group_by_alpha()
         self.__get_numeric_fields()
@@ -492,21 +537,10 @@ class FilelistGrouper:
             reg = ''.join(tuple(reconst))
             regexes[grp_no] = reg
             ####################################################################
-            reg = copy.deepcopy(grp[-1])
-            oldreg = copy.deepcopy(reg)
-            fngrp = copy.deepcopy(fnames[grp_no])
-            diff = 0
-            for fname, variable_zone_idx in zip(fngrp, intervals):
-                # print('here is a pattern %s' % fname)
-                if fname is None:
-                    pass
-                else:
-                    idx0, idx1 = variable_zone_idx
-                    idx0 += diff; idx1 += diff
-                    reg = reg[:idx0] + fname + reg[idx1:]
-                    diff = len(reg) - len(oldreg)
-                    oldreg = reg
-            string = reg.split('.')
+            fname = reg.replace('<', '{')
+            fname = fname.replace('>', '}')
+            fname = fname.replace(':', '-')
+            string = fname.split('.')
             if len(string) > 1:
                 string = ''.join((*string[:-1], '.pattern'))
             else:
@@ -530,7 +564,7 @@ class FilelistGrouper:
 # ''.join(('a', 'b'))
 
 
-# fl = ['23052022_D3_0001.oir', '23052022_D3_0002.oir', '23052022_D3_0003.oir', '23052022_D3_0004.oir',
+# fl = ['23052022_D3_ 0001.oir', '23052022_D3_ 0002.oir', '23052022_D3_0003.oir', '23052022_D3_0004.oir',
 #       '23052022_D3_0005.oir', '23052022_D3_0006.oir', '23052022_D3_0007.oir', '23052022_D3_0009.oir',
 #       '23052022_D3_0010.oir', '23052022_D3_0011.oir', '23052022_D3_0012.oir', '23052022_D3_0013.oir',
 #       '23052022_D3_0014.oir',
@@ -557,8 +591,8 @@ class FilelistGrouper:
 
 
 #################################################################
-# axes = ['a']
-# grouper = FilelistGrouper("/home/oezdemir/PycharmProjects/nfprojects/test1", concatenation_order = axes, selby = 'Z')
+# axes = 'auto'
+# grouper = FilelistGrouper("/home/oezdemir/PycharmProjects/nfprojects/daja", concatenation_order = axes, rejby = 'Transmission')
 # grps = grouper.group_files()
 # grouper.find_patterns()
 # grouper.write()
