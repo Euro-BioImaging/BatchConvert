@@ -1,6 +1,6 @@
 #!/usr/bin/env nflow
 nextflow.enable.dsl=2
-
+import groovy.io.FileType
 // Note that you can move the parameterise python scripts as a beforeScript directive
 
 // Conversion processes
@@ -192,6 +192,22 @@ def verify_axes(axes) {
     return truth
 }
 
+def verify_filenames(directory, selby, rejby) {
+	def files = []
+	def dir = new File(directory)
+	dir.eachFileRecurse(FileType.FILES) { file ->
+		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
+			files << file
+		}
+	}
+	truth = true
+	files.each {
+		if (it.toString().contains(" ")) {
+			truth = false
+		}
+	}
+	return truth
+}
 
 process createPatternFile1 {
     input:
@@ -200,14 +216,17 @@ process createPatternFile1 {
         path "${inpath}/*"
     script:
     """
-    if [[ "${params.pattern}" == '' ]];then
+    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
         create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    else
+    elif [[ "${params.reject_pattern}" == '' ]];then
         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
+    elif [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} ${inpath}
     fi
     """
 }
-
 
 process createPatternFile2 {
     input:
@@ -216,10 +235,14 @@ process createPatternFile2 {
         path "${inpath}/tempdir/*"
     script:
     """
-    if [[ "${params.pattern}" == '' ]];then
+    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
         create_hyperstack --concatenation_order ${params.concatenation_order} ${inpath}
-    else
+    elif [[ "${params.reject_pattern}" == '' ]];then
         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath}
+    elif [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} ${inpath}
     fi
     """
 }
