@@ -8,18 +8,21 @@ if __name__ == '__main__':
     parser.add_argument('input_path')
     parser.add_argument('--concatenation_order', default = 'auto')
     parser.add_argument('--select_by', default = None)
+    parser.add_argument('--reject_by', default = None)
 
     args = parser.parse_args()
 
     rootDir = args.input_path
     conc_order = args.concatenation_order
     selby = args.select_by
+    rejby = args.reject_by
 
     conc_order = conc_order.split(',')
-    print(conc_order)
     grouper = FilelistGrouper(rootDir,
                               concatenation_order = conc_order,
-                              selby = selby)
+                              selby = selby,
+                              rejby = rejby
+                              )
     grps = grouper.group_files()
     grouper.find_patterns()
     grouper.write()
