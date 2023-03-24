@@ -192,7 +192,7 @@ def verify_axes(axes) {
     return truth
 }
 
-def verify_filenames(directory, selby, rejby) {
+def verify_filenames_fromPath(directory, selby, rejby) {
 	def files = []
 	def dir = new File(directory)
 	dir.eachFileRecurse(FileType.FILES) { file ->
@@ -208,6 +208,18 @@ def verify_filenames(directory, selby, rejby) {
 	}
 	return truth
 }
+
+
+def verify_filenames_fromList(files, selby, rejby) {
+	truth = true
+	files.each {
+		if (it.toString().contains(" ")) {
+			truth = false
+		}
+	}
+	return truth
+}
+
 
 process createPatternFile1 {
     input:
