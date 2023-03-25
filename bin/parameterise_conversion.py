@@ -14,9 +14,18 @@ def intlist(s):
         rv.append(x)
     return rv
 
-bf2rawParams = ["resolutions_zarr", "chunk_h", "chunk_w", "chunk_d",
-                 "downsample_type", "compression_zarr", "max_workers", "no_nested",
-                 "drop_series", "dimension_order", "overwrite"]
+bf2rawParams = { "resolutions_zarr": "Number of resolution levels in the OME-Zarr pyramid. Enter an integer value.",
+                 "chunk_h": "Chunk height. Enter an integer value.",
+                 "chunk_w": "Chunk width. Enter an integer value.",
+                 "chunk_d": "Chunk depth. Enter an integer value.",
+                 "downsample_type": "Downsampling algorithm.\nOptions are: SIMPLE, GAUSSIAN, AREA, LINEAR, CUBIC, LANCZOS",
+                 "compression_zarr": "Compression algorithm.\nOptions are: null, zlib, blosc",
+                 "max_workers": "Number of workers. Enter an integer value.",
+                 "no_nested": "Whether to organise the chunk files in a flat directory.\nOptions are: True, False",
+                 "drop_series": "Whether to drop the series hierarchy from the OME-Zarr.\nOptions are: True, False",
+                 "dimension_order": "Order of dimensions. It is advised to stay with the input dimensions. To do so, enter 'skip' or 's'.\nOptions are: XYZCT, XYZTC, XYCTZ, XYCZT, XYTCZ, XYTZC",
+                 "overwrite": "Whether to overwrite any existing files in the output path.\nOptions are: True, False"
+                }
 bftoolsParams = ["noflat", "series", "timepoint", "channel", "z_slice", "range",
                   "autoscale", "crop", "compression_tiff", "resolutions_tiff",
                  'resolution_scale']
@@ -272,7 +281,7 @@ if __name__ == "__main__":
                 value = argsdict[key]
                 # print(value)
                 if value is None:
-                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the current value ´%s´\n' % (key,current))
+                    keyprompt = input('Please enter value for %s\nClick enter to set the parameter to the initial defaults\nEnter "skip" or "s" if you would like to keep the current value ´%s´\n' % (key,current))
                     # print(keyprompt)
                     if keyprompt is None:
                         pass
@@ -310,7 +319,7 @@ if __name__ == "__main__":
                     current = "<bfconvert defaults>"
                 # print(value)
                 if value is None:
-                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
+                    keyprompt = input('Please enter value for %s\nClick enter to set the parameter to the initial defaults\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
                     # print(keyprompt)
                     if keyprompt is None:
                         pass
@@ -347,7 +356,10 @@ if __name__ == "__main__":
                     current = "<bioformats2raw defaults>"
                 # print(value)
                 if value is None:
-                    keyprompt = input('Please enter value for %s\nClick enter if this parameter is not applicable\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
+                    keyprompt = input('Please enter value for %s\n'
+                                      '%s\n'
+                                      'Click enter to set the parameter to the initial defaults\n'
+                                      'Enter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, bf2rawParams[key], current))
                     # print(keyprompt)
                     if keyprompt is None:
                         pass
