@@ -225,11 +225,11 @@ if __name__ == "__main__":
     # print(subparsers)
     # print(keys)
     if prompt == 'configure_s3_remote':
-        remote_prompt = 'enter remote name (for example s3)\n'
-        url_prompt = 'enter url:\n'
-        access_prompt = 'enter access key:\n'
-        secret_prompt = 'enter secret key:\n'
-        bucket_prompt = 'enter bucket name:\n'
+        remote_prompt = 'enter remote name (for example s3)\nEnter "skip" or "s" if you would like to keep the current value\n'
+        url_prompt = 'enter url:\nEnter "skip" or "s" if you would like to keep the current value\n'
+        access_prompt = 'enter access key:\nEnter "skip" or "s" if you would like to keep the current value\n'
+        secret_prompt = 'enter secret key:\nEnter "skip" or "s" if you would like to keep the current value\n'
+        bucket_prompt = 'enter bucket name:\nEnter "skip" or "s" if you would like to keep the current value\n'
         if args.remote is None:
             args.remote = input(remote_prompt)
         if args.url is None:
@@ -240,15 +240,23 @@ if __name__ == "__main__":
             args.secret = input(secret_prompt)
         if args.bucket is None:
             args.bucket = input(bucket_prompt)
-
+        # print(args)
         with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
             jsonfile = json.load(f)
             # jsondict = dict(jsonfile)
-            jsonfile['S3REMOTE'] = args.remote
-            jsonfile['S3ENDPOINT'] = args.url
-            jsonfile['S3ACCESS'] = args.access
-            jsonfile['S3SECRET'] = args.secret
-            jsonfile['S3BUCKET'] = args.bucket
+            for i, (_, value) in enumerate(args.__dict__.items()):
+                key = s3_params[i]
+                if (value == 's') | (value == 'skip'):
+                    pass
+                elif len(value) == 0:
+                    try:
+                        del jsonfile[key]
+                    except:
+                        pass
+                elif len(value) > 0:
+                    # print(key, value)
+                    jsonfile[key] = value
+            # print(jsonfile)
             f.seek(0)
             json.dump(jsonfile, f, indent = 2)
             f.truncate()
