@@ -49,7 +49,7 @@ if __name__ == '__main__':
             _crop = ''.join(args.crop[1:-1].split(' '))
             cmd += [" -crop", ' %s' % _crop]
         if "compression_tiff" in keys:
-            cmd += [" --compression", ' %s' % args.compression_tiff]
+            cmd += [" -compression", ' %s' % args.compression_tiff]
         if "resolution_scale" in keys:
             cmd += [" -pyramid-scale", ' %s' % args.resolution_scale]
         if "resolutions_tiff" in keys:
