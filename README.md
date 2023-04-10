@@ -9,6 +9,8 @@ The tool also wraps s3 and Aspera clients (go-mc and aspera-cli, respectively). 
 be specified as local or remote storage and file transfer will be performed automatically. The conversion can be run on 
 HPC with Slurm.  
 
+![](figures/diagram.png)
+
 ## Installation & Dependencies
 
 **Important** note: The package has been so far only tested on Ubuntu 20.04.
