@@ -7,7 +7,6 @@ channels:
   - hcc
 dependencies:
   - python ~= 3.9.0
-  - pandas = 1.5.2
   - bioformats2raw
   - bftools
   - go-mc
