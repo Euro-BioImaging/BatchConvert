@@ -1,4 +1,4 @@
-# BatchConvert
+# BatchConvert  ![DOI:10.5281](https://zenodo.org/badge/doi/10.5281/zenodo.7955974.svg)
 
 A command line tool for converting image data into either of the standard file formats OME-TIFF or OME-Zarr. 
 
