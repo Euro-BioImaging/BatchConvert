@@ -361,9 +361,10 @@ class FilelistGrouper:
                 for olditem, newitem in zip(grp, newnames):
                     oldpath = os.path.join(oldDir, olditem)
                     newpath = os.path.join(newDir, newitem)
+                    oldpath_abs = os.path.abspath(oldpath)
                     # print(oldpath)
                     # print(newpath)
-                    shutil.copy(oldpath, newpath)
+                    os.symlink(oldpath_abs, newpath)
         filelist = os.listdir(newDir)
         fl = copy.deepcopy(filelist)
         if self.selby is not None:
@@ -561,8 +562,8 @@ class FilelistGrouper:
 
 
 
-# ''.join(('a', 'b'))
 
+# ''.join(('a', 'b'))
 
 # fl = ['23052022_D3_ 0001.oir', '23052022_D3_ 0002.oir', '23052022_D3_0003.oir', '23052022_D3_0004.oir',
 #       '23052022_D3_0005.oir', '23052022_D3_0006.oir', '23052022_D3_0007.oir', '23052022_D3_0009.oir',
