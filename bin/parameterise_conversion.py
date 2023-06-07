@@ -105,8 +105,8 @@ if __name__ == "__main__":
     ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
-    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
-                         help="Specifies one of the three profiles: standard, no_container and cluster")
+    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
+                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
     ### specify output type: if the output type is ometiff add the following parameters
     ometiff.add_argument('--noflat', '-nf', default=getdef('noflat', False), action='store_true')
     ometiff.add_argument('--series', '-s', default=getdef('series', None), type=int,
@@ -160,8 +160,8 @@ if __name__ == "__main__":
     omezarr.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
-    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
-                         help="Specifies one of the three profiles: standard, no_container and cluster")
+    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
+                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")")
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
