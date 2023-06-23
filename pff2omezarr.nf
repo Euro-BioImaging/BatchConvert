@@ -28,15 +28,12 @@ workflow {
             Inspect_S3Path(ch000)
             ch00 = Inspect_S3Path.out.filelist
             ch0 = ch00.flatMap { it.toString().split('\n') }
-            ch0f = ch0.flatMap { file(it).Name }
-            ch1 = Transfer_S3Storage2Local(ch0, ch0f)
-            ch2 = ch1.filter { it.toString().contains(params.pattern) }
+            ch1 = ch0.filter { it.toString().contains(params.pattern) }
             if ( params.reject_pattern.size() > 0 ) {
-                ch = ch2.filter { !(it.toString().contains(params.reject_pattern)) }
+                ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
             }
-            else {
-                ch = ch2
-            }
+            ch1f = ch1.flatMap { file(it).Name }
+            ch = Transfer_S3Storage2Local(ch1, ch1f)
         }
     }
     else if ( params.source_type == "bia" ) {
