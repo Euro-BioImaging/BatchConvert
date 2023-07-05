@@ -161,7 +161,7 @@ if __name__ == "__main__":
 
     ### specify the config profile
     omezarr.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
-                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")")
+                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
