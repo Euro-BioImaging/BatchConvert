@@ -171,8 +171,6 @@ if __name__ == "__main__":
     omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
     omezarr.add_argument('--downsample_type', default=getdef('downsample_type', None), type=str,
                          help='Specifies downsampling algorithm')
-    # omezarr.add_argument('--compression_tiff', '-ctiff', default=getdef('compression_tiff', None), type=str,
-    #                     help='Specifies compression algorithm for bfconvert')
     omezarr.add_argument('--compression_zarr', '-czarr', default=getdef('compression_zarr', None), type=str,
                          help='Specifies compression algorithm for bioformats2raw')
     omezarr.add_argument('--max_workers', default=getdef('max_workers', None), type=int,
@@ -185,7 +183,6 @@ if __name__ == "__main__":
                          help='Specifies path type.')
     omezarr.add_argument('--overwrite', default=getdef('overwrite', False), action='store_true',
                          help='Overwrites the output path.')
-    ### If the output_type is ometiff, add the following parameters of conversion into ometiff format: yet none
     ### Specify the input and output locations (source_type or dest_type): currently either local or s3
     omezarr.add_argument('--source_type', '-st', default=getdef('source_type', "local"),
                          help='Specifies where the input dataset is located: either local or s3.')
