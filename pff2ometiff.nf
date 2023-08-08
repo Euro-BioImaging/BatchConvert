@@ -2,8 +2,8 @@
 nextflow.enable.dsl=2
 // nextflow.enable.moduleBinaries = true
 
-include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMETIFF; Convert_EachFile2SeparateOMETIFF; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local } from "./modules/modules.nf"
-include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList } from "./modules/modules.nf"
+include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMETIFF; Convert_EachFile2SeparateOMETIFF; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Inspect_S3Path } from "./modules/modules.nf"
+include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; } from "./modules/modules.nf"
 
 // TODO: add an optional remove-workdir parameter and a remove-workdir script to the end of the workflow (in Groovy)
 
@@ -11,15 +11,29 @@ workflow {
     // If the input dataset is in s3 or bia, bring it to the execution environment first:
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
-        ch0 = Channel.of(params.in_path)
-        Transfer_S3Storage2Local(ch0)
-        ch1 = Transfer_S3Storage2Local.out.map { file(it).listFiles() }.flatten()
-        ch2 = ch1.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch = ch2.filter { !(it.toString().contains(params.reject_pattern)) }
+        if ( params.merge_files == "True" ) {
+            ch0 = Channel.of(params.in_path)
+            Mirror_S3Storage2Local(ch0)
+            ch1 = Mirror_S3Storage2Local.out.map { file(it).listFiles() }.flatten()
+            ch2 = ch1.filter { it.toString().contains(params.pattern) }
+            if ( params.reject_pattern.size() > 0 ) {
+                ch = ch2.filter { !(it.toString().contains(params.reject_pattern)) }
+            }
+            else {
+                ch = ch2
+            }
         }
         else {
-            ch = ch2
+            ch000 = Channel.of(params.in_path)
+            Inspect_S3Path(ch000)
+            ch00 = Inspect_S3Path.out.filelist
+            ch0 = ch00.flatMap { it.toString().split('\n') }
+            ch1 = ch0.filter { it.toString().contains(params.pattern) }
+            if ( params.reject_pattern.size() > 0 ) {
+                ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
+            }
+            ch1f = ch1.flatMap { file(it).Name }
+            ch = Transfer_S3Storage2Local(ch1, ch1f)
         }
     }
     else if ( params.source_type == "bia" ) {
@@ -87,16 +101,16 @@ workflow {
         // Create a branch leading either to a grouped conversion or one-to-one conversion.
         if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
-            chlist = Transfer_S3Storage2Local.out.collect()
+            chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
             if ( is_auto && is_correctNames ) {
-                pattern_files = createPatternFile1(Transfer_S3Storage2Local.out).flatten()
+                pattern_files = createPatternFile1(Mirror_S3Storage2Local.out).flatten()
             }
             else {
-                pattern_files = createPatternFile2(Transfer_S3Storage2Local.out).flatten()
+                pattern_files = createPatternFile2(Mirror_S3Storage2Local.out).flatten()
             }
             ch = pattern_files.filter { it.toString().contains(".pattern") }
-            val = Transfer_S3Storage2Local.out.first()
+            val = Mirror_S3Storage2Local.out.first()
             output = Convert_Concatenate2SingleOMETIFF(ch, val)
         }
         else {

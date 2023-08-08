@@ -1,4 +1,4 @@
-# BatchConvert
+# BatchConvert  ![DOI:10.5281](https://zenodo.org/badge/doi/10.5281/zenodo.7955974.svg)
 
 A command line tool for converting image data into either of the standard file formats OME-TIFF or OME-Zarr. 
 
@@ -79,11 +79,11 @@ s3
 enter url:
 https://s3.embl.de
 enter access key:
-<your-access-key>
+"your-access-key"
 enter secret key:
-<your-secret-key>
+"your-secret-key"
 enter bucket name:
-<your-bucket>
+"your-bucket"
 Configuration of the default s3 credentials is complete
 ```
 
@@ -100,7 +100,7 @@ Upon completing the configuration, the sequence of commands should roughly look 
 ```
 oezdemir@pc-ellenberg108:~$ batchconvert configure_bia_remote
 enter the secret directory for BioImage Archive user space:
-<your-secret-directory>
+"your-secret-directory"
 configuration of the default bia credentials is complete
 ```
 
@@ -154,15 +154,15 @@ configuration, the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
 Please enter value for noflat
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
 s
 Please enter value for series
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
 s
 Please enter value for timepoint
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bfconvert defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
 s
 ...
 ...
@@ -186,15 +186,15 @@ the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
 Please enter value for resolutions_zarr
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
 s
 Please enter value for chunk_h
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
 s
 Please enter value for chunk_w
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is <bioformats2raw defaults>
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
 ...
 ...
 ...
@@ -215,7 +215,7 @@ Another important point is that any of these configured parameters can be overri
 parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_h` parameter 
 even if the value for the same parameter might be different in the configuration file. 
 
-`batchconvert omezarr --chunk_h 20 <path/to/input> <path/to/output>`
+`batchconvert omezarr --chunk_h 20 "path/to/input" "path/to/output"`
 
 
 ## Examples
@@ -226,7 +226,7 @@ even if the value for the same parameter might be different in the configuration
 Convert a batch of images on your local storage into OME-TIFF format. 
 Note that the `input_path` in the command given below is typically a 
 directory with multiple image files but a single image file can also be passed:\
-`batchconvert ometiff -pf conda <input_path> <output_path>` 
+`batchconvert ometiff -pf conda "input_path" "output_path"` 
 
 Note that if this is your first conversion with the profile `conda`, 
 it will take a while for a conda environment with the dependencies to be
@@ -235,34 +235,34 @@ however, will use this environment, and thus show no such delay.
 
 Since conda is the default profile, it does not have to be 
 explicitly included in the command line. Thus, the command can be shortened to:\
-`batchconvert ometiff <input_path> <output_path>`
+`batchconvert ometiff "input_path" "output_path"`
 
 Convert only the first channel of the images:\
-`batchconvert ometiff -chn 0 <input_path> <output_path>`
+`batchconvert ometiff -chn 0 "input_path" "output_path"`
 
 Crop the images being converted along x and y axis by 150 pixels:\
-`batchconvert ometiff -cr 0,0,150,150 <input_path> <output_path>`
+`batchconvert ometiff -cr 0,0,150,150 "input_path" "output_path"`
 
 Convert into OME-Zarr instead:\
-`batchconvert omezarr <input_path> <output_path>`
+`batchconvert omezarr "input_path" "output_path"`
 
 Convert into OME-Zarr with 3 resolution levels:\
-`batchconvert omezarr -rz 3 <input_path> <output_path>`
+`batchconvert omezarr -rz 3 "input_path" "output_path"`
 
 Select a subset of images with a matching string such as "mutation":\
-`batchconvert omezarr -p mutation <input_path> <output_path>`
+`batchconvert omezarr -p mutation "input_path" "output_path"`
 
 Select a subset of images using wildcards. Note that the use of "" around 
 the input path is necessary when using wildcards:\
-`batchconvert omezarr "<input_path>/*D3*.oir" <output_path>`
+`batchconvert omezarr "input_path/*D3*.oir" "output_path"`
 
 Convert by using a singularity container instead of conda environment (requires
 singularity to be installed on your system):\
-`batchconvert omezarr -pf singularity "<input_path>/*D3*.oir" <output_path>`
+`batchconvert omezarr -pf singularity "input_path/*D3*.oir" "output_path"`
 
 Convert by using a docker container instead of conda environment (requires docker
 to be installed on your system):\
-`batchconvert omezarr -pf docker "<input_path>/*D3*.oir" <output_path>`
+`batchconvert omezarr -pf docker "input_path/*D3*.oir" "output_path"`
 
 Note that similarly to the case with the profile `conda`, the first execution of
 a conversion with the profile `singularity` or `docker` will take a while for the
@@ -271,21 +271,21 @@ container option will use this image, and thus show no such delay.
 
 Convert local data and upload the output to an s3 bucket. Note that the output 
 path is created relative to the bucket specified in your s3 configuration:\
-`batchconvert omezarr -dt s3 <input_path> <output_path>`
+`batchconvert omezarr -dt s3 "input_path" "output_path"`
 
 Receive input files from an s3 bucket, convert locally and upload the output to 
 the same bucket. Note that wildcards cannot be used when the input is from s3. 
 Use pattern matching option `-p` for selecting a subset of input files:\
-`batchconvert omezarr -p mutation -st s3 -dt s3 <input_path> <output_path>`
+`batchconvert omezarr -p mutation -st s3 -dt s3 "input_path" "output_path"`
 
 Receive input files from your private BioStudies user space and convert them locally.
 Use pattern matching option `-p` for selecting a subset of input files:\
-`batchconvert omezarr -p mutation -st bia <input_path> <output_path>`
+`batchconvert omezarr -p mutation -st bia "input_path" "output_path"`
 
 Receive an input from an s3 bucket, convert locally and upload the output to your 
 private BioStudies user space. Use pattern matching option `-p` for selecting a subset 
 of input files:\
-`batchconvert omezarr -p mutation -st s3 -dt bia <input_path> <output_path>`
+`batchconvert omezarr -p mutation -st s3 -dt bia "input_path" "output_path"`
 
 Note that in all the examples shown above, BatchConvert treats each input file as separate,
 standalone data point, disregarding the possibility that some of the input files might belong to 
@@ -337,7 +337,7 @@ time-series/test_img_T12
 ```
 In this example, leading zeroes are missing in the variable fields of some filenames. 
 A typical command to convert this folder to a single OME-TIFF would look like: \
-`batchconvert --ometiff --merge_files <input_path>/time-series <output_path>`
+`batchconvert --ometiff --merge_files "input_dir/time-series" "output_path"`
 
 However, this command would fail to create a single OME-Zarr folder due to the non-uniform 
 lengths of the filenames. Instead, the files would be split into two groups based on the
@@ -369,7 +369,7 @@ time-series/test_img_T7
 ```
 
 A typical command to convert this folder to a single OME-Zarr would look like: \
-`batchconvert --omezarr --merge_files <input_path>/time-series <output_path>`
+`batchconvert --omezarr --merge_files "input_dir/time-series" "output_path"`
 
 However, the command would fail to assume these files as a single group due to the
 non-uniform incrementation in the variable field of the filenames. Instead, the dataset 
@@ -389,7 +389,7 @@ multichannel_time-series/test_img_C2-T1
 multichannel_time-series/test_img_C2-T2
 ```
 To convert this folder to a single OME-Zarr, one could try the following command: \
-`batchconvert --omezarr --merge_files <input_path>/multichannel_time-series <output_path>`
+`batchconvert --omezarr --merge_files "input_dir/multichannel_time-series" "output_path"`
 
 However, since the channel-2 does not have the same number of timeframes as the channel-1, 
 BatchConvert will fail to assume these two channels as part of the same series and
@@ -432,7 +432,7 @@ folder_with_multiple_groups/test_img_T2-Z3
 ```
 
 One can convert this folder with- \
-`batchconvert --omezarr --merge_files <input_path>/folder_with_multiple_groups <output_path>`
+`batchconvert --omezarr --merge_files "input_dir/folder_with_multiple_groups" "output_path"`
  
 BatchConvert will detect the two patterns in this folder and perform two grouped conversions. 
 The output folders will be named as `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and 
@@ -466,7 +466,7 @@ the user does not need to specify anything for this group, and can enter `auto` 
 detection of the specifiers. 
 
 So the following line can be used to convert this folder: \
-`batchconvert --omezarr --merge_files --concatenation_order ct,aa <input_path>/folder_with_multiple_groups <output_path>`
+`batchconvert --omezarr --merge_files --concatenation_order ct,aa "input_dir/folder_with_multiple_groups" "output_path"`
 
 The resulting OME-Zarrs will have the names:
 `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and
@@ -500,14 +500,14 @@ filenames_with_dates/test_data_date04.03.2023_imageZ2-T3
 
 One may try the following command to convert this folder:
 
-`batchconvert --omezarr --merge_files <input_path>/filenames_with_dates <output_path>`
+`batchconvert --omezarr --merge_files "input_dir/filenames_with_dates" "output_path"`
 
 Since the concatenation axes are not specified, this command would try to create
 a single OME-Zarr with name: `test_data_dateRange{03-04-1}.03.2023_imageZRange{1-2-1}-TRange{1-3-1}`.
 
 In order to force BatchConvert to ignore the date field, the user can restrict the concatenation 
 axes to the last two numeric fields. This can be done by using a command such as: \
-`batchconvert --omezarr --merge_files --concatenation_order aa <input_path>/filenames_with_dates <output_path>` \
+`batchconvert --omezarr --merge_files --concatenation_order aa "input_dir/filenames_with_dates" "output_path"` \
 This command will avoid concatenation along the date field, and therefore, there will be two
 OME-Zarrs corresponding to the two dates. The number of characters being passed to the 
 `--concatenation_order` option specifies the number of numeric fields (starting from the right 
@@ -523,7 +523,7 @@ specifying `--concatenation_order a`.
 
 All the examples given above can also be run on slurm by specifying `-pf cluster` option. 
 Note that this option automatically uses the singularity profile:\
-`batchconvert omezarr -pf cluster -p .oir <input_path> <output_path>`
+`batchconvert omezarr -pf cluster -p .oir "input_path" "output_path"`
 
 
 

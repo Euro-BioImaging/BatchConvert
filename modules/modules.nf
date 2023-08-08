@@ -97,6 +97,23 @@ process Convert_Concatenate2SingleOMEZARR{
     """
 }
 
+
+// Processes for inspecting a remote location:
+
+process Inspect_S3Path {
+    input:
+        val source
+    output:
+        stdout emit: filelist
+    script:
+    """
+    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
+    parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
+    """
+}
+
+
+
 // Transfer processes:
 
 process Transfer_Local2S3Storage {
@@ -117,8 +134,7 @@ process Transfer_Local2S3Storage {
     """
 }
 
-
-process Transfer_S3Storage2Local {
+process Mirror_S3Storage2Local {
     input:
         val source
     output:
@@ -130,6 +146,19 @@ process Transfer_S3Storage2Local {
     """
 }
 
+
+process Transfer_S3Storage2Local {
+    input:
+        val s3path
+        val s3name
+    output:
+        path "${s3name}"
+    script:
+    """
+    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc cp "${s3path}" "${s3name}";
+    """
+}
 
 process Transfer_Local2PrivateBiostudies {
     input:
@@ -209,7 +238,6 @@ def verify_filenames_fromPath(directory, selby, rejby) {
 	return truth
 }
 
-
 def verify_filenames_fromList(files, selby, rejby) {
 	truth = true
 	files.each {
@@ -219,7 +247,16 @@ def verify_filenames_fromList(files, selby, rejby) {
 	}
 	return truth
 }
-
+// BELOW FUNCTION NOT READY YET - TODO
+def get_filenames_fromList(files, selby, rejby) {
+	def filtered = []
+	files.each {
+		if (it.toString().contains(selby) && !(it.toString().contains(rejby))) {
+		    filtered << it
+		}
+	}
+	return filtered
+}
 
 process createPatternFile1 {
     input:

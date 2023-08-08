@@ -105,8 +105,8 @@ if __name__ == "__main__":
     ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
-    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
-                         help="Specifies one of the three profiles: standard, no_container and cluster")
+    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
+                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
     ### specify output type: if the output type is ometiff add the following parameters
     ometiff.add_argument('--noflat', '-nf', default=getdef('noflat', False), action='store_true')
     ometiff.add_argument('--series', '-s', default=getdef('series', None), type=int,
@@ -160,8 +160,8 @@ if __name__ == "__main__":
     omezarr.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
 
     ### specify the config profile
-    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "standard"), type=str,
-                         help="Specifies one of the three profiles: standard, no_container and cluster")
+    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
+                         help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
@@ -171,8 +171,6 @@ if __name__ == "__main__":
     omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
     omezarr.add_argument('--downsample_type', default=getdef('downsample_type', None), type=str,
                          help='Specifies downsampling algorithm')
-    # omezarr.add_argument('--compression_tiff', '-ctiff', default=getdef('compression_tiff', None), type=str,
-    #                     help='Specifies compression algorithm for bfconvert')
     omezarr.add_argument('--compression_zarr', '-czarr', default=getdef('compression_zarr', None), type=str,
                          help='Specifies compression algorithm for bioformats2raw')
     omezarr.add_argument('--max_workers', default=getdef('max_workers', None), type=int,
@@ -185,7 +183,6 @@ if __name__ == "__main__":
                          help='Specifies path type.')
     omezarr.add_argument('--overwrite', default=getdef('overwrite', False), action='store_true',
                          help='Overwrites the output path.')
-    ### If the output_type is ometiff, add the following parameters of conversion into ometiff format: yet none
     ### Specify the input and output locations (source_type or dest_type): currently either local or s3
     omezarr.add_argument('--source_type', '-st', default=getdef('source_type', "local"),
                          help='Specifies where the input dataset is located: either local or s3.')
