@@ -103,7 +103,7 @@ if __name__ == "__main__":
     ### specify whether the input files should be concatenated into a single ome-tiff file
     ometiff.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
     ometiff.add_argument('--concatenation_order', default=getdef("concatenation_order", 'auto'))
-    omezarr.add_argument('--companion', '-cmp', default=getdef('companion', ""), type=str)
+    ometiff.add_argument('--companion', '-cmp', default=getdef('companion', ""), type=str)
 
     ### specify the config profile
     ometiff.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
