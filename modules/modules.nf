@@ -20,7 +20,7 @@ process Convert_EachFile2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh $inpath "${inpath.baseName}.ome.tiff"
+    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
     """
 }
 
@@ -65,7 +65,7 @@ process Convert_EachFile2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
+    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
     """
 }
 
