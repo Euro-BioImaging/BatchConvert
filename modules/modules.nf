@@ -88,9 +88,9 @@ process Convert_Concatenate2SingleOMEZARR{
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
+            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
+            batchconvert_cli.sh "${inpath}/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
