@@ -86,7 +86,7 @@ workflow {
             is_correctNames = verify_filenames_fromPath(params.in_path, params.pattern, params.reject_pattern)
             println(params.companion.size())
             if ( params.companion.size() > 0 ) {
-                pattern_files = file(params.companion).flatten()
+                pattern_files = Channel.of( params.companion ).flatten()
             }
             else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(params.in_path).flatten()
