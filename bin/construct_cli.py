@@ -55,8 +55,7 @@ if __name__ == '__main__':
         if "resolutions_tiff" in keys:
             cmd += [" -pyramid-resolutions", ' %s' % args.resolutions_tiff]
         # add here all params
-        cmd.append(' %s' % "$1")
-        cmd.append(' %s' % "$2")
+        cmd.append(' %s' % "$@")
         cmdstr = ''.join(cmd)
         sys.stdout.write(cmdstr)
     elif args.output_type == 'omezarr':
@@ -81,8 +80,7 @@ if __name__ == '__main__':
             cmd += [" --scale-format-string", ' %s' % "'%2$d'"]
         if "overwrite" in keys:
             cmd += [" --overwrite"]
-        cmd.append(' %s' % "$1")
-        cmd.append(' %s' % "$2")
+        cmd.append(' %s' % "$@")
         cmdstr = ''.join(cmd)
         sys.stdout.write(cmdstr)
         # os.chdir(scriptpath)
