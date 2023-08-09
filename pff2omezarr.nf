@@ -84,7 +84,8 @@ workflow {
         if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             is_correctNames = verify_filenames_fromPath(params.in_path, params.pattern, params.reject_pattern)
-            if ( params.companion.length() > 0 ) {
+            println(params.companion.size())
+            if ( params.companion.size() > 0 ) {
                 pattern_files = file(params.companion).flatten()
             }
             else if ( is_auto && is_correctNames ) {
