@@ -87,14 +87,16 @@ workflow {
             println(params.companion.size())
             if ( params.companion.size() > 0 ) {
                 pattern_files = Channel.of( params.companion ).flatten()
+                ch = pattern_files
             }
             else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
         }
         else {
