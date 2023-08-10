@@ -44,7 +44,7 @@ process Convert_Concatenate2SingleOMETIFF {
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
+            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -90,7 +90,7 @@ process Convert_Concatenate2SingleOMEZARR{
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "${inpath}/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
+            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
