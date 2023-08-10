@@ -477,7 +477,7 @@ if __name__ == "__main__":
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('resetted')
     
-    if not os.path.exists(args.__dict__['in_path'):
+    if not os.path.exists(args.__dict__['in_path']):
         raise ValueError(f'The requested path does not exist: {args.__dict__['in_path']}')
 
 
