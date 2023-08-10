@@ -472,7 +472,15 @@ if __name__ == "__main__":
         #sys.stdout.write('converted') ### VERY IMPORTANT STEP
     elif (prompt == 'reset_defaults'):
         backup_params = os.path.join(scriptpath, '..', 'params', 'params.json.backup')
-        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
+        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')        
         shutil.copy(backup_params, default_params)
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('resetted')
+    
+    if not os.path.exists(args.__dict__['in_path'):
+        raise ValueError(f'The requested path does not exist: {args.__dict__['in_path']}')
+
+
+
+
+        
