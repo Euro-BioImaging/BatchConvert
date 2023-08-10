@@ -478,7 +478,7 @@ if __name__ == "__main__":
             writer.write('resetted')
     
     if not os.path.exists(args.__dict__['in_path']):
-        raise ValueError('The requested path does not exist: %s' % args.__dict__['in_path'])
+        print('The requested path does not locally exist: %s' % args.__dict__['in_path'])
 
 
 
