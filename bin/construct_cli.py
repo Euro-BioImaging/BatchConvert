@@ -80,7 +80,7 @@ if __name__ == '__main__':
             cmd += [" --scale-format-string", ' %s' % "'%2$d'"]
         if "overwrite" in keys:
             cmd += [" --overwrite"]
-        cmd.append(' %s' % "$@")
+        cmd.append(' "%s"' % "$@")
         cmdstr = ''.join(cmd)
         sys.stdout.write(cmdstr)
         # os.chdir(scriptpath)
