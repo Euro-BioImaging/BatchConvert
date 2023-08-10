@@ -109,7 +109,12 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.companion.size())
+            if ( params.companion.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.companion ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Mirror_S3Storage2Local.out).flatten()
             }
             else {
@@ -128,7 +133,12 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Transfer_PrivateBiostudies2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.companion.size())
+            if ( params.companion.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.companion ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Transfer_PrivateBiostudies2Local.out).flatten()
             }
             else {
