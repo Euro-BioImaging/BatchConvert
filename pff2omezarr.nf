@@ -116,11 +116,12 @@ workflow {
             }
             else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             val = Mirror_S3Storage2Local.out.first()
             output = Convert_Concatenate2SingleOMEZARR(ch, val)
         }
