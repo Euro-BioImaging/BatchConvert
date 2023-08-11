@@ -482,7 +482,7 @@ if __name__ == "__main__":
             raise ValueError('The requested path does not locally exist: %s' % args.__dict__['in_path'])
         else:
             print('The requested path does not locally exist: %s' % args.__dict__['in_path'])
-            print(Searching the path remotely.)
+            print('Searching the path remotely.')
                   
             
 
