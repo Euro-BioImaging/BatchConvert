@@ -84,13 +84,19 @@ workflow {
         if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             is_correctNames = verify_filenames_fromPath(params.in_path, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             output = Convert_Concatenate2SingleOMETIFF(ch, params.in_path)
         }
         else {
@@ -103,13 +109,19 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             val = Mirror_S3Storage2Local.out.first()
             output = Convert_Concatenate2SingleOMETIFF(ch, val)
         }
@@ -122,7 +134,12 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Transfer_PrivateBiostudies2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Transfer_PrivateBiostudies2Local.out).flatten()
             }
             else {

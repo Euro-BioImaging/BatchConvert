@@ -84,9 +84,9 @@ workflow {
         if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             is_correctNames = verify_filenames_fromPath(params.in_path, params.pattern, params.reject_pattern)
-            println(params.companion.size())
-            if ( params.companion.size() > 0 ) {
-                pattern_files = Channel.fromPath( params.companion ).flatten()
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
                 ch = pattern_files
             }
             else if ( is_auto && is_correctNames ) {
@@ -109,9 +109,9 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            println(params.companion.size())
-            if ( params.companion.size() > 0 ) {
-                pattern_files = Channel.fromPath( params.companion ).flatten()
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
                 ch = pattern_files
             }
             else if ( is_auto && is_correctNames ) {
@@ -134,9 +134,9 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Transfer_PrivateBiostudies2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            println(params.companion.size())
-            if ( params.companion.size() > 0 ) {
-                pattern_files = Channel.fromPath( params.companion ).flatten()
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
                 ch = pattern_files
             }
             else if ( is_auto && is_correctNames ) {
