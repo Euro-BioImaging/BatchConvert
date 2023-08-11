@@ -470,6 +470,9 @@ if __name__ == "__main__":
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('converted')
         #sys.stdout.write('converted') ### VERY IMPORTANT STEP
+        if args.__dict__['source_type'] == 'local':
+            if not os.path.exists(args.__dict__['in_path']):
+                raise ValueError('The requested path does not locally exist: %s' % args.__dict__['in_path'])
     elif (prompt == 'reset_defaults'):
         backup_params = os.path.join(scriptpath, '..', 'params', 'params.json.backup')
         default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')        
@@ -477,12 +480,7 @@ if __name__ == "__main__":
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('resetted')
     
-    if not os.path.exists(args.__dict__['in_path']):
-        if args.__dict__['source_type'] == 'local':
-            raise ValueError('The requested path does not locally exist: %s' % args.__dict__['in_path'])
-        else:
-            print('The requested path does not locally exist: %s' % args.__dict__['in_path'])
-            print('Searching the path remotely.')
+
                   
             
 
