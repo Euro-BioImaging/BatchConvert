@@ -108,6 +108,11 @@ if __name__ == "__main__":
     ### specify the config profile
     ometiff.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
                          help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
+
+    ### specify the work directory
+    ometiff.add_argument('--workdir', '-wd', default=getdef('workdir', ""), type=str,
+                         help="Specifies the work directory")
+    
     ### specify output type: if the output type is ometiff add the following parameters
     ometiff.add_argument('--noflat', '-nf', default=getdef('noflat', False), action='store_true')
     ometiff.add_argument('--series', '-s', default=getdef('series', None), type=int,
@@ -164,6 +169,10 @@ if __name__ == "__main__":
     ### specify the config profile
     omezarr.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
                          help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
+
+    ### specify the work directory
+    omezarr.add_argument('--workdir', '-wd', default=getdef('workdir', ""), type=str,
+                         help="Specifies the work directory")
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
@@ -392,6 +401,14 @@ if __name__ == "__main__":
     elif (prompt == 'ometiff') | (prompt == 'omezarr'):
         # print(keys)
         os.chdir(relpath)
+
+        scratchdir = '/scratch'
+        if len(args.workdir) == 0:
+            if os.path.exists(scratchdir):
+                args.workdir = os.path.join(scratchdir, '.batchconvert/work')
+            else:
+                args.workdir = "${baseDir}/WorkDir/work"
+        
         if args.in_path.startswith('/'):
             pass
         elif not args.in_path.startswith('/'):
