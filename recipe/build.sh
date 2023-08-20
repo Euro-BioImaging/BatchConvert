@@ -11,4 +11,3 @@ echo 'SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );' >> $PREFIX/bin/batchconver
 script="\$SCRIPTPATH/../lib/${PKG_NAME}-${PKG_VERSION}/batchconvert.sh "\$@"";
 echo $script >> $PREFIX/bin/batchconvert; 
 chmod +x $PREFIX/bin/batchconvert
-
