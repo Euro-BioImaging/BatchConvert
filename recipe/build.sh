@@ -2,8 +2,6 @@
 
 set -eu
 tempdir=$PREFIX/lib/${PKG_NAME}-${PKG_VERSION};
-echo "bu ne lan kari gibi, $ROOT"
-echo $ROOT
 mkdir -p $tempdir;
 cp -r $SRC_DIR/* $tempdir;
 chmod -R 777 $tempdir
