@@ -106,7 +106,7 @@ if __name__ == "__main__":
     ometiff.add_argument('--metafile', '-meta', default=getdef('metafile', ""), type=str)
 
     ### specify the config profile
-    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "manual"), type=str,
+    ometiff.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
                          help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
 
     ### specify the work directory
@@ -167,7 +167,7 @@ if __name__ == "__main__":
     omezarr.add_argument('--metafile', '-meta', default=getdef('metafile', ""), type=str)
 
     ### specify the config profile
-    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "manual"), type=str,
+    omezarr.add_argument('--profile', '-pf', default=getdef('profile', "conda"), type=str,
                          help="Specifies one of the five profiles: manual, conda, docker, singularity and cluster")
 
     ### specify the work directory
