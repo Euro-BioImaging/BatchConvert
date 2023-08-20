@@ -1,9 +1,9 @@
 package:
-  name: batchconvert
-  version: 0.0.3
+  name: batchconvert-mini
+  version: 0.0.2
 
 source:
-  url: https://github.com/Euro-BioImaging/BatchConvert/archive/refs/tags/v0.0.3.tar.gz
+  url: https://github.com/Euro-BioImaging/BatchConvert/archive/refs/tags/v0.0.2.tar.gz
 
 requirements:
   build:
@@ -11,10 +11,5 @@ requirements:
   host:
     - python>=3.9
   run:
-    - conda-forge::python>=3.9
-    - bioconda::nextflow>=22.10.1
-    - ome::bftools=6.7.0
-    - ome::bioformats2raw=0.7.0
-    - hcc::aspera-cli>=3.9
-    - joshmoore::go-mc>=2020.11
-
+    - python>=3.9
+    - nextflow>=22.10.1
