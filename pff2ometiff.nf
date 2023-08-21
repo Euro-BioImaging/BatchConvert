@@ -8,6 +8,9 @@ include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get
 // TODO: add an optional remove-workdir parameter and a remove-workdir script to the end of the workflow (in Groovy)
 
 workflow {
+    if ( params.source_type != "local" && params.in_path.contains( '*' )) {
+        throw new Exception( "Globbing is currently only supported with input files existing in the local filesystem.\nTo filter remotely-stored input files you can try the '--pattern' or '-p' argument." )
+        }
     // If the input dataset is in s3 or bia, bring it to the execution environment first:
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
