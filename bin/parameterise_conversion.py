@@ -401,7 +401,7 @@ if __name__ == "__main__":
             writer.write('configured_omezarr')
     elif prompt == 'configure_from_json': ### Parse the default parameters directly from an input json file.
         if len(sys.argv) < 3:
-            raise ValueError('No input provided. "configure_from_json" subcommand requires a filepath as mandatory input.')
+            raise ValueError('No input provided. "configure_from_json" subcommand requires an absolute filepath as mandatory input.')
         elif not os.path.exists(args.cfile_path):
             raise FileNotFoundError(f'The path {args.cfile_path} not found in the filesystem.')
         else:
