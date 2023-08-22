@@ -2,7 +2,7 @@
 import subprocess
 import argparse
 import os, sys, shutil
-import json
+import json, pprint
 
 def intlist(s):
     rv = []
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     #####################################################################################################
     subparsers = parser.add_subparsers()
     configure_from_json = subparsers.add_parser('configure_from_json')
-    configure_from_json.add_argument('cfile_path', help = "A json file with user-specified parameters. The parameters specified here will be the default parameters for the conversions.")
+    configure_from_json.add_argument('jsonfile_path', help = "Path to a json file with user-specified parameters, which will be the default parameters for any subsequent conversions.")
     configure_s3_remote = subparsers.add_parser('configure_s3_remote')
     configure_s3_remote.add_argument('--remote', default=None)
     configure_s3_remote.add_argument('--url', default=None)
@@ -219,16 +219,17 @@ if __name__ == "__main__":
     #################################### RESET DEFAULTS SUBPARSER #######################################
     #####################################################################################################
     reset = subparsers.add_parser('reset_defaults')
+    show_default_params = subparsers.add_parser('show_default_params')
 
     args = parser.parse_args()
     keys = args.__dict__.keys()
     # for item in keys:
     #     print("%s: %s" % (item, args.__dict__[item]))
     if (len(sys.argv) <= 1):
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_from_json"\n"configure_slurm"\n"reset_defaults"')
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_from_json"\n"configure_slurm"\n"reset_defaults"\n"show_default_params"')
         exit()
-    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults", "configure_from_json"]:
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"\n"configure_from_json"')
+    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults", "configure_from_json", "show_default_params"]:
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"\n"configure_from_json"\n"show_default_params"')
         exit()
     prompt = str(sys.argv[1])
     # print(sys.argv[1])
@@ -402,20 +403,22 @@ if __name__ == "__main__":
     elif prompt == 'configure_from_json': ### Parse the default parameters directly from an input json file.
         if len(sys.argv) < 3:
             raise ValueError('No input provided. "configure_from_json" subcommand requires an absolute filepath as mandatory input.')
-        elif not os.path.exists(args.cfile_path):
-            raise FileNotFoundError(f'The path {args.cfile_path} not found in the filesystem.')
         else:
-            with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
-                jsonfile = json.load(f)
-                with open(args.cfile_path, 'r+') as ff:
-                    newparams = json.load(ff)
-                    for key, value in newparams.items():
-                        jsonfile[key] = value
-                        f.seek(0)
-                        json.dump(jsonfile, f, indent=2)
-                        f.truncate()
-                        with open(os.path.join(scriptpath, '.process'), 'w') as writer:
-                            writer.write('configured_from_json')
+            abspath = os.path.join(relpath, args.jsonfile_path)
+            if not os.path.exists(abspath):
+                raise FileNotFoundError(f'The path {abspath} not found in the filesystem.')
+            else:
+                with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+                    jsonfile = json.load(f)
+                    with open(abspath, 'r+') as ff:
+                        newparams = json.load(ff)
+                        for key, value in newparams.items():
+                            jsonfile[key] = value
+                            f.seek(0)
+                            json.dump(jsonfile, f, indent=2)
+                            f.truncate()
+                            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+                                writer.write('configured_from_json')
     elif (prompt == 'ometiff') | (prompt == 'omezarr'):
         # print(keys)
         os.chdir(relpath)
@@ -435,7 +438,7 @@ if __name__ == "__main__":
             elif args.source_type == 'bia':
                 pass
             else:
-                args.in_path = relpath + '/' + args.in_path
+                args.in_path = os.path.join(relpath, args.in_path)
         ###
         if args.out_path.startswith('/'):
             pass
@@ -514,12 +517,12 @@ if __name__ == "__main__":
         shutil.copy(backup_params, default_params)
         with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
             writer.write('resetted')
-    
+    elif (prompt == 'show_default_params'):
+        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
+        with open(default_params, 'r+') as jsonfile:
+            paramdict = json.load(jsonfile)
+            pp = pprint.PrettyPrinter(depth = 4)
+            pp.pprint(paramdict)
 
-                  
-            
 
 
-
-
-        
