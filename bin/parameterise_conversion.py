@@ -91,6 +91,9 @@ if __name__ == "__main__":
     configure_slurm.add_argument('--submit_rate_limit', default = None)
     configure_slurm.add_argument('--cluster_options', default = None)
     configure_slurm.add_argument('--time', default = None)
+    set_default_param = subparsers.add_parser('set_default_param')
+    set_default_param.add_argument('default_param_name')
+    set_default_param.add_argument('default_param_value')
     #####################################################################################################
     ##################################### CONVERSION SUBPARSERS #########################################
     #####################################################################################################
@@ -226,10 +229,10 @@ if __name__ == "__main__":
     # for item in keys:
     #     print("%s: %s" % (item, args.__dict__[item]))
     if (len(sys.argv) <= 1):
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_from_json"\n"configure_slurm"\n"reset_defaults"\n"show_default_params"')
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_from_json"\n"configure_slurm"\n"reset_defaults"\n"show_default_params"\n"set_default_param"')
         exit()
-    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults", "configure_from_json", "show_default_params"]:
-        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"\n"configure_from_json"\n"show_default_params"')
+    elif sys.argv[1] not in ["ometiff", "omezarr", "configure_ometiff", "configure_omezarr", "configure_bia_remote", "configure_s3_remote", "configure_slurm", "reset_defaults", "configure_from_json", "show_default_params", "set_default_param"]:
+        raise ValueError('The first argument of batchconvert must be either of: \n"ometiff"\n"omezarr"\n"configure_ometiff"\n"configure_omezarr"\n"configure_bia_remote"\n"configure_s3_remote"\n"configure_slurm"\n"reset_defaults"\n"configure_from_json"\n"show_default_params"\n"set_default_param"')
         exit()
     prompt = str(sys.argv[1])
     # print(sys.argv[1])
@@ -402,7 +405,7 @@ if __name__ == "__main__":
             writer.write('configured_omezarr')
     elif prompt == 'configure_from_json': ### Parse the default parameters directly from an input json file.
         if len(sys.argv) < 3:
-            raise ValueError('No input provided. "configure_from_json" subcommand requires an absolute filepath as mandatory input.')
+            raise ValueError('No input provided. "configure_from_json" subcommand requires a filepath as a mandatory input.')
         else:
             abspath = os.path.join(relpath, args.jsonfile_path)
             if not os.path.exists(abspath):
@@ -419,6 +422,15 @@ if __name__ == "__main__":
                             f.truncate()
                             with open(os.path.join(scriptpath, '.process'), 'w') as writer:
                                 writer.write('configured_from_json')
+    elif prompt == 'set_default_param': ### Parse the default parameters directly from an input json file.
+        with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+            jsonfile = json.load(f)
+            jsonfile[args.default_param_name] = args.default_param_value
+            f.seek(0)
+            json.dump(jsonfile, f, indent=2)
+            f.truncate()
+            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+                writer.write('default_param_set')
     elif (prompt == 'ometiff') | (prompt == 'omezarr'):
         # print(keys)
         os.chdir(relpath)
