@@ -55,7 +55,6 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-echo $afterrun
 if [[ $afterrun == "clean" ]];
   then
     echo $afterrun
