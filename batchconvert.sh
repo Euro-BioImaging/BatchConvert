@@ -4,13 +4,20 @@
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
 set -f && \
-python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
     process=$(cat $SCRIPTPATH/bin/.process)
   else
     printf "The batchonvert command seems to be invalid. Please try again. \n"
+fi
+
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+    afterrun=$(cat $SCRIPTPATH/bin/.afterrun)
+  else
+    afterrun="nan"
 fi
 
 if [[ $process == 'configured_s3' ]];
@@ -35,8 +42,8 @@ elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    python construct_cli.py > batchconvert_cli.sh && \
-    python construct_nextflow_cli.py > nextflow_cli.sh && \
+    pythonexe construct_cli.py > batchconvert_cli.sh && \
+    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
     printf "Nextflow script has been created. Workflow is beginning.\n"
     cd - && \
 
@@ -48,16 +55,29 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-rm -rf /scratch/.batchconvert/work &> /dev/null;
-rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
-rm -rf /scratch/.batchconvert/logs &> /dev/null;
+echo $afterrun
+if [[ $afterrun == "clean" ]];
+  then
+    echo $afterrun
+    echo "enters cleaning"
+    rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
+    rm -rf /scratch/.batchconvert/work &> /dev/null;
+    rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
+    rm -rf /scratch/.batchconvert/logs &> /dev/null;
+fi
 
-python $SCRIPTPATH/bin/cleanup.py &> /dev/null
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+    rm $SCRIPTPATH/bin/.afterrun
+fi
+
+pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+
 
 
 # this runs the nextflow workflow which will consume the updated command line in the bin:
 
-# sudo rm -r work
+
+
 
 
