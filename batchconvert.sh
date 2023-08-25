@@ -13,6 +13,13 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     printf "The batchonvert command seems to be invalid. Please try again. \n"
 fi
 
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+    afterrun=$(cat $SCRIPTPATH/bin/.afterrun)
+  else
+    afterrun="nan"
+fi
+
 if [[ $process == 'configured_s3' ]];
   then
     printf "Configuration of the default s3 credentials is complete\n";
@@ -48,10 +55,21 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-#rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-#rm -rf /scratch/.batchconvert/work &> /dev/null;
-#rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
-#rm -rf /scratch/.batchconvert/logs &> /dev/null;
+echo $afterrun
+if [[ $afterrun == "clean" ]];
+  then
+    echo $afterrun
+    echo "enters cleaning"
+    rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
+    rm -rf /scratch/.batchconvert/work &> /dev/null;
+    rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
+    rm -rf /scratch/.batchconvert/logs &> /dev/null;
+fi
+
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+    rm $SCRIPTPATH/bin/.afterrun
+fi
 
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
