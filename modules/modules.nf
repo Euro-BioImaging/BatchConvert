@@ -107,6 +107,7 @@ process Inspect_S3Path {
         stdout emit: filelist
     script:
     """
+    sleep 5;
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
     parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
     """
@@ -123,6 +124,7 @@ process Transfer_Local2S3Storage {
         path "./transfer_report.txt", emit: tfr
     script:
     """
+    sleep 5;
     localname="\$(basename $local)" && \
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     if [ -f $local ];then
@@ -141,6 +143,7 @@ process Mirror_S3Storage2Local {
         path "transferred/${source}"
     script:
     """
+    sleep 5;
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     mc -C "./mc" mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
     """
@@ -155,6 +158,7 @@ process Transfer_S3Storage2Local {
         path "${s3name}"
     script:
     """
+    sleep 5;
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     mc -C "./mc" cp "${s3path}" "${s3name}";
     """
