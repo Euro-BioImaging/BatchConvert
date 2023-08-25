@@ -107,7 +107,8 @@ process Inspect_S3Path {
         stdout emit: filelist
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
     parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
     """
 }
@@ -123,12 +124,13 @@ process Transfer_Local2S3Storage {
         path "./transfer_report.txt", emit: tfr
     script:
     """
+    sleep 5;
     localname="\$(basename $local)" && \
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     if [ -f $local ];then
-        mc cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
     elif [ -d $local ];then
-        mc mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
     fi
     echo "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/$local > "./transfer_report.txt";
     """
@@ -141,8 +143,9 @@ process Mirror_S3Storage2Local {
         path "transferred/${source}"
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
     """
 }
 
@@ -155,8 +158,9 @@ process Transfer_S3Storage2Local {
         path "${s3name}"
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc cp "${s3path}" "${s3name}";
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" cp "${s3path}" "${s3name}";
     """
 }
 
