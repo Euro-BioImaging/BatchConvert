@@ -4,7 +4,7 @@
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
 set -f && \
-pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
@@ -42,8 +42,8 @@ elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    pythonexe construct_cli.py > batchconvert_cli.sh && \
-    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
+    python construct_cli.py > batchconvert_cli.sh && \
+    python construct_nextflow_cli.py > nextflow_cli.sh && \
     printf "Nextflow script has been created. Workflow is beginning.\n"
     cd - && \
 
@@ -70,7 +70,7 @@ if [[ -f $SCRIPTPATH/bin/.afterrun ]];
     rm $SCRIPTPATH/bin/.afterrun
 fi
 
-pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+python $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
