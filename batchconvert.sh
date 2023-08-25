@@ -55,7 +55,6 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-echo $afterrun
 if [[ $afterrun == "clean" ]];
   then
     echo $afterrun
@@ -74,8 +73,10 @@ fi
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
+
 # this runs the nextflow workflow which will consume the updated command line in the bin:
 
-# sudo rm -r work
+
+
 
 
