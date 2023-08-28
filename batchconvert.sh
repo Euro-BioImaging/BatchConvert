@@ -55,14 +55,11 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-if [[ $afterrun == "clean" ]];
+if [[ $afterrun != "noclean" ]];
   then
-    echo $afterrun
-    echo "enters cleaning"
-    rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-    rm -rf /scratch/.batchconvert/work &> /dev/null;
-    rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
-    rm -rf /scratch/.batchconvert/logs &> /dev/null;
+    # echo $afterrun
+    echo "Cleaning work directory."
+    pythonexe $SCRIPTPATH/bin/clean_workdir.py;
 fi
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
