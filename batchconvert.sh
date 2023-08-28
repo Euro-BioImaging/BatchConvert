@@ -55,16 +55,21 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-if [[ $afterrun != "noclean" ]];
+
+if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
   then
-    # echo $afterrun
-    echo "Cleaning work directory."
-    pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+    if [[ $afterrun != "noclean" ]];
+      then
+        # echo $afterrun
+        echo "Cleaning work directory."
+        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+    fi
 fi
+
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
   then
-    rm $SCRIPTPATH/bin/.afterrun
+  rm $SCRIPTPATH/bin/.afterrun
 fi
 
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
