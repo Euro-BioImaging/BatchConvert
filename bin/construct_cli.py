@@ -60,6 +60,8 @@ if __name__ == '__main__':
         sys.stdout.write(cmdstr)
     elif args.output_type == 'omezarr':
         cmd += ["bioformats2raw"]
+        if "min_xy_size" in keys:
+            cmd += [" --target-min-size", ' %s' % args.min_xy_size]
         if "resolutions_zarr" in keys:
             cmd += [" --resolutions", ' %s' % args.resolutions_zarr]
         if "chunk_h" in keys:
