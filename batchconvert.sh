@@ -4,7 +4,7 @@
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 
 set -f && \
-python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
@@ -42,8 +42,8 @@ elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    python construct_cli.py > batchconvert_cli.sh && \
-    python construct_nextflow_cli.py > nextflow_cli.sh && \
+    pythonexe construct_cli.py > batchconvert_cli.sh && \
+    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
     printf "Nextflow script has been created. Workflow is beginning.\n"
     cd - && \
 
@@ -55,14 +55,11 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-if [[ $afterrun == "clean" ]];
+if [[ $afterrun != "noclean" ]];
   then
-    echo $afterrun
-    echo "enters cleaning"
-    rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-    rm -rf /scratch/.batchconvert/work &> /dev/null;
-    rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
-    rm -rf /scratch/.batchconvert/logs &> /dev/null;
+    # echo $afterrun
+    echo "Cleaning work directory."
+    pythonexe $SCRIPTPATH/bin/clean_workdir.py;
 fi
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
@@ -70,7 +67,7 @@ if [[ -f $SCRIPTPATH/bin/.afterrun ]];
     rm $SCRIPTPATH/bin/.afterrun
 fi
 
-python $SCRIPTPATH/bin/cleanup.py &> /dev/null
+pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
