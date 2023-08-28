@@ -166,7 +166,7 @@ if __name__ == "__main__":
     omezarr.add_argument('in_path', default=getdef('in_path',
                                                    "placehold"))  # you can update existing arguments with those from json file
     omezarr.add_argument('out_path', default=getdef('out_path', "placehold"))
-    omezarr.add_argument('--keep_workdir', default = getdef('keep_workdir', True), action = 'store_true')
+    omezarr.add_argument('--keep_workdir', default = getdef('keep_workdir', False), action = 'store_true')
     omezarr.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
     omezarr.add_argument('--reject_pattern', '-rp', default=getdef('reject_pattern', ""), type=str)
 
@@ -445,9 +445,9 @@ if __name__ == "__main__":
         scratchdir = '/scratch'
         if len(args.workdir) == 0:
             if os.path.exists(scratchdir):
-                args.workdir = os.path.join(scratchdir, '.batchconvert/work')
+                args.workdir = os.path.join(scratchdir, '.batchconvert/WorkDir')
             else:
-                args.workdir = "${baseDir}/WorkDir/work"
+                args.workdir = f"{scriptpath}/../WorkDir"
         
         if args.in_path.startswith('/'):
             pass
