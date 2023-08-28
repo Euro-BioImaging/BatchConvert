@@ -15,6 +15,7 @@ def intlist(s):
     return rv
 
 bf2rawParams = { "resolutions_zarr": "Number of resolution levels in the OME-Zarr pyramid. Enter an integer value.",
+                 "min_xy_size": "minimum xy dimension size that the smallest resolution layer can have.",
                  "chunk_h": "Chunk height. Enter an integer value.",
                  "chunk_w": "Chunk width. Enter an integer value.",
                  "chunk_d": "Chunk depth. Enter an integer value.",
@@ -75,6 +76,7 @@ if __name__ == "__main__":
     configure_ometiff.add_argument('--resolutions_tiff', default = None)
     configure_ometiff.add_argument('--resolution_scale', default = None)
     configure_omezarr = subparsers.add_parser('configure_omezarr')
+    configure_omezarr.add_argument('--min_xy_size', default = None)
     configure_omezarr.add_argument('--resolutions_zarr', default = None)
     configure_omezarr.add_argument('--chunk_h', default = None)
     configure_omezarr.add_argument('--chunk_w', default = None)
@@ -182,13 +184,15 @@ if __name__ == "__main__":
                          help="Specifies the work directory")
 
     ### If the output_type is omezarr, add the following parameters of conversion into omezarr format:
+    omezarr.add_argument('--min_xy_size', '-ms', default = getdef('min_xy_size', None), type = int,
+                         help = 'Specifies the minimum xy dimension size that the smallest resolution layer can have.')
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
-                         help='Specifies resolution levels of the pyramidal image for bioformats2raw.')
+                         help='Specifies the number of resolution levels in the pyramidal image for bioformats2raw. Overrrides the --min_xy_size parameter.')
     omezarr.add_argument('--chunk_h', '-ch', default=getdef('chunk_h', None), type=int, help='Specifies chunk height')
     omezarr.add_argument('--chunk_w', '-cw', default=getdef('chunk_w', None), type=int, help='Specifies chunk width')
     omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
     omezarr.add_argument('--downsample_type', default=getdef('downsample_type', None), type=str,
-                         help='Specifies downsampling algorithm')
+                         help='Specifies the downsampling algorithm')
     omezarr.add_argument('--compression_zarr', '-czarr', default=getdef('compression_zarr', None), type=str,
                          help='Specifies compression algorithm for bioformats2raw')
     omezarr.add_argument('--max_workers', default=getdef('max_workers', None), type=int,
@@ -201,6 +205,7 @@ if __name__ == "__main__":
                          help='Specifies path type.')
     omezarr.add_argument('--overwrite', default=getdef('overwrite', False), action='store_true',
                          help='Overwrites the output path.')
+
     ### Specify the input and output locations (source_type or dest_type): currently either local or s3
     omezarr.add_argument('--source_type', '-st', default=getdef('source_type', "local"),
                          help='Specifies where the input dataset is located: either local or s3.')
