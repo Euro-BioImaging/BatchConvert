@@ -13,8 +13,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     # print("args are %s" % args)
 
-    os.chdir('/home/oezdemir/PycharmProjects/nfprojects/BatchConvert')
-
     with open('./params/params.json', 'rt') as f:
         t_args = argparse.Namespace()
         t_args.__dict__.update(json.load(f))
