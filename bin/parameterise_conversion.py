@@ -101,12 +101,18 @@ if __name__ == "__main__":
     #####################################################################################################
     ometiff = subparsers.add_parser('ometiff')
     ### add io parameters - obligatory
-    ometiff.add_argument('in_path', default=getdef('in_path',
-                                                   "placehold"))  # you can update existing arguments with those from json file
+    ometiff.add_argument('in_path', default=getdef('in_path', "placehold"))  # you can update existing arguments with those from json file
     ometiff.add_argument('out_path', default=getdef('out_path', "placehold"))
+
+    ### add work directory path
     ometiff.add_argument('--keep_workdir', default = getdef('keep_workdir', False), action = 'store_true')
+
+    ### add patterns to filter input
     ometiff.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
     ometiff.add_argument('--reject_pattern', '-rp', default=getdef('reject_pattern', ""), type=str)
+
+    ### specify whether to use the scratch directory - relevant only for Slurm execution
+    ometiff.add_argument('--use_local_scratch', default=getdef("use_local_scratch", False),  action='store_true')
 
     ### specify whether the input files should be concatenated into a single ome-tiff file
     ometiff.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
@@ -119,7 +125,7 @@ if __name__ == "__main__":
 
     ### specify the work directory
     ometiff.add_argument('--workdir', '-wd', default=getdef('workdir', ""), type=str,
-                         help="Specifies the work directory")
+                         help="Specifies the work directory path. This directory contains the temporary data and the log files related to the workflow.")
     
     ### specify output type: if the output type is ometiff add the following parameters
     ometiff.add_argument('--noflat', '-nf', default=getdef('noflat', False), action='store_true')
@@ -145,9 +151,9 @@ if __name__ == "__main__":
                          help='Specifies the scale with which successive resolution level is calculated')
     ### Specify the input and output locations (source_type or dest_type): currently either local or s3
     ometiff.add_argument('--source_type', '-st', default=getdef('source_type', "local"),
-                         help='Specifies where the input dataset is located: either local or s3.')
+                         help='Specifies where the input dataset is located. Choose one of the options: local, s3 or bia.')
     ometiff.add_argument('--dest_type', '-dt', default=getdef('dest_type', "local"),
-                         help='Specifies where the output is to be deposited: either local or s3')
+                         help='Specifies where the output is to be deposited. Choose one of the options: local, s3 or bia.')
     ### add s3 parameters if either of the source_type or dest_type is s3
     ometiff.add_argument('--S3REMOTE', default=getdef('S3REMOTE', "s3"))
     ometiff.add_argument('--S3ENDPOINT', default=getdef('S3ENDPOINT', "https://s3.embl.de"))
@@ -166,9 +172,16 @@ if __name__ == "__main__":
     omezarr.add_argument('in_path', default=getdef('in_path',
                                                    "placehold"))  # you can update existing arguments with those from json file
     omezarr.add_argument('out_path', default=getdef('out_path', "placehold"))
+
+    ### add work directory path
     omezarr.add_argument('--keep_workdir', default = getdef('keep_workdir', False), action = 'store_true')
+
+    ### add patterns to filter input
     omezarr.add_argument('--pattern', '-p', default=getdef('pattern', ""), type=str)
     omezarr.add_argument('--reject_pattern', '-rp', default=getdef('reject_pattern', ""), type=str)
+
+    ### specify whether to use the scratch directory - relevant only for Slurm execution
+    omezarr.add_argument('--use_local_scratch', default=getdef("use_local_scratch", False),  action='store_true')
 
     ### specify whether the input files should be concatenated into a single ome-tiff folder
     omezarr.add_argument('--merge_files', default=getdef("merge_files", False), action='store_true')
@@ -486,10 +499,12 @@ if __name__ == "__main__":
                 pass
             elif value is None:
                 pass
-            elif str(value) == str("False") and (key != "merge_files"):
-                pass
-            elif value is False and (key != "merge_files"):
-                pass
+            elif value is False:
+                if key in ["use_local_scratch", "merge_files"]:
+                    cmd.append(cmdroot + ["--key", key, "--value", "%s" % value])
+                else:
+                    pass
+                    # print((key, value))
             else:
                 cmd.append(cmdroot + ["--key", key, "--value", "%s" % value])
             if prompt == 'ometiff':
@@ -548,6 +563,8 @@ if __name__ == "__main__":
             paramdict = json.load(jsonfile)
             pp = pprint.PrettyPrinter(depth = 4)
             pp.pprint(paramdict)
+            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+                writer.write('parameters_shown')
 
 
 
