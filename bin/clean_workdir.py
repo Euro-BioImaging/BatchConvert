@@ -7,13 +7,18 @@ if __name__ == "__main__":
     with open(os.path.join(scriptpath, '..', 'params', 'params.json'), 'r+') as f:
         jsonfile = json.load(f)
         # keep_workdir = jsonfile['keep_workdir']
-        workdir = jsonfile['workdir']
-        paths = os.listdir(workdir)
-        for fpath in paths:
-            removal_path = os.path.join(workdir, fpath)
-            cmd = ['rm', '-rf', removal_path]
-            try:
-                subprocess.run(cmd)
-            except:
-                pass
+        if 'workdir' not in jsonfile.keys():
+            pass
+        else:
+            workdir = jsonfile['workdir']
+            paths = os.listdir(workdir)
+            if len(paths) > 0:
+                print("Cleaning work directory.")
+            for fpath in paths:
+                removal_path = os.path.join(workdir, fpath)
+                cmd = ['rm', '-rf', removal_path]
+                try:
+                    subprocess.run(cmd)
+                except:
+                    pass
 
