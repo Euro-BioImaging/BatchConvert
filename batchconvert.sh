@@ -38,6 +38,12 @@ elif [[ $process == 'configured_omezarr' ]];
 elif [[ $process == 'resetted' ]];
   then
     printf "Default parameters were resetted.\n";
+elif [[ $process == 'parameters_shown' ]];
+  then
+    printf "These are the default parameters.\n";
+elif [[ $process == "default_param_set" ]];
+  then
+    printf "The default parameter is set";
 elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
@@ -61,7 +67,6 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
     if [[ $afterrun != "noclean" ]];
       then
         # echo $afterrun
-        echo "Cleaning work directory."
         pythonexe $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
