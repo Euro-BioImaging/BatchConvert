@@ -39,9 +39,11 @@ slurm_params = ["queue_size", "submit_rate_limit", "cluster_options", "time"]
 
 if __name__ == "__main__":
     relpath = os.getcwd()
-    scriptpath = os.path.dirname(os.path.realpath(__file__)) # /home/oezdemir/PycharmProjects/nfprojects/bftools/modules/templates
+    scriptpath = os.path.dirname(os.path.realpath(__file__))
     os.chdir(scriptpath)
-
+    if (sys.argv[2] == "--help") | (sys.argv[2] == "-h"):
+        with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            writer.write('help_provided')
     with open("../params/params.json.default", 'r+') as f:
         jsonfileparams = json.load(f)
     defparams = dict(jsonfileparams)
@@ -486,7 +488,7 @@ if __name__ == "__main__":
             with open(os.path.join(scriptpath, '.afterrun'), 'w') as writer:
                 writer.write('noclean')
         else:
-            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            with open(os.path.join(scriptpath, '.afterrun'), 'w') as writer:
                 writer.write('clean')
         #print(args)
         cmdroot = ["python", "./edit_params_file.py".format(scriptpath), "-f", '../params/params.json', "-df", '../params/params.json.default']
