@@ -5,8 +5,6 @@ nextflow.enable.dsl=2
 include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMETIFF; Convert_EachFile2SeparateOMETIFF; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Inspect_S3Path } from "./modules/modules.nf"
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; } from "./modules/modules.nf"
 
-// TODO: add an optional remove-workdir parameter and a remove-workdir script to the end of the workflow (in Groovy)
-
 workflow {
     // If the input dataset is in s3 or bia, bring it to the execution environment first:
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
