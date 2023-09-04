@@ -11,7 +11,10 @@ workflow {
     // If the input dataset is in s3 or bia, bring it to the execution environment first:
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
-        if ( params.merge_files == "True" ) {
+        if ( params.in_path.toString().contains( "*" ) ) {
+            println( "Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns." )
+        }
+        else if ( params.merge_files == "True" ) {
             ch0 = Channel.of(params.in_path)
             Mirror_S3Storage2Local(ch0)
             ch1 = Mirror_S3Storage2Local.out.map { file(it).listFiles() }.flatten()
@@ -105,7 +108,10 @@ workflow {
     }
     else if ( params.source_type == "s3" ) {
         // Create a branch leading either to a grouped conversion or one-to-one conversion.
-        if ( params.merge_files == "True" ) {
+        if ( params.in_path.toString().contains( "*" ) ) {
+            println( "Workflow being killed." )
+        }
+        else if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
