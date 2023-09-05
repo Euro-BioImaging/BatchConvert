@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-bioformats2raw "$@"
+bioformats2raw --max_workers 4 "$@"
