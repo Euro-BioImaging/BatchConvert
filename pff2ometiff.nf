@@ -10,7 +10,7 @@ workflow {
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
         if ( params.in_path.toString().contains( "*" ) ) {
-            println( "Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns." )
+            println( "\u001B[31m"+"Error: Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         }
         else if ( params.merge_files == "True" ) {
             ch0 = Channel.of(params.in_path)
@@ -113,7 +113,7 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            println(params.metafile.size())
+            // println(params.metafile.size())
             if ( params.metafile.size() > 0 ) {
                 pattern_files = Channel.fromPath( params.metafile ).flatten()
                 ch = pattern_files

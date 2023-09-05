@@ -1,16 +1,28 @@
 #!/usr/bin/env bash
 
-# make SCRIPTPATH an environment variable TODO
+# TODO make SCRIPTPATH an environment variable
+
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
+source $SCRIPTPATH/bin/utils.sh
 
 set -f && \
-pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+result=$(pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
+
+if [[ $result == "inputpatherror" ]];
+  then
+    printf "${RED}Error: The input path does not exist.\n${BLACK}"
+    exit
+elif [[ ${#result} > 0 ]];
+  then
+    printf "$result\n"
+    exit
+fi
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
     process=$(cat $SCRIPTPATH/bin/.process)
   else
-    printf "The batchonvert command seems to be invalid. Please try again. \n"
+    printf "${RED}The batchonvert command is invalid. Please try again.${BLACK}\n"
 fi
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
@@ -22,35 +34,41 @@ fi
 
 if [[ $process == 'configured_s3' ]];
   then
-    printf "Configuration of the default s3 credentials is complete\n";
+    printf "${GREEN}Configuration of the default s3 credentials is complete${BLACK}\n";
 elif [[ $process == 'configured_bia' ]];
   then
-    printf "Configuration of the default bia credentials is complete\n";
+    printf "${GREEN}Configuration of the default bia credentials is complete${BLACK}\n";
 elif [[ $process == 'configured_slurm' ]];
   then
-    printf "Configuration of the default slurm parameters is complete\n";
+    printf "${GREEN}Configuration of the default slurm parameters is complete\n${BLACK}";
 elif [[ $process == 'configured_ometiff' ]];
   then
-    printf "Configuration of the default parameters for 'bfconvert' is complete\n";
+    printf "${GREEN}Configuration of the default parameters for 'bfconvert' is complete\n${BLACK}";
 elif [[ $process == 'configured_omezarr' ]];
   then
-    printf "Configuration of the default parameters for 'bioformats2raw' is complete\n";
+    printf "${GREEN}Configuration of the default parameters for 'bioformats2raw' is complete\n${BLACK}";
+elif [[ $process == 'configured_from_json' ]];
+  then
+    printf "${GREEN}Default parameters have been updated from a json file.\n${BLACK}";
 elif [[ $process == 'resetted' ]];
   then
-    printf "Default parameters were resetted.\n";
+    printf "${GREEN}Default parameters have been resetted.\n${BLACK}";
 elif [[ $process == 'parameters_shown' ]];
   then
-    printf "These are the default parameters.\n";
+    printf "${GREEN}Current default parameters displayed.\n${BLACK}";
+elif [[ $process == 'parameters_exported' ]];
+  then
+    printf "${GREEN}Current default parameters successfully exported.\n${BLACK}";
 elif [[ $process == "default_param_set" ]];
   then
-    printf "The default parameter is set";
+    printf "${GREEN}Default parameter updated.\n${BLACK}";
 elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
     pythonexe construct_cli.py > batchconvert_cli.sh && \
     pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
-    printf "Nextflow script has been created. Workflow is beginning.\n"
+    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${BLACK}"
     cd - && \
 
     $SCRIPTPATH/bin/nextflow_cli.sh
@@ -61,7 +79,6 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-
 if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
   then
     if [[ $afterrun != "noclean" ]];
@@ -70,7 +87,6 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
         pythonexe $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
-
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
   then
