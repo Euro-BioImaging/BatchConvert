@@ -6,23 +6,28 @@ SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 source $SCRIPTPATH/bin/utils.sh
 
 set -f && \
-result=$(pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
-
-if [[ $result == "inputpatherror" ]];
-  then
-    printf "${RED}Error: The input path does not exist.\n${BLACK}"
-    exit
-elif [[ ${#result} > 0 ]];
-  then
-    printf "$result\n"
-    exit
-fi
+result=$(python $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
     process=$(cat $SCRIPTPATH/bin/.process)
   else
-    printf "${RED}The batchonvert command is invalid. Please try again.${BLACK}\n"
+    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+fi
+
+if [[ $result == "inputpatherror" ]];
+  then
+    printf "${RED}Error: The input path does not exist.\n${NORMAL}"
+    exit
+elif [[ ${#result} > 0 ]];
+  then
+    if [[ $process == 'parameters_shown' ]];
+      then
+        printf "${NORMAL}$result${NORMAL}\n"
+      else
+        printf "${RED}$result${NORMAL}\n"
+        exit
+    fi
 fi
 
 if [[ -f $SCRIPTPATH/bin/.afterrun ]];
@@ -34,41 +39,41 @@ fi
 
 if [[ $process == 'configured_s3' ]];
   then
-    printf "${GREEN}Configuration of the default s3 credentials is complete${BLACK}\n";
+    printf "${GREEN}Configuration of the default s3 credentials is complete${NORMAL}\n";
 elif [[ $process == 'configured_bia' ]];
   then
-    printf "${GREEN}Configuration of the default bia credentials is complete${BLACK}\n";
+    printf "${GREEN}Configuration of the default bia credentials is complete${NORMAL}\n";
 elif [[ $process == 'configured_slurm' ]];
   then
-    printf "${GREEN}Configuration of the default slurm parameters is complete\n${BLACK}";
+    printf "${GREEN}Configuration of the default slurm parameters is complete\n${NORMAL}";
 elif [[ $process == 'configured_ometiff' ]];
   then
-    printf "${GREEN}Configuration of the default parameters for 'bfconvert' is complete\n${BLACK}";
+    printf "${GREEN}Configuration of the default parameters for 'bfconvert' is complete\n${NORMAL}";
 elif [[ $process == 'configured_omezarr' ]];
   then
-    printf "${GREEN}Configuration of the default parameters for 'bioformats2raw' is complete\n${BLACK}";
+    printf "${GREEN}Configuration of the default parameters for 'bioformats2raw' is complete\n${NORMAL}";
 elif [[ $process == 'configured_from_json' ]];
   then
-    printf "${GREEN}Default parameters have been updated from a json file.\n${BLACK}";
+    printf "${GREEN}Default parameters have been updated from a json file.\n${NORMAL}";
 elif [[ $process == 'resetted' ]];
   then
-    printf "${GREEN}Default parameters have been resetted.\n${BLACK}";
+    printf "${GREEN}Default parameters have been resetted.\n${NORMAL}";
 elif [[ $process == 'parameters_shown' ]];
   then
-    printf "${GREEN}Current default parameters displayed.\n${BLACK}";
+    printf "${GREEN}Current default parameters displayed.\n${NORMAL}";
 elif [[ $process == 'parameters_exported' ]];
   then
-    printf "${GREEN}Current default parameters successfully exported.\n${BLACK}";
+    printf "${GREEN}Current default parameters successfully exported.\n${NORMAL}";
 elif [[ $process == "default_param_set" ]];
   then
-    printf "${GREEN}Default parameter updated.\n${BLACK}";
+    printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    pythonexe construct_cli.py > batchconvert_cli.sh && \
-    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
-    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${BLACK}"
+    python construct_cli.py > batchconvert_cli.sh && \
+    python construct_nextflow_cli.py > nextflow_cli.sh && \
+    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
     cd - && \
 
     $SCRIPTPATH/bin/nextflow_cli.sh
@@ -84,7 +89,7 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
     if [[ $afterrun != "noclean" ]];
       then
         # echo $afterrun
-        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+        python $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
 
@@ -93,7 +98,7 @@ if [[ -f $SCRIPTPATH/bin/.afterrun ]];
   rm $SCRIPTPATH/bin/.afterrun
 fi
 
-pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+python $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
