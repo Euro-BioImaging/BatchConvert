@@ -12,15 +12,17 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     # print("args are %s" % args)
+
     with open('./params/params.json', 'rt') as f:
         t_args = argparse.Namespace()
         t_args.__dict__.update(json.load(f))
         args = parser.parse_args(namespace=t_args)
         # print(args)
     # keys = args.__dict__.keys()
+    logdir = os.path.join(args.workdir, 'logs/.nextflow.log')
     cmd = ["#!/usr/bin/env bash\n"]
     cmd += ["SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );\n"]
-    cmd += ["nextflow -C $SCRIPTPATH/../configs/bftools.config -log $SCRIPTPATH/../WorkDir/logs/.nextflow.log"]
+    cmd += ["nextflow -C $SCRIPTPATH/../configs/bftools.config -log %s" % logdir]
     if args.output_type == 'ometiff':
         cmd += [" run $SCRIPTPATH/../pff2ometiff.nf"]
     elif args.output_type == 'omezarr':

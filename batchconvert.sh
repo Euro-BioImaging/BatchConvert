@@ -1,43 +1,79 @@
 #!/usr/bin/env bash
 
-# make SCRIPTPATH an environment variable TODO
+# TODO make SCRIPTPATH an environment variable
+
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
+source $SCRIPTPATH/bin/utils.sh
 
 set -f && \
-pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+result=$(pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
     process=$(cat $SCRIPTPATH/bin/.process)
   else
-    printf "The batchonvert command seems to be invalid. Please try again. \n"
+    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+fi
+
+if [[ $result == "inputpatherror" ]];
+  then
+    printf "${RED}Error: The input path does not exist.\n${NORMAL}"
+    exit
+elif [[ ${#result} > 0 ]];
+  then
+    if [[ $process == 'parameters_shown' ]];
+      then
+        printf "${NORMAL}$result${NORMAL}\n"
+      else
+        printf "${RED}$result${NORMAL}\n"
+        exit
+    fi
+fi
+
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+    afterrun=$(cat $SCRIPTPATH/bin/.afterrun)
+  else
+    afterrun="nan"
 fi
 
 if [[ $process == 'configured_s3' ]];
   then
-    printf "Configuration of the default s3 credentials is complete\n";
+    printf "${GREEN}Configuration of the default s3 credentials is complete${NORMAL}\n";
 elif [[ $process == 'configured_bia' ]];
   then
-    printf "Configuration of the default bia credentials is complete\n";
+    printf "${GREEN}Configuration of the default bia credentials is complete${NORMAL}\n";
 elif [[ $process == 'configured_slurm' ]];
   then
-    printf "Configuration of the default slurm parameters is complete\n";
+    printf "${GREEN}Configuration of the default slurm parameters is complete\n${NORMAL}";
 elif [[ $process == 'configured_ometiff' ]];
   then
-    printf "Configuration of the default parameters for 'bfconvert' is complete\n";
+    printf "${GREEN}Configuration of the default parameters for 'bfconvert' is complete\n${NORMAL}";
 elif [[ $process == 'configured_omezarr' ]];
   then
-    printf "Configuration of the default parameters for 'bioformats2raw' is complete\n";
+    printf "${GREEN}Configuration of the default parameters for 'bioformats2raw' is complete\n${NORMAL}";
+elif [[ $process == 'configured_from_json' ]];
+  then
+    printf "${GREEN}Default parameters have been updated from a json file.\n${NORMAL}";
 elif [[ $process == 'resetted' ]];
   then
-    printf "Default parameters were resetted.\n";
+    printf "${GREEN}Default parameters have been resetted.\n${NORMAL}";
+elif [[ $process == 'parameters_shown' ]];
+  then
+    printf "${GREEN}Current default parameters displayed.\n${NORMAL}";
+elif [[ $process == 'parameters_exported' ]];
+  then
+    printf "${GREEN}Current default parameters successfully exported.\n${NORMAL}";
+elif [[ $process == "default_param_set" ]];
+  then
+    printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
     pythonexe construct_cli.py > batchconvert_cli.sh && \
     pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
-    printf "Nextflow script has been created. Workflow is beginning.\n"
+    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
     cd - && \
 
     $SCRIPTPATH/bin/nextflow_cli.sh
@@ -48,16 +84,27 @@ if [[ -f $SCRIPTPATH/bin/.process ]];
     rm $SCRIPTPATH/bin/.process
 fi
 
-rm -rf $SCRIPTPATH/WorkDir/work &> /dev/null;
-rm -rf /scratch/.batchconvert/work &> /dev/null;
-rm -rf $SCRIPTPATH/WorkDir/logs &> /dev/null;
-rm -rf /scratch/.batchconvert/logs &> /dev/null;
+if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
+  then
+    if [[ $afterrun != "noclean" ]];
+      then
+        # echo $afterrun
+        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+    fi
+fi
+
+if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+  then
+  rm $SCRIPTPATH/bin/.afterrun
+fi
 
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
+
 # this runs the nextflow workflow which will consume the updated command line in the bin:
 
-# sudo rm -r work
+
+
 
 

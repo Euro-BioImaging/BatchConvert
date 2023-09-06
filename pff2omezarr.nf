@@ -5,13 +5,14 @@ nextflow.enable.dsl=2
 include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMEZARR; Convert_EachFile2SeparateOMEZARR; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Inspect_S3Path } from "./modules/modules.nf"
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; } from "./modules/modules.nf"
 
-// TODO: add an optional remove-workdir parameter and a remove-workdir script to the end of the workflow (in Groovy)
-
 workflow {
     // If the input dataset is in s3 or bia, bring it to the execution environment first:
     // Note that this scenario assumes that the input path corresponds to a directory at s3 (not a single file)
     if ( params.source_type == "s3" ) {
-        if ( params.merge_files == "True" ) {
+        if ( params.in_path.toString().contains( "*" ) ) {
+            println( "\u001B[31m"+"Error: Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+        }
+        else if ( params.merge_files == "True" ) {
             ch0 = Channel.of(params.in_path)
             Mirror_S3Storage2Local(ch0)
             ch1 = Mirror_S3Storage2Local.out.map { file(it).listFiles() }.flatten()
@@ -84,13 +85,19 @@ workflow {
         if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             is_correctNames = verify_filenames_fromPath(params.in_path, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(params.in_path).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
         }
         else {
@@ -99,17 +106,26 @@ workflow {
     }
     else if ( params.source_type == "s3" ) {
         // Create a branch leading either to a grouped conversion or one-to-one conversion.
-        if ( params.merge_files == "True" ) {
+        if ( params.in_path.toString().contains( "*" ) ) {
+            println( "Workflow being killed." )
+        }
+        else if ( params.merge_files == "True" ) {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Mirror_S3Storage2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            // println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
                 pattern_files = createPatternFile2(Mirror_S3Storage2Local.out).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
             val = Mirror_S3Storage2Local.out.first()
             output = Convert_Concatenate2SingleOMEZARR(ch, val)
         }
@@ -122,7 +138,12 @@ workflow {
             is_auto = verify_axes(params.concatenation_order)
             chlist = Transfer_PrivateBiostudies2Local.out.collect()
             is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-            if ( is_auto && is_correctNames ) {
+            println(params.metafile.size())
+            if ( params.metafile.size() > 0 ) {
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto && is_correctNames ) {
                 pattern_files = createPatternFile1(Transfer_PrivateBiostudies2Local.out).flatten()
             }
             else {

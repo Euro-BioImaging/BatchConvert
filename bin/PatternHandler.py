@@ -614,4 +614,3 @@ class FilelistGrouper:
 
 # nf = grouper.numfields_global[39][3]
 # nf[slice(0, None, None)]
-

@@ -20,7 +20,7 @@ process Convert_EachFile2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh $inpath "${inpath.baseName}.ome.tiff"
+    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
     """
 }
 
@@ -44,7 +44,7 @@ process Convert_Concatenate2SingleOMETIFF {
         then
             batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
+            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -65,7 +65,7 @@ process Convert_EachFile2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
+    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
     """
 }
 
@@ -88,9 +88,9 @@ process Convert_Concatenate2SingleOMEZARR{
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
+            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "${inpath}/${pattern_file}" "${pattern_file.baseName}.ome.zarr"
+            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -107,7 +107,8 @@ process Inspect_S3Path {
         stdout emit: filelist
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
     parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
     """
 }
@@ -123,12 +124,13 @@ process Transfer_Local2S3Storage {
         path "./transfer_report.txt", emit: tfr
     script:
     """
+    sleep 5;
     localname="\$(basename $local)" && \
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     if [ -f $local ];then
-        mc cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
     elif [ -d $local ];then
-        mc mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
     fi
     echo "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/$local > "./transfer_report.txt";
     """
@@ -141,8 +143,9 @@ process Mirror_S3Storage2Local {
         path "transferred/${source}"
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred/${source}";
     """
 }
 
@@ -155,8 +158,9 @@ process Transfer_S3Storage2Local {
         path "${s3name}"
     script:
     """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc cp "${s3path}" "${s3name}";
+    sleep 5;
+    mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+    mc -C "./mc" cp "${s3path}" "${s3name}";
     """
 }
 

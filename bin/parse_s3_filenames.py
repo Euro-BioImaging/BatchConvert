@@ -6,7 +6,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('s3path')
     args = parser.parse_args()
-    p = subprocess.Popen(["mc", "ls", args.s3path], stdout = subprocess.PIPE)
+    p = subprocess.Popen(["mc", "-C", "./mc", "ls", args.s3path], stdout = subprocess.PIPE)
     out, err = p.communicate()
     text = out.decode('utf-8')
     llist = text.split('\n')
