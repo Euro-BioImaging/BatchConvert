@@ -20,7 +20,7 @@ The minimal dependency to run the tool is Nextflow, which should be installed an
 If conda exists on your system, you can install BatchConvert together with Nextflow using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
-source BatchConvert/installation/install_with_Nextflow.sh
+source BatchConvert/installation/install_with_nextflow.sh
 ```
 
 
