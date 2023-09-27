@@ -9,20 +9,30 @@ The tool also wraps s3 and Aspera clients (go-mc and aspera-cli, respectively). 
 be specified as local or remote storage and file transfer will be performed automatically. The conversion can be run on 
 HPC with Slurm.  
 
+**Important** note: The package has been so far only tested on Ubuntu 20.04.
+
 ![](figures/diagram.png)
 
 ## Installation & Dependencies
 
-**Important** note: The package has been so far only tested on Ubuntu 20.04.
+### Installation via conda
 
-The minimal dependency to run the tool is Nextflow, which should be installed and made accessible from the command line.
+A conda package for BatchConvert exists: https://anaconda.org/Euro-BioImaging/batchconvert
+
+Conda installation of BatchConvert to a new conda environment is recommended. Simply run the following command:
+
+`conda install -c euro-bioimaging -c conda-forge -c bioconda batchconvert`
+
+### Installation from the source
+
+BatchConvert can also be acquired by cloning this repository. In this case, Nextflow, which is the minimal dependency to run 
+BatchConvert, should be installed and made accessible from the command line.
 
 If conda exists on your system, you can install BatchConvert together with Nextflow using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
 source BatchConvert/installation/install_with_nextflow.sh
 ```
-
 
 If you already have Nextflow installed and accessible from the command line (or if you prefer to install it manually 
 e.g., as shown [here](https://www.Nextflow.io/docs/latest/getstarted.html)), you can also install BatchConvert alone, using the following script:
@@ -31,8 +41,7 @@ git clone https://github.com/Euro-BioImaging/BatchConvert.git && \
 source BatchConvert/installation/install.sh
 ```
 
-
-Other dependencies (which will be **automatically** installed):
+Regardless of how BatchConvert has been installed, the specific workflow dependencies (listed below) will be **automatically** installed:
 - bioformats2raw (entrypoint bioformats2raw)
 - bftools (entrypoint bfconvert)
 - go-mc (entrypoint mc)
