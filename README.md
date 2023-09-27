@@ -3,7 +3,7 @@
 A command line tool for converting image data into either of the standard file formats OME-TIFF or OME-Zarr. 
 
 The tool wraps the dedicated file converters bfconvert and bioformats2raw to convert into OME-TIFF or OME-Zarr,
-respectively. The workflow management system NextFlow is used to perform conversion in parallel for batches of images. 
+respectively. The workflow management system Nextflow is used to perform conversion in parallel for batches of images. 
 
 The tool also wraps s3 and Aspera clients (go-mc and aspera-cli, respectively). Therefore, input and output locations can 
 be specified as local or remote storage and file transfer will be performed automatically. The conversion can be run on 
@@ -15,17 +15,17 @@ HPC with Slurm.
 
 **Important** note: The package has been so far only tested on Ubuntu 20.04.
 
-The minimal dependency to run the tool is NextFlow, which should be installed and made accessible from the command line.
+The minimal dependency to run the tool is Nextflow, which should be installed and made accessible from the command line.
 
-If conda exists on your system, you can install BatchConvert together with NextFlow using the following script:
+If conda exists on your system, you can install BatchConvert together with Nextflow using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
-source BatchConvert/installation/install_with_nextflow.sh
+source BatchConvert/installation/install_with_Nextflow.sh
 ```
 
 
-If you already have NextFlow installed and accessible from the command line (or if you prefer to install it manually 
-e.g., as shown [here](https://www.nextflow.io/docs/latest/getstarted.html)), you can also install BatchConvert alone, using the following script:
+If you already have Nextflow installed and accessible from the command line (or if you prefer to install it manually 
+e.g., as shown [here](https://www.Nextflow.io/docs/latest/getstarted.html)), you can also install BatchConvert alone, using the following script:
 ```
 git clone https://github.com/Euro-BioImaging/BatchConvert.git && \ 
 source BatchConvert/installation/install.sh
