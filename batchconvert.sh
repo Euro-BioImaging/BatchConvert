@@ -6,7 +6,26 @@ SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 source $SCRIPTPATH/bin/utils.sh
 
 set -f && \
-result=$(pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
+pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+
+if [[ -f $SCRIPTPATH/bin/.stderr ]];
+  then
+    error=$(cat $SCRIPTPATH/bin/.stderr);
+    rm $SCRIPTPATH/bin/.stderr;
+fi;
+
+if [[ ${#error} > 0 ]];
+  then
+    printf "${RED}$error${NORMAL}\n"
+    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+    exit
+fi
+
+if [[ -f $SCRIPTPATH/bin/.stdout ]];
+  then
+    result=$(cat $SCRIPTPATH/bin/.stdout);
+    rm $SCRIPTPATH/bin/.stdout;
+fi;
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
