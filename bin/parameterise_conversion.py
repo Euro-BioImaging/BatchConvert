@@ -5,7 +5,7 @@ if __name__ == "__main__":
     scriptpath = os.path.dirname(os.path.realpath(__file__))
     cmd = [os.path.join(scriptpath, "batchconvert"), *sys.argv[1:]]
     interactive_commands = ['configure_s3_remote', 'configure_ometiff', 'configure_omezarr', 'configure_slurm']
-    if cmd[1] in interactive_commands:
+    if len(cmd) > 1 and cmd[1] in interactive_commands:
         proc = subprocess.Popen(cmd, universal_newlines=True)
         _ = proc.communicate()
     else:
