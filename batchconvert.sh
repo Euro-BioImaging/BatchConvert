@@ -6,7 +6,26 @@ SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
 source $SCRIPTPATH/bin/utils.sh
 
 set -f && \
-result=$(pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";)
+python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+
+if [[ -f $SCRIPTPATH/bin/.stderr ]];
+  then
+    error=$(cat $SCRIPTPATH/bin/.stderr);
+    rm $SCRIPTPATH/bin/.stderr;
+fi;
+
+if [[ ${#error} > 0 ]];
+  then
+    printf "${RED}$error${NORMAL}\n"
+    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+    exit
+fi
+
+if [[ -f $SCRIPTPATH/bin/.stdout ]];
+  then
+    result=$(cat $SCRIPTPATH/bin/.stdout);
+    rm $SCRIPTPATH/bin/.stdout;
+fi;
 
 if [[ -f $SCRIPTPATH/bin/.process ]];
   then
@@ -71,8 +90,8 @@ elif [[ $process == 'converted' ]];
   then
     cd $SCRIPTPATH/bin && \
 
-    pythonexe construct_cli.py > batchconvert_cli.sh && \
-    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
+    python construct_cli.py > batchconvert_cli.sh && \
+    python construct_nextflow_cli.py > nextflow_cli.sh && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
     cd - && \
 
@@ -89,7 +108,7 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
     if [[ $afterrun != "noclean" ]];
       then
         # echo $afterrun
-        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+        python $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
 
@@ -98,7 +117,7 @@ if [[ -f $SCRIPTPATH/bin/.afterrun ]];
   rm $SCRIPTPATH/bin/.afterrun
 fi
 
-pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+python $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
