@@ -578,6 +578,8 @@ if __name__ == "__main__":
     elif (prompt == 'export_default_params'):
         default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
         dest_path_abs = os.path.join(relpath, args.dest_path)
+        if not os.path.exists(os.path.dirname(dest_path_abs)):
+            raise ValueError(f"The directory {os.path.dirname(dest_path_abs)} does not exist.\nCan only export to an existing directory.")
         with open(default_params, 'r+') as f:
             jsonfile = json.load(f)
             with open(dest_path_abs, 'w') as ff:
