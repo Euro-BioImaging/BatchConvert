@@ -2,7 +2,7 @@
 nextflow.enable.dsl=2
 // nextflow.enable.moduleBinaries = true
 
-include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMEZARR; Convert_EachFile2SeparateOMEZARR; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Inspect_S3Path } from "./modules/modules.nf"
+include { createPatternFile1; createPatternFile2; Convert_Concatenate2SingleOMEZARR; Convert_EachFile2SeparateOMEZARR; Convert_EachFileFromRoot2SeparateOMEZARR; Transfer_Local2S3Storage; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Transfer_Local2PrivateBiostudies; Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Inspect_S3Path } from "./modules/modules.nf"
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; } from "./modules/modules.nf"
 
 workflow {
@@ -101,7 +101,7 @@ workflow {
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
         }
         else {
-            output = Convert_EachFile2SeparateOMEZARR(ch)
+            output = Convert_EachFileFromRoot2SeparateOMEZARR(ch)
         }
     }
     else if ( params.source_type == "s3" ) {
@@ -130,7 +130,7 @@ workflow {
             output = Convert_Concatenate2SingleOMEZARR(ch, val)
         }
         else {
-            output = Convert_EachFile2SeparateOMEZARR(ch)
+            output = Convert_EachFile2SeparateOMEZARR(ch) // Note that the conversion is not from root.
         }
     }
     else if ( params.source_type == "bia" ) {
@@ -154,7 +154,7 @@ workflow {
             output = Convert_Concatenate2SingleOMEZARR(ch, val)
         }
         else {
-            output = Convert_EachFile2SeparateOMEZARR(ch)
+            output = Convert_EachFile2SeparateOMEZARR(ch) // Note that the conversion is not from root.
         }
     }
     if ( params.dest_type == "s3" ) {
