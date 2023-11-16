@@ -5,6 +5,30 @@ import groovy.io.FileType
 
 // Conversion processes
 
+process Convert_EachFileFromRoot2SeparateOMETIFF {
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        path inpath
+    output:
+        path "${inpath.baseName}.ome.tiff", emit: conv
+
+    script:
+    template 'makedirs.sh "${params.out_path}"'
+    """
+    if [[ -d "${params.in_path}" ]];
+        then
+            batchconvert_cli.sh "${params.in_path}/$inpath" "${inpath.baseName}.ome.tiff"
+        else
+            batchconvert_cli.sh "\$(dirname ${params.in_path})/$inpath" "${inpath.baseName}.ome.tiff"
+    fi
+    """
+}
+
 process Convert_EachFile2SeparateOMETIFF {
     if ("${params.dest_type}"=="local") {
         publishDir(
@@ -48,6 +72,31 @@ process Convert_Concatenate2SingleOMETIFF {
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
+    """
+}
+
+
+process Convert_EachFileFromRoot2SeparateOMEZARR {
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        path inpath
+    output:
+        path "${inpath.baseName}.ome.zarr", emit: conv
+
+    script:
+    template 'makedirs.sh "${params.out_path}"'
+    """
+    if [[ -d "${params.in_path}" ]];
+        then
+            batchconvert_cli.sh "${params.in_path}/$inpath" "${inpath.baseName}.ome.zarr"
+        else
+            batchconvert_cli.sh "\$(dirname ${params.in_path})/$inpath" "${inpath.baseName}.ome.zarr"
+    fi
     """
 }
 
@@ -251,6 +300,9 @@ def verify_filenames_fromList(files, selby, rejby) {
 	}
 	return truth
 }
+
+def find_csv
+
 // BELOW FUNCTION NOT READY YET - TODO
 def get_filenames_fromList(files, selby, rejby) {
 	def filtered = []
