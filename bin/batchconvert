@@ -558,7 +558,7 @@ if __name__ == "__main__":
             writer.write('converted')
         #sys.stdout.write('converted') ### VERY IMPORTANT STEP
         if args.__dict__['source_type'] == 'local':
-            if not os.path.exists(args.__dict__['in_path']):
+            if not "*" in args.__dict__['in_path'] and not os.path.exists(args.__dict__['in_path']):
                 # raise ValueError('The requested path does not locally exist: %s' % args.__dict__['in_path'])
                 print('inputpatherror')
     elif (prompt == 'reset_defaults'):
