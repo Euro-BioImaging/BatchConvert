@@ -22,7 +22,7 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "$root" == *"*"* ]];
+    if echo "$root" | grep -q "*";
         then
             batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
         else
@@ -95,7 +95,7 @@ process Convert_EachFileFromRoot2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ "$root" == *"*"* ]];
+    if echo "$root" | grep -q "*";
         then
             batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.zarr"
         else
