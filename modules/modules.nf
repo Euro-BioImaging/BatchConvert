@@ -13,6 +13,8 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         )
     }
     input:
+        val root
+    input:
         path inpath
     output:
         path "${inpath.baseName}.ome.tiff", emit: conv
@@ -20,11 +22,11 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ -d "${params.in_path}" ]];
+    if [[ "$root" == *"*"* ]];
         then
-            batchconvert_cli.sh "${params.in_path}/$inpath" "${inpath.baseName}.ome.tiff"
+            batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "\$(dirname ${params.in_path})/$inpath" "${inpath.baseName}.ome.tiff"
+            batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.tiff"
     fi
     """
 }
@@ -84,6 +86,8 @@ process Convert_EachFileFromRoot2SeparateOMEZARR {
         )
     }
     input:
+        val root
+    input:
         path inpath
     output:
         path "${inpath.baseName}.ome.zarr", emit: conv
@@ -91,11 +95,11 @@ process Convert_EachFileFromRoot2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    if [[ -d "${params.in_path}" ]];
+    if [[ "$root" == *"*"* ]];
         then
-            batchconvert_cli.sh "${params.in_path}/$inpath" "${inpath.baseName}.ome.zarr"
+            batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "\$(dirname ${params.in_path})/$inpath" "${inpath.baseName}.ome.zarr"
+            batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.zarr"
     fi
     """
 }
@@ -146,7 +150,6 @@ process Convert_Concatenate2SingleOMEZARR{
     """
 }
 
-
 // Processes for inspecting a remote location:
 
 process Inspect_S3Path {
@@ -161,8 +164,6 @@ process Inspect_S3Path {
     parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
     """
 }
-
-
 
 // Transfer processes:
 
@@ -301,9 +302,9 @@ def verify_filenames_fromList(files, selby, rejby) {
 	return truth
 }
 
-def find_csv
 
-// BELOW FUNCTION NOT READY YET - TODO
+
+// THE CONTENT BELOW IS NOT READY YET - TODO
 def get_filenames_fromList(files, selby, rejby) {
 	def filtered = []
 	files.each {
