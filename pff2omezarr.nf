@@ -24,7 +24,7 @@ workflow {
                 ch = ch2
             }
         }
-        else {
+        else { // This branch will be deleted, no concurrency for import as it jeopardises conversion for multi-file formats.
             ch000 = Channel.of(params.in_path)
             Inspect_S3Path(ch000)
             ch00 = Inspect_S3Path.out.filelist
@@ -101,7 +101,7 @@ workflow {
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
         }
         else {
-            output = Convert_EachFileFromRoot2SeparateOMEZARR(ch)
+            output = Convert_EachFileFromRoot2SeparateOMEZARR(params.in_path, ch)
         }
     }
     else if ( params.source_type == "s3" ) {
