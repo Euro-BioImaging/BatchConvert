@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
         if len(args.workdir) == 0:
             if os.path.exists('/scratch'):
-                os.makedirs(scratchpath)
+                os.makedirs(scratchpath, exist_ok = True)
                 args.workdir = os.path.join(scratchpath, 'WorkDir')
             else:
                 args.workdir = f"{homepath}/WorkDir"
