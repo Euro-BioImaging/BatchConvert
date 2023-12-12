@@ -38,6 +38,7 @@ bia_params = ["BIA_REMOTE"]
 slurm_params = ["queue_size", "submit_rate_limit", "cluster_options", "time"]
 
 if __name__ == "__main__":
+    scratchpath = os.environ.get('SCRATCHPATH')
     homepath = os.environ.get('HOMEPATH')
     temppath = os.environ.get('TEMPPATH')
     parampath = os.environ.get('PARAMPATH')
@@ -473,10 +474,11 @@ if __name__ == "__main__":
         # print(args.__dict__.keys())
         # print(len(args.workdir))
         os.chdir(relpath)
-        scratchdir = '/scratch'
+
         if len(args.workdir) == 0:
-            if os.path.exists(scratchdir):
-                args.workdir = os.path.join(scratchdir, '.batchconvert/WorkDir')
+            if os.path.exists('/scratch'):
+                os.makedirs(scratchpath)
+                args.workdir = os.path.join(scratchpath, 'WorkDir')
             else:
                 args.workdir = f"{homepath}/WorkDir"
 

@@ -38,6 +38,7 @@ BLINK=$(tput blink)
 REVERSE=$(tput smso)
 UNDERLINE=$(tput smul)
 
+export SCRATCHPATH=/scratch/$USER/.batchconvert
 export HOMEPATH=$HOME/.batchconvert
 export TEMPPATH=$HOMEPATH/tmp
 export BINPATH=$HOMEPATH/bin

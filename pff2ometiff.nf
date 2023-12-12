@@ -56,6 +56,7 @@ workflow {
         }
         else {
             def fpath = file(params.in_path)
+            // println(fpath)
             // Note the above assignment yields either a list of files (with globbing), a single file (if the parameter in_path corresponds to a file path) a directory (if the parameter in_path corresponds to a directory path)
             // Make sure a proper channel is created in any of these 3 cases:
             if  ( fpath instanceof List ){
@@ -65,8 +66,15 @@ workflow {
                 ch0 = Channel.of(fpath.listFiles()).flatten()
                 ch1 = ch0.filter { it.toString().contains(params.pattern) }
             }
-            else if ( fpath.isFile() ) {
-                ch0 = Channel.of(fpath).flatten()
+            else if ( fpath.isFile() ) { // Note that reading file paths from csv file is currently only possible if data is local.
+                if ( fpath.toString().endsWith( '.csv' ) ) {
+                    ch0 = Channel.fromPath(fpath) \
+                                | splitCsv(header:true) \
+                                | map { row-> row.input_path }
+                    }
+                else {
+                    ch0 = Channel.of(fpath).flatten()
+                }
                 ch1 = ch0.filter { it.toString().contains(params.pattern) }
             }
             // ch1 must be acquired by this point based on the 3 cases above, now apply reject_pattern filter
@@ -101,7 +109,12 @@ workflow {
             output = Convert_Concatenate2SingleOMETIFF(ch, params.in_path)
         }
         else {
-            output = Convert_EachFileFromRoot2SeparateOMETIFF(params.in_path, ch)
+            if ( params.in_path.endsWith( '.csv' ) ) {
+                output = Convert_EachFile2SeparateOMETIFF(ch)
+            }
+            else {
+                output = Convert_EachFileFromRoot2SeparateOMETIFF(params.in_path, ch)
+            }
         }
     }
     else if ( params.source_type == "s3" ) {
