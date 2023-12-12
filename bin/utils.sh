@@ -37,3 +37,9 @@ NORMAL=$(tput sgr0)
 BLINK=$(tput blink)
 REVERSE=$(tput smso)
 UNDERLINE=$(tput smul)
+
+export HOMEPATH=$HOME/.batchconvert
+export TEMPPATH=$HOMEPATH/tmp
+export BINPATH=$HOMEPATH/bin
+export PARAMPATH=$HOMEPATH/params
+export CONFIGPATH=$HOMEPATH/configs

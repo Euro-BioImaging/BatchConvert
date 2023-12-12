@@ -38,18 +38,26 @@ bia_params = ["BIA_REMOTE"]
 slurm_params = ["queue_size", "submit_rate_limit", "cluster_options", "time"]
 
 if __name__ == "__main__":
+    homepath = os.environ.get('HOMEPATH')
+    temppath = os.environ.get('TEMPPATH')
+    parampath = os.environ.get('PARAMPATH')
+    binpath = os.environ.get('BINPATH')
+    defparamfile = os.path.join(parampath, 'params.json.default')
+    backupparamfile = os.path.join(parampath, 'params.json.backup')
+    paramfile = os.path.join(parampath, 'params.json')
+
     relpath = os.getcwd()
     scriptpath = os.path.dirname(os.path.realpath(__file__))
     os.chdir(scriptpath)
     if len(sys.argv) > 2:
         if (sys.argv[2] == "--help") | (sys.argv[2] == "-h"):
-            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            with open(os.path.join(temppath, '.process'), 'w') as writer:
                 writer.write('help_provided')
     elif len(sys.argv) == 2:
         if (sys.argv[1] == "--help") | (sys.argv[1] == "-h"):
-            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            with open(os.path.join(temppath, '.process'), 'w') as writer:
                 writer.write('help_provided')
-    with open("../params/params.json.default", 'r+') as f:
+    with open(defparamfile, 'r+') as f:
         jsonfileparams = json.load(f)
     defparams = dict(jsonfileparams)
     defkeys = defparams.keys()
@@ -135,7 +143,7 @@ if __name__ == "__main__":
     ### specify the work directory
     ometiff.add_argument('--workdir', '-wd', default=getdef('workdir', ""), type=str,
                          help="Specifies the work directory path. This directory contains the temporary data and the log files related to the workflow.")
-    
+
     ### specify output type: if the output type is ometiff add the following parameters
     ometiff.add_argument('--noflat', '-nf', default=getdef('noflat', False), action='store_true')
     ometiff.add_argument('--series', '-s', default=getdef('series', None), type=int,
@@ -284,7 +292,7 @@ if __name__ == "__main__":
         if args.bucket is None:
             args.bucket = input(bucket_prompt)
         # print(args)
-        with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             # jsondict = dict(jsonfile)
             for i, (_, value) in enumerate(args.__dict__.items()):
@@ -304,28 +312,28 @@ if __name__ == "__main__":
             json.dump(jsonfile, f, indent = 2)
             f.truncate()
         # print("Configuration of the default s3 credentials is complete")
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('configured_s3')
         #sys.stdout.write('configured_s3') ### VERY IMPORTANT STEP
     elif prompt == 'configure_bia_remote':
         secret_dir_prompt = 'enter the secret directory for your BioStudies user space:\n'
         if args.secret_dir is None:
             args.secret_dir = input(secret_dir_prompt)
-        with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             jsonfile['BIA_REMOTE'] = args.secret_dir
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
         # print("Configuration of the default bia credentials is complete")
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('configured_bia')
         #sys.stdout.write('configured_bia') ### VERY IMPORTANT STEP
     elif prompt == 'configure_slurm':
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             for key in slurm_params:
                 current = jsonfile[key]
@@ -354,13 +362,13 @@ if __name__ == "__main__":
             json.dump(jsonfile, f, indent=2)
             f.truncate()
         # print("Configuration of the default parameters for slurm is complete")
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('configured_slurm')
     elif prompt == 'configure_ometiff':
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             for key in bftoolsParams:
                 value = argsdict[key]
@@ -390,14 +398,14 @@ if __name__ == "__main__":
             json.dump(jsonfile, f, indent=2)
             f.truncate()
             # print("Configuration of the default parameters for 'bfconvert' is complete")
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('configured_ometiff')
         #sys.stdout.write('configured_ometiff\n') ### VERY IMPORTANT STEP
     elif prompt == 'configure_omezarr':
         # print(prompt)
         argsdict = args.__dict__
         # print(argsdict)
-        with open(os.path.join(scriptpath,  '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             for key in bf2rawParams:
                 value = argsdict[key]
@@ -430,7 +438,7 @@ if __name__ == "__main__":
             json.dump(jsonfile, f, indent=2)
             f.truncate()
         # print("Configuration of the default parameters for 'bioformats2raw' is complete")
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('configured_omezarr')
     elif prompt == 'configure_from_json': ### Parse the default parameters directly from an input json file.
         if len(sys.argv) < 3:
@@ -440,7 +448,7 @@ if __name__ == "__main__":
             if not os.path.exists(abspath):
                 raise FileNotFoundError(f'The path {abspath} not found in the filesystem.')
             else:
-                with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+                with open(os.path.join(defparamfile), 'r+') as f:
                     jsonfile = json.load(f)
                     with open(abspath, 'r+') as ff:
                         newparams = json.load(ff)
@@ -449,28 +457,29 @@ if __name__ == "__main__":
                             f.seek(0)
                             json.dump(jsonfile, f, indent=2)
                             f.truncate()
-                            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+                            with open(os.path.join(temppath, '.process'), 'w') as writer:
                                 writer.write('configured_from_json')
     elif prompt == 'set_default_param': ### Parse the default parameters directly from an input json file.
-        with open(os.path.join(scriptpath, '..', 'params', 'params.json.default'), 'r+') as f:
+        with open(os.path.join(defparamfile), 'r+') as f:
             jsonfile = json.load(f)
             jsonfile[args.default_param_name] = args.default_param_value
             f.seek(0)
             json.dump(jsonfile, f, indent=2)
             f.truncate()
-            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            with open(os.path.join(temppath, '.process'), 'w') as writer:
                 writer.write('default_param_set')
     elif (prompt == 'ometiff') | (prompt == 'omezarr'):
         # print(keys)
+        # print(args.__dict__.keys())
+        # print(len(args.workdir))
         os.chdir(relpath)
-
         scratchdir = '/scratch'
         if len(args.workdir) == 0:
             if os.path.exists(scratchdir):
                 args.workdir = os.path.join(scratchdir, '.batchconvert/WorkDir')
             else:
-                args.workdir = f"{scriptpath}/../WorkDir"
-        
+                args.workdir = f"{homepath}/WorkDir"
+
         if args.in_path.startswith('/'):
             pass
         elif not args.in_path.startswith('/'):
@@ -492,13 +501,13 @@ if __name__ == "__main__":
                 args.out_path = os.path.realpath(args.out_path)
         os.chdir(scriptpath)
         if args.keep_workdir == True:
-            with open(os.path.join(scriptpath, '.afterrun'), 'w') as writer:
+            with open(os.path.join(temppath, '.afterrun'), 'w') as writer:
                 writer.write('noclean')
         else:
-            with open(os.path.join(scriptpath, '.afterrun'), 'w') as writer:
+            with open(os.path.join(temppath, '.afterrun'), 'w') as writer:
                 writer.write('clean')
         #print(args)
-        cmdroot = ["python", "./edit_params_file.py".format(scriptpath), "-f", '../params/params.json', "-df", '../params/params.json.default']
+        cmdroot = ["python", "./edit_params_file.py".format(scriptpath), "-f", paramfile, "-df", defparamfile]
         cmd = []
         idx = 0
         # print(args)
@@ -550,11 +559,11 @@ if __name__ == "__main__":
             # cmd.append(cmdroot + ["--key", key, "--value", "%s" % value])
             # cmd.append(cmdroot + ["--key", key, "--value", "%s" % value])
             idx += 1
-        if os.path.exists('../params/params.json'):
-            os.remove('../params/params.json')
+        if os.path.exists(paramfile):
+            os.remove(paramfile)
         for item in cmd:
             subprocess.run(item)
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('converted')
         #sys.stdout.write('converted') ### VERY IMPORTANT STEP
         if args.__dict__['source_type'] == 'local':
@@ -562,21 +571,18 @@ if __name__ == "__main__":
                 # raise ValueError('The requested path does not locally exist: %s' % args.__dict__['in_path'])
                 print('inputpatherror')
     elif (prompt == 'reset_defaults'):
-        backup_params = os.path.join(scriptpath, '..', 'params', 'params.json.backup')
-        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')        
-        shutil.copy(backup_params, default_params)
-        with open(os.path.join(scriptpath,  '.process'), 'w') as writer:
+        shutil.copy(backupparamfile, defparamfile)
+        with open(os.path.join(temppath,  '.process'), 'w') as writer:
             writer.write('resetted')
     elif (prompt == 'show_default_params'):
-        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
-        with open(default_params, 'r+') as jsonfile:
+        with open(defparamfile, 'r+') as jsonfile:
             paramdict = json.load(jsonfile)
             pp = pprint.PrettyPrinter(depth = 4)
             pp.pprint(paramdict)
-            with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+            with open(os.path.join(temppath, '.process'), 'w') as writer:
                 writer.write('parameters_shown')
     elif (prompt == 'export_default_params'):
-        default_params = os.path.join(scriptpath, '..', 'params', 'params.json.default')
+        default_params = defparamfile
         dest_path_abs = os.path.join(relpath, args.dest_path)
         if not os.path.exists(os.path.dirname(dest_path_abs)):
             raise ValueError(f"The directory {os.path.dirname(dest_path_abs)} does not exist.\nCan only export to an existing directory.")
@@ -585,5 +591,12 @@ if __name__ == "__main__":
             with open(dest_path_abs, 'w') as ff:
                 ff.seek(0)
                 json.dump(jsonfile, ff, indent = 2)
-                with open(os.path.join(scriptpath, '.process'), 'w') as writer:
+                with open(os.path.join(temppath, '.process'), 'w') as writer:
                     writer.write('parameters_exported')
+
+    ### add binpath ###
+    cmd_binpath = ["python", f"{scriptpath}/edit_params_file.py", "-f", paramfile, "-df", defparamfile, "--key",
+                   "binpath", "--value", binpath]
+    # print(cmd_binpath)
+    subprocess.run(cmd_binpath)
+    ### binpath added ###

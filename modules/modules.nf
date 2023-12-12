@@ -21,12 +21,13 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
 
     script:
     template 'makedirs.sh "${params.out_path}"'
+    // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN HIC "${params.binpath}/batchconvert_cli.sh OLARAK KAYDETMESIN
     """
     if echo "$root" | grep -q "*";
         then
-            batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.tiff"
     fi
     """
 }
@@ -46,7 +47,7 @@ process Convert_EachFile2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
+    ${params.binpath}/batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
     """
 }
 
@@ -68,9 +69,9 @@ process Convert_Concatenate2SingleOMETIFF {
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -97,9 +98,9 @@ process Convert_EachFileFromRoot2SeparateOMEZARR {
     """
     if echo "$root" | grep -q "*";
         then
-            batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.zarr"
     fi
     """
 }
@@ -118,7 +119,7 @@ process Convert_EachFile2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
+    ${params.binpath}/batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
     """
 }
 
@@ -141,9 +142,9 @@ process Convert_Concatenate2SingleOMEZARR{
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
@@ -303,6 +304,10 @@ def verify_filenames_fromList(files, selby, rejby) {
 }
 
 
+def get_filenames_fromCSV(csvfile, selby, rejby) {
+
+}
+
 
 // THE CONTENT BELOW IS NOT READY YET - TODO
 def get_filenames_fromList(files, selby, rejby) {
@@ -433,14 +438,14 @@ process bioformats2raw_experimental {
             create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath};
             if [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+                    ${params.binpath}/batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
             elif ! [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
+                    ${params.binpath}/batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
             fi
     elif [[ "${params.merge_files}" == "False" ]];
         then
-            batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
     fi
     rm -rf "${inpath}/tempdir" &> /dev/null
     rm -rf "${inpath}/*pattern" &> /dev/null

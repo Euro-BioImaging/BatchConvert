@@ -10,12 +10,20 @@ intlist = lambda s: [int(x) for x in re.findall(r'\b\d+\b', s)]
 
 if __name__ == '__main__':
     scriptpath = os.path.dirname(os.path.realpath(__file__)) # /home/oezdemir/PycharmProjects/nfprojects/bftools/modules/templates
+
+    homepath = os.environ.get('HOMEPATH')
+    temppath = os.environ.get('TEMPPATH')
+    parampath = os.environ.get('PARAMPATH')
+    defparamfile = os.path.join(parampath, 'params.json.default')
+    backupparamfile = os.path.join(parampath, 'params.json.backup')
+    paramfile = os.path.join(parampath, 'params.json')
+
     os.chdir(scriptpath) #
     os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects/bftools ### note that this is the execution directory.
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     # print("args are %s" % args)
-    with open('./params/params.json', 'rt') as f:
+    with open(paramfile, 'rt') as f:
         t_args = argparse.Namespace()
         t_args.__dict__.update(json.load(f))
         args = parser.parse_args(namespace=t_args)
