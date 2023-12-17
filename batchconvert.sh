@@ -3,15 +3,17 @@
 # TODO make SCRIPTPATH an environment variable
 
 SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );
+
 source $SCRIPTPATH/bin/utils.sh
+mkdir -p $HOMEPATH
 
 set -f && \
 pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
-if [[ -f $SCRIPTPATH/bin/.stderr ]];
+if [[ -f $TEMPPATH/.stderr ]];
   then
-    error=$(cat $SCRIPTPATH/bin/.stderr);
-    rm $SCRIPTPATH/bin/.stderr;
+    error=$(cat $TEMPPATH/.stderr);
+    rm $TEMPPATH/.stderr;
 fi;
 
 if [[ ${#error} > 0 ]];
@@ -21,15 +23,15 @@ if [[ ${#error} > 0 ]];
     exit
 fi
 
-if [[ -f $SCRIPTPATH/bin/.stdout ]];
+if [[ -f $TEMPPATH/.stdout ]];
   then
-    result=$(cat $SCRIPTPATH/bin/.stdout);
-    rm $SCRIPTPATH/bin/.stdout;
+    result=$(cat $TEMPPATH/.stdout);
+    rm $TEMPPATH/.stdout;
 fi;
 
-if [[ -f $SCRIPTPATH/bin/.process ]];
+if [[ -f $TEMPPATH/.process ]];
   then
-    process=$(cat $SCRIPTPATH/bin/.process)
+    process=$(cat $TEMPPATH/.process)
   else
     printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
 fi
@@ -49,9 +51,9 @@ elif [[ ${#result} > 0 ]];
     fi
 fi
 
-if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+if [[ -f $TEMPPATH/.afterrun ]];
   then
-    afterrun=$(cat $SCRIPTPATH/bin/.afterrun)
+    afterrun=$(cat $TEMPPATH/.afterrun)
   else
     afterrun="nan"
 fi
@@ -88,19 +90,18 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
-    cd $SCRIPTPATH/bin && \
+#    cd $SCRIPTPATH/bin && \
 
-    pythonexe construct_cli.py > batchconvert_cli.sh && \
-    pythonexe construct_nextflow_cli.py > nextflow_cli.sh && \
+    pythonexe $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
+    chmod +x $BINPATH/batchconvert_cli.sh && \
+    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
-    cd - && \
-
-    $SCRIPTPATH/bin/nextflow_cli.sh
+#    cd -;
 fi
 
-if [[ -f $SCRIPTPATH/bin/.process ]];
+if [[ -f $TEMPPATH/.process ]];
   then
-    rm $SCRIPTPATH/bin/.process
+    rm $TEMPPATH/.process
 fi
 
 if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
@@ -112,16 +113,16 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
     fi
 fi
 
-if [[ -f $SCRIPTPATH/bin/.afterrun ]];
+if [[ -f $TEMPPATH/.afterrun ]];
   then
-  rm $SCRIPTPATH/bin/.afterrun
+  rm $TEMPPATH/.afterrun
 fi
 
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
-# this runs the nextflow workflow which will consume the updated command line in the bin:
+# This runs the nextflow workflow which will consume the updated command line in the bin:
 
 
 

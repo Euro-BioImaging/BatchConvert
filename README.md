@@ -346,7 +346,7 @@ time-series/test_img_T12
 ```
 In this example, leading zeroes are missing in the variable fields of some filenames. 
 A typical command to convert this folder to a single OME-TIFF would look like: \
-`batchconvert --ometiff --merge_files "input_dir/time-series" "output_path"`
+`batchconvert ometiff --merge_files "input_dir/time-series" "output_path"`
 
 However, this command would fail to create a single OME-Zarr folder due to the non-uniform 
 lengths of the filenames. Instead, the files would be split into two groups based on the
@@ -378,7 +378,7 @@ time-series/test_img_T7
 ```
 
 A typical command to convert this folder to a single OME-Zarr would look like: \
-`batchconvert --omezarr --merge_files "input_dir/time-series" "output_path"`
+`batchconvert omezarr --merge_files "input_dir/time-series" "output_path"`
 
 However, the command would fail to assume these files as a single group due to the
 non-uniform incrementation in the variable field of the filenames. Instead, the dataset 
@@ -398,7 +398,7 @@ multichannel_time-series/test_img_C2-T1
 multichannel_time-series/test_img_C2-T2
 ```
 To convert this folder to a single OME-Zarr, one could try the following command: \
-`batchconvert --omezarr --merge_files "input_dir/multichannel_time-series" "output_path"`
+`batchconvert omezarr --merge_files "input_dir/multichannel_time-series" "output_path"`
 
 However, since the channel-2 does not have the same number of timeframes as the channel-1, 
 BatchConvert will fail to assume these two channels as part of the same series and
@@ -441,7 +441,7 @@ folder_with_multiple_groups/test_img_T2-Z3
 ```
 
 One can convert this folder with- \
-`batchconvert --omezarr --merge_files "input_dir/folder_with_multiple_groups" "output_path"`
+`batchconvert omezarr --merge_files "input_dir/folder_with_multiple_groups" "output_path"`
  
 BatchConvert will detect the two patterns in this folder and perform two grouped conversions. 
 The output folders will be named as `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and 
@@ -475,7 +475,7 @@ the user does not need to specify anything for this group, and can enter `auto` 
 detection of the specifiers. 
 
 So the following line can be used to convert this folder: \
-`batchconvert --omezarr --merge_files --concatenation_order ct,aa "input_dir/folder_with_multiple_groups" "output_path"`
+`batchconvert omezarr --merge_files --concatenation_order ct,aa "input_dir/folder_with_multiple_groups" "output_path"`
 
 The resulting OME-Zarrs will have the names:
 `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and
@@ -509,14 +509,14 @@ filenames_with_dates/test_data_date04.03.2023_imageZ2-T3
 
 One may try the following command to convert this folder:
 
-`batchconvert --omezarr --merge_files "input_dir/filenames_with_dates" "output_path"`
+`batchconvert omezarr --merge_files "input_dir/filenames_with_dates" "output_path"`
 
 Since the concatenation axes are not specified, this command would try to create
 a single OME-Zarr with name: `test_data_dateRange{03-04-1}.03.2023_imageZRange{1-2-1}-TRange{1-3-1}`.
 
 In order to force BatchConvert to ignore the date field, the user can restrict the concatenation 
 axes to the last two numeric fields. This can be done by using a command such as: \
-`batchconvert --omezarr --merge_files --concatenation_order aa "input_dir/filenames_with_dates" "output_path"` \
+`batchconvert omezarr --merge_files --concatenation_order aa "input_dir/filenames_with_dates" "output_path"` \
 This command will avoid concatenation along the date field, and therefore, there will be two
 OME-Zarrs corresponding to the two dates. The number of characters being passed to the 
 `--concatenation_order` option specifies the number of numeric fields (starting from the right 

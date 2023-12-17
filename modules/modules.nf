@@ -5,6 +5,33 @@ import groovy.io.FileType
 
 // Conversion processes
 
+process Convert_EachFileFromRoot2SeparateOMETIFF {
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        val root
+    input:
+        path inpath
+    output:
+        path "${inpath.baseName}.ome.tiff", emit: conv
+
+    script:
+    template 'makedirs.sh "${params.out_path}"'
+    // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN HIC "${params.binpath}/batchconvert_cli.sh OLARAK KAYDETMESIN
+    """
+    if echo "$root" | grep -q "*";
+        then
+            ${params.binpath}/batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
+        else
+            ${params.binpath}/batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.tiff"
+    fi
+    """
+}
+
 process Convert_EachFile2SeparateOMETIFF {
     if ("${params.dest_type}"=="local") {
         publishDir(
@@ -20,7 +47,7 @@ process Convert_EachFile2SeparateOMETIFF {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
+    ${params.binpath}/batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.tiff"
     """
 }
 
@@ -42,12 +69,39 @@ process Convert_Concatenate2SingleOMETIFF {
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "${inpath}/tempdir/${pattern_file}" "${pattern_file.baseName}.ome.tiff"
         else
-            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
+            ${params.binpath}/batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.tiff"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
+    """
+}
+
+
+process Convert_EachFileFromRoot2SeparateOMEZARR {
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        val root
+    input:
+        path inpath
+    output:
+        path "${inpath.baseName}.ome.zarr", emit: conv
+
+    script:
+    template 'makedirs.sh "${params.out_path}"'
+    """
+    if echo "$root" | grep -q "*";
+        then
+            ${params.binpath}/batchconvert_cli.sh "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.zarr"
+        else
+            ${params.binpath}/batchconvert_cli.sh "$root/$inpath" "${inpath.baseName}.ome.zarr"
+    fi
     """
 }
 
@@ -65,7 +119,7 @@ process Convert_EachFile2SeparateOMEZARR {
     script:
     template 'makedirs.sh "${params.out_path}"'
     """
-    batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
+    ${params.binpath}/batchconvert_cli.sh "$inpath.name" "${inpath.baseName}.ome.zarr"
     """
 }
 
@@ -88,15 +142,14 @@ process Convert_Concatenate2SingleOMEZARR{
     """
     if [[ -d "${inpath}/tempdir" ]];
         then
-            batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "${inpath}/tempdir/${pattern_file.name}" "${pattern_file.baseName}.ome.zarr"
         else
-            batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh "$inpath/$pattern_file.name" "${pattern_file.baseName}.ome.zarr"
     fi
     # rm -rf ${inpath}/tempdir &> /dev/null
     # rm -rf ${inpath}/*pattern &> /dev/null
     """
 }
-
 
 // Processes for inspecting a remote location:
 
@@ -112,8 +165,6 @@ process Inspect_S3Path {
     parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
     """
 }
-
-
 
 // Transfer processes:
 
@@ -230,9 +281,30 @@ def verify_filenames_fromPath(directory, selby, rejby) {
 	def dir = new File(directory)
 	dir.eachFileRecurse(FileType.FILES) { file ->
 		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
+		    println(file)
 			files << file
 		}
 	}
+	truth = true
+	files.each {
+		if (it.toString().contains(" ")) {
+			truth = false
+		}
+	}
+	return truth
+}
+
+def verify_filenames_fromCsv(fpath, selby, rejby, root_column, input_column) {
+	def files = []
+    ch_ = Channel.fromPath(fpath.toString()).
+            splitCsv(header:true)
+    if (params.root_column == 'auto'){
+        ch0 = ch_.map { row-> file( row[params.input_column] ) }
+    }
+    else {
+        ch0 = ch_.map { row-> file( row[root_column] + '/' + row[input_column] ) }
+    }
+    files = ch0.collect()
 	truth = true
 	files.each {
 		if (it.toString().contains(" ")) {
@@ -251,7 +323,24 @@ def verify_filenames_fromList(files, selby, rejby) {
 	}
 	return truth
 }
-// BELOW FUNCTION NOT READY YET - TODO
+
+def is_csv(fpath) {
+    if (fpath instanceof File) {
+        fpth = fpath.toString()
+    }
+    else if (fpath instanceof String) {
+        fpth = fpath
+    }
+    else {
+        println("fpath must be either of types File or String.")
+        return
+    }
+    return ( fpth.endsWith('.csv') || fpth.endsWith('.txt') )
+}
+
+def get_filenames_fromCSV(csvfile, selby, rejby) {
+}
+
 def get_filenames_fromList(files, selby, rejby) {
 	def filtered = []
 	files.each {
@@ -300,8 +389,100 @@ process createPatternFile2 {
     """
 }
 
+process createPatternFileFromCsv {
+    input:
+        path inpath //
+    input:
+        path use_list // This has to be the path to the csv file
+    input:
+        val colname // This is the name of the csv column
+    output:
+        path "${inpath}/tempdir/*"
+    script:
+    """
+    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --use_list ${use_list} --colname ${colname} ${inpath}
+    elif [[ "${params.reject_pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    elif [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    fi
+    """
+}
 
+// process createPatternFileFromCsv2 {
+//     input:
+//         path inpath
+//     input:
+//         val use_list
+//     output:
+//         path "${inpath}/tempdir/*"
+//     script:
+//     """
+//     if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --use_list use_list ${inpath}
+//     elif [[ "${params.reject_pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --use_list use_list ${inpath}
+//     elif [[ "${params.pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
+//     else
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
+//     fi
+//     """
+// }
 
+process Csv2Symlink2 {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}"
+    script:
+    """
+    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    """
+}
+
+process Csv2Symlink1 {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}/*"
+    script:
+    """
+    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    """
+}
+
+process ParseCsv {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}"
+    script:
+    """
+    parseCsv.py $csv_path $root_column $input_column "${dest_path}"
+    """
+}
 
 
 
@@ -380,14 +561,14 @@ process bioformats2raw_experimental {
             create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath};
             if [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+                    ${params.binpath}/batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
             elif ! [[ "${params.concatenation_order}" == "auto" ]];
                 then
-                    batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
+                    ${params.binpath}/batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
             fi
     elif [[ "${params.merge_files}" == "False" ]];
         then
-            batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
+            ${params.binpath}/batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
     fi
     rm -rf "${inpath}/tempdir" &> /dev/null
     rm -rf "${inpath}/*pattern" &> /dev/null
