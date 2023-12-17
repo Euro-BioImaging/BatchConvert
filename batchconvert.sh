@@ -90,13 +90,13 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
-    cd $SCRIPTPATH/bin && \
+#    cd $SCRIPTPATH/bin && \
 
-    pythonexe construct_cli.py > $BINPATH/batchconvert_cli.sh && \
+    pythonexe $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
     chmod +x $BINPATH/batchconvert_cli.sh && \
-    pythonexe run_nextflow_cli.py && \
+    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
-    cd -;
+#    cd -;
 fi
 
 if [[ -f $TEMPPATH/.process ]];

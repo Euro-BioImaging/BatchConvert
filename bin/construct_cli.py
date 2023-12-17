@@ -18,8 +18,8 @@ if __name__ == '__main__':
     backupparamfile = os.path.join(parampath, 'params.json.backup')
     paramfile = os.path.join(parampath, 'params.json')
 
-    os.chdir(scriptpath) #
-    os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects/bftools ### note that this is the execution directory.
+    # os.chdir(scriptpath) #
+    # os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects/bftools ### note that this is the execution directory.
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     # print("args are %s" % args)

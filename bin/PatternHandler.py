@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import os, re
+import os, re, csv
 import shutil
 import copy
 from collections import Counter
@@ -272,10 +272,23 @@ def parse_axes(axes, nfields):
     return final, is_auto
 
 class FilelistGrouper:
-    def __init__(self, rootDir, concatenation_order = None, selby = None, rejby = None):
+    def __init__(self, rootDir, concatenation_order = None, selby = None, rejby = None, use_list = None, colname = None):
         # rootDir = "/home/oezdemir/PycharmProjects/nfprojects/daja"
         # selby, rejby = None, "Transmission"
-        filelist = os.listdir(rootDir)
+        if (use_list is None) or (len(use_list) == 0):
+            self.is_csv = False
+            filelist = os.listdir(rootDir)
+        else:
+            self.is_csv = True
+            assert colname is not None
+            filelist = []
+            with open(use_list, 'r') as csv_file:
+                csv_reader = csv.DictReader(csv_file)
+                for row in csv_reader:
+                    h = 'RootPath'
+                    print(f'rootdir: {row[h]}')
+                    print(f'column: {row[colname]}')
+                    filelist.append(row[colname])
         self.rootDir = rootDir
         fl = copy.deepcopy(filelist)
         self.selby = selby
@@ -285,6 +298,7 @@ class FilelistGrouper:
         if rejby is not None:
             fl = [item for item in fl if not rejby in item]
         self.fl = sorted(fl)
+        print(self.fl)
         self.fname_is_repaired = False
         self.__group_by_alpha()
         self.__get_numeric_fields()
@@ -296,6 +310,7 @@ class FilelistGrouper:
         self.__setup_filenames()
     def __group_by_alpha(self):
         filelist = copy.deepcopy(self.fl)
+        print(f'group_alpha: {filelist}')
         self.alphagrps = group_preliminary(filelist)
         self.grps = copy.deepcopy(self.alphagrps)
     def __get_numeric_fields(self):
@@ -324,7 +339,7 @@ class FilelistGrouper:
             replacement.append(nfield_repl)
         self.numfields_global = replacement
         self.concatenation_order = axes
-        if self.is_auto:
+        if self.is_auto and not self.is_csv:
             self.newDir = self.rootDir
         else:
             self.newDir = self.rootDir + '/tempdir'
@@ -334,6 +349,7 @@ class FilelistGrouper:
         for i, grp in enumerate(self.grps):
             grp_fixed = []
             for fname in grp:
+                # print(f'fname: {fname}')
                 if ' ' in fname:
                     self.is_auto = False
                     self.newDir = self.rootDir + '/tempdir'
@@ -341,6 +357,8 @@ class FilelistGrouper:
                     self.fname_is_repaired = True
                 else:
                     fname_fixed = fname
+                # Make sure that all list items are basenames:
+                # fname_fixed = os.path.basename(fname_fixed)
                 grp_fixed.append(fname_fixed)
             names_fixed.append(grp_fixed)
         return names_fixed
@@ -350,14 +368,16 @@ class FilelistGrouper:
         oldDir = self.rootDir
         newDir = self.newDir
         axes = self.concatenation_order
-        if not is_auto:  ### The default scenario where user chooses the automatic detection of axes.
+        if not is_auto or self.is_csv:  ### The default scenario where user chooses the automatic detection of axes.
             try:
                 os.makedirs(newDir)
             except:
                 pass
             for i, grp in enumerate(self.grps):
                 newgrp = newgrps[i]
+                print(f'newgrp: {newgrp}')
                 newnames = _insert_dimension_specifiers(newgrp, axes[i])
+                print(f'newnames: {newnames}')
                 for olditem, newitem in zip(grp, newnames):
                     oldpath = os.path.join(oldDir, olditem)
                     newpath = os.path.join(newDir, newitem)
@@ -365,7 +385,9 @@ class FilelistGrouper:
                     # print(oldpath)
                     # print(newpath)
                     os.symlink(oldpath_abs, newpath)
+        print(f'newdir: {newDir}')
         filelist = os.listdir(newDir)
+        # assert all([item in filelist for item in self.fl]), f'The filenames in the newDir do not match the original filenames. Wrong csv file?'
         fl = copy.deepcopy(filelist)
         if self.selby is not None:
             fl = [item for item in fl if self.selby in item]
@@ -555,6 +577,7 @@ class FilelistGrouper:
             raise ValueError("No pattern files were generated.")
         for fname, reg in zip(self.regex_filenames, self.regexes):
             fpath = os.path.join(newDir, fname)
+            print(fpath)
             with open(fpath, 'w') as writer:
                 writer.write(reg)
 

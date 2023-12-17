@@ -25,8 +25,8 @@ if __name__ == '__main__':
     if not os.path.exists(homepath):
         os.makedirs(homepath)
 
-    os.chdir(scriptpath) #
-    os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects ### note that this is the execution directory.
+    # os.chdir(scriptpath) #
+    # os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects ### note that this is the execution directory.
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
 

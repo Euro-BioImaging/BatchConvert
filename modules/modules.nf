@@ -281,9 +281,30 @@ def verify_filenames_fromPath(directory, selby, rejby) {
 	def dir = new File(directory)
 	dir.eachFileRecurse(FileType.FILES) { file ->
 		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
+		    println(file)
 			files << file
 		}
 	}
+	truth = true
+	files.each {
+		if (it.toString().contains(" ")) {
+			truth = false
+		}
+	}
+	return truth
+}
+
+def verify_filenames_fromCsv(fpath, selby, rejby, root_column, input_column) {
+	def files = []
+    ch_ = Channel.fromPath(fpath.toString()).
+            splitCsv(header:true)
+    if (params.root_column == 'auto'){
+        ch0 = ch_.map { row-> file( row[params.input_column] ) }
+    }
+    else {
+        ch0 = ch_.map { row-> file( row[root_column] + '/' + row[input_column] ) }
+    }
+    files = ch0.collect()
 	truth = true
 	files.each {
 		if (it.toString().contains(" ")) {
@@ -303,13 +324,23 @@ def verify_filenames_fromList(files, selby, rejby) {
 	return truth
 }
 
-
-def get_filenames_fromCSV(csvfile, selby, rejby) {
-
+def is_csv(fpath) {
+    if (fpath instanceof File) {
+        fpth = fpath.toString()
+    }
+    else if (fpath instanceof String) {
+        fpth = fpath
+    }
+    else {
+        println("fpath must be either of types File or String.")
+        return
+    }
+    return ( fpth.endsWith('.csv') || fpth.endsWith('.txt') )
 }
 
+def get_filenames_fromCSV(csvfile, selby, rejby) {
+}
 
-// THE CONTENT BELOW IS NOT READY YET - TODO
 def get_filenames_fromList(files, selby, rejby) {
 	def filtered = []
 	files.each {
@@ -358,8 +389,100 @@ process createPatternFile2 {
     """
 }
 
+process createPatternFileFromCsv {
+    input:
+        path inpath //
+    input:
+        path use_list // This has to be the path to the csv file
+    input:
+        val colname // This is the name of the csv column
+    output:
+        path "${inpath}/tempdir/*"
+    script:
+    """
+    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --use_list ${use_list} --colname ${colname} ${inpath}
+    elif [[ "${params.reject_pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    elif [[ "${params.pattern}" == '' ]];then
+        create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    else
+        create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} --use_list ${use_list} --colname ${colname} ${inpath}
+    fi
+    """
+}
 
+// process createPatternFileFromCsv2 {
+//     input:
+//         path inpath
+//     input:
+//         val use_list
+//     output:
+//         path "${inpath}/tempdir/*"
+//     script:
+//     """
+//     if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --use_list use_list ${inpath}
+//     elif [[ "${params.reject_pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --use_list use_list ${inpath}
+//     elif [[ "${params.pattern}" == '' ]];then
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
+//     else
+//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
+//     fi
+//     """
+// }
 
+process Csv2Symlink2 {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}"
+    script:
+    """
+    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    """
+}
+
+process Csv2Symlink1 {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}/*"
+    script:
+    """
+    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    """
+}
+
+process ParseCsv {
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val dest_path
+    output:
+        path "${dest_path}"
+    script:
+    """
+    parseCsv.py $csv_path $root_column $input_column "${dest_path}"
+    """
+}
 
 
 
