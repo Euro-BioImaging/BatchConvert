@@ -332,7 +332,8 @@ def is_csv(fpath) {
         fpth = fpath
     }
     else {
-        println("fpath must be either of types File or String.")
+        println("'is_csv': fpath must be either of types File or String.")
+        println( "fpath: " + fpath.toString() )
         return
     }
     return ( fpth.endsWith('.csv') || fpth.endsWith('.txt') )
