@@ -71,20 +71,16 @@ workflow {
     else if ( params.source_type == "local" ) {
         // Create a branch leading either to a grouped conversion or one-to-one conversion.
         def fpath = file(params.in_path)
-        if ( ( params.merge_files == "True" ) && ( fpath.isFile() ) ) {// Note that reading file paths from csv file is currently only possible if data is local.
-            if ( fpath.toString().endsWith('.csv') || fpath.toString().endsWith('.txt') ) {
+        if ( ( params.merge_files == "True" ) ) {// Note that reading file paths from csv file is currently only possible if data is local.
+            if ( is_csv( fpath.toString() ) ) {
                 ch0 = Csv2Symlink2( fpath, params.root_column, params.input_column, 'symlinks' ).collect()
                 imgpath = Csv2Symlink2.out
                 ch = "NULL"
             }
             else {
+                fpath = Channel.of(params.in_path)
                 imgpath = fpath
-                ch = "NULL"
             }
-        }
-        else if ( ( params.merge_files == "True" ) ) {
-            fpath = Channel.of(params.in_path)
-            imgpath = fpath
         }
         else {
             // Note the above assignment yields either a list of files (with globbing), a single file (if the parameter in_path corresponds to a file path) a directory (if the parameter in_path corresponds to a directory path)
@@ -126,17 +122,24 @@ workflow {
                 is_correctNames = verify_filenames_fromCsv(fpath, params.pattern, params.reject_pattern,
                                                             params.root_column, params.input_column)
             }
+            else if ( params.in_path.contains( "*" ) ) { // TODO: add a file validation for this condition
+                println( "\u001B[31m"+"Error: Globbing cannot be used together with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+                println( "Workflow being killed." )
+            }
             else if ( fpath.isDirectory() ) {
                 is_correctNames = verify_filenames_fromPath(fpath.toString(), params.pattern, params.reject_pattern)
             }
             else {
                 println(" Input path must be either a directory or a csv file. ")
             }
-            if ( params.metafile.size() > 0 ) { // TODO for csv !!!!!!!!!!!!!!!!!!!!!!!!
+            if ( params.in_path.contains( "*" ) ) {
+                return
+            }
+            else if ( params.metafile.size() > 0 ) { // TODO for csv !!!!!!!!!!!!!!!!!!!!!!!!
                 pattern_files = Channel.fromPath( params.metafile ).flatten()
                 ch = pattern_files
             }
-            else if ( is_auto && is_correctNames &&  is_csv( fpath.toString() ) ) {
+            else if ( is_auto && is_correctNames && is_csv( fpath.toString() ) ) {
                 pattern_files = createPatternFile1(imgpath).flatten()
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
@@ -145,18 +148,22 @@ workflow {
                 pattern_files = createPatternFile1(fpath).flatten()
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-            else if ( is_csv( fpath.toString() )  ) {
+            else if ( is_csv( fpath.toString() ) ) {
                 pattern_files = createPatternFile2(imgpath).flatten()
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
-                println("Or we are here indeed.")
                 imgpath = params.in_path
                 pattern_files = createPatternFile2(params.in_path).flatten()
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
-//             ch.view()
-            output = Convert_Concatenate2SingleOMEZARR(ch, imgpath)
+            if ( params.in_path.contains( "*" ) ) {
+                println( "Globbing cannot be applied together with --merge_files option. Use --pattern or -p argument." )
+                return
+            }
+            else {
+                output = Convert_Concatenate2SingleOMEZARR(ch, imgpath)
+            }
         }
         else {
             if ( is_csv( fpath.toString() ) ) {
