@@ -281,7 +281,6 @@ def verify_filenames_fromPath(directory, selby, rejby) {
 	def dir = new File(directory)
 	dir.eachFileRecurse(FileType.FILES) { file ->
 		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
-		    println(file)
 			files << file
 		}
 	}
