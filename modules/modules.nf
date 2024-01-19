@@ -480,9 +480,40 @@ process ParseCsv {
         path "${dest_path}"
     script:
     """
-    parseCsv.py $csv_path $root_column $input_column "${dest_path}"
+    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
+        parseCsv.py $csv_path $root_column $input_column "${dest_path}"
+    elif [[ "${params.reject_pattern}" == '' ]];then
+        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -p "${params.pattern}"
+    elif [[ "${params.pattern}" == '' ]];then
+        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -rp "${params.reject_pattern}"
+    else
+        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -p "${params.pattern}" -rp "${params.reject_pattern}"
+    fi
     """
 }
+
+process UpdateCsv {
+    publishDir(
+        path: "${params.out_path}",
+        mode: 'copy'
+    )
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val conversion_type
+    output:
+        path "FileList.csv"
+    script:
+    """
+    updateCsv.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv" --conversion_type $conversion_type
+    """
+}
+
+
 
 
 
@@ -502,8 +533,6 @@ process cleanup {
     """
 }
 
-
-
 process mirror2local {
     input:
         val source
@@ -515,7 +544,6 @@ process mirror2local {
     mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred";
     """
 }
-
 
 process stageLocal {
     input:
@@ -540,7 +568,6 @@ process stageLocalPublish {
     """
     """
 }
-
 
 process bioformats2raw_experimental {
     if ("${params.dest_type}"=="local") {

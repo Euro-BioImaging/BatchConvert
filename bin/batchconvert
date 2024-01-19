@@ -16,9 +16,9 @@ def intlist(s):
 
 bf2rawParams = { "resolutions_zarr": "Number of resolution levels in the OME-Zarr pyramid. Enter an integer value.",
                  "min_xy_size": "minimum xy dimension size that the smallest resolution layer can have.",
-                 "chunk_h": "Chunk height. Enter an integer value.",
-                 "chunk_w": "Chunk width. Enter an integer value.",
-                 "chunk_d": "Chunk depth. Enter an integer value.",
+                 "chunk_y": "Chunk height. Enter an integer value.",
+                 "chunk_x": "Chunk width. Enter an integer value.",
+                 "chunk_z": "Chunk depth. Enter an integer value.",
                  "downsample_type": "Downsampling algorithm.\nOptions are: SIMPLE, GAUSSIAN, AREA, LINEAR, CUBIC, LANCZOS",
                  "compression_zarr": "Compression algorithm.\nOptions are: null, zlib, blosc",
                  "max_workers": "Number of workers. Enter an integer value.",
@@ -94,9 +94,9 @@ if __name__ == "__main__":
     configure_omezarr = subparsers.add_parser('configure_omezarr')
     configure_omezarr.add_argument('--min_xy_size', default = None)
     configure_omezarr.add_argument('--resolutions_zarr', default = None)
-    configure_omezarr.add_argument('--chunk_h', default = None)
-    configure_omezarr.add_argument('--chunk_w', default = None)
-    configure_omezarr.add_argument('--chunk_d', default = None)
+    configure_omezarr.add_argument('--chunk_y', default = None)
+    configure_omezarr.add_argument('--chunk_x', default = None)
+    configure_omezarr.add_argument('--chunk_z', default = None)
     configure_omezarr.add_argument('--downsample_type', default = None)
     configure_omezarr.add_argument('--compression_zarr', default = None)
     configure_omezarr.add_argument('--max_workers', default = None)
@@ -227,9 +227,9 @@ if __name__ == "__main__":
                          help = 'Specifies the minimum xy dimension size that the smallest resolution layer can have.')
     omezarr.add_argument('--resolutions_zarr', '-rz', default=getdef('resolutions_zarr', None), type=int,
                          help='Specifies the number of resolution levels in the pyramidal image for bioformats2raw. Overrrides the --min_xy_size parameter.')
-    omezarr.add_argument('--chunk_h', '-ch', default=getdef('chunk_h', None), type=int, help='Specifies chunk height')
-    omezarr.add_argument('--chunk_w', '-cw', default=getdef('chunk_w', None), type=int, help='Specifies chunk width')
-    omezarr.add_argument('--chunk_d', '-cd', default=getdef('chunk_d', None), type=int, help='Specifies chunk depth')
+    omezarr.add_argument('--chunk_y', '-cy', default=getdef('chunk_y', None), type=int, help='Specifies chunk height')
+    omezarr.add_argument('--chunk_x', '-cx', default=getdef('chunk_x', None), type=int, help='Specifies chunk width')
+    omezarr.add_argument('--chunk_z', '-cz', default=getdef('chunk_z', None), type=int, help='Specifies chunk depth')
     omezarr.add_argument('--downsample_type', default=getdef('downsample_type', None), type=str,
                          help='Specifies the downsampling algorithm')
     omezarr.add_argument('--compression_zarr', '-czarr', default=getdef('compression_zarr', None), type=str,

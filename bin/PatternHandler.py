@@ -273,8 +273,6 @@ def parse_axes(axes, nfields):
 
 class FilelistGrouper:
     def __init__(self, rootDir, concatenation_order = None, selby = None, rejby = None, use_list = None, colname = None):
-        # rootDir = "/home/oezdemir/PycharmProjects/nfprojects/daja"
-        # selby, rejby = None, "Transmission"
         if (use_list is None) or (len(use_list) == 0):
             self.is_csv = False
             filelist = os.listdir(rootDir)
@@ -285,8 +283,6 @@ class FilelistGrouper:
             with open(use_list, 'r') as csv_file:
                 csv_reader = csv.DictReader(csv_file)
                 for row in csv_reader:
-                    h = 'RootPath'
-                    print(f'rootdir: {row[h]}')
                     print(f'column: {row[colname]}')
                     filelist.append(row[colname])
         self.rootDir = rootDir
@@ -560,14 +556,28 @@ class FilelistGrouper:
             reg = ''.join(tuple(reconst))
             regexes[grp_no] = reg
             ####################################################################
-            fname = reg.replace('<', '{')
-            fname = fname.replace('>', '}')
-            fname = fname.replace(':', '-')
-            string = fname.split('.')
-            if len(string) > 1:
-                string = ''.join((*string[:-1], '.pattern'))
-            else:
-                string = ''.join((*string, '.pattern'))
+            tlist = list(reg)
+            inds_lt = [i for i in range(len(tlist)) if tlist[i] == '<']
+            inds_ht = [i for i in range(len(tlist)) if tlist[i] == '>']
+            inds_dash = [i for i in range(len(tlist)) if tlist[i] == '-']
+            inds_dots = [i for i in range(len(tlist)) if tlist[i] == ':']
+            for idx in range(len(tlist)):
+                if idx in inds_lt:
+                    tlist.pop(idx)
+                    tlist.insert(idx, 's')
+                if idx in inds_ht:
+                    tlist.pop(idx)
+                    tlist.insert(idx, '')
+                if idx in inds_dots:
+                    tlist.pop(idx)
+                    tlist.insert(idx, 'step')
+                if idx in inds_dash:
+                    for i, j in zip(inds_lt, inds_ht):
+                        if (idx > i) and (idx < j):
+                            tlist.pop(idx)
+                            tlist.insert(idx, 'to')
+            string = ''.join(tlist)
+            string = os.path.splitext(string)[0] + '.pattern'
             filenames[grp_no] = string
         self.regexes = transpose_list(regexes.items())[1]
         self.regex_filenames = transpose_list(filenames.items())[1]
@@ -637,3 +647,4 @@ class FilelistGrouper:
 
 # nf = grouper.numfields_global[39][3]
 # nf[slice(0, None, None)]
+
