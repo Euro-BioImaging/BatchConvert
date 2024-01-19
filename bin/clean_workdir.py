@@ -22,10 +22,11 @@ if __name__ == "__main__":
             if len(paths) > 0:
                 print("Cleaning work directory.")
             for fpath in paths:
-                removal_path = os.path.join(workdir, fpath)
-                cmd = ['rm', '-rf', removal_path]
-                try:
-                    subprocess.run(cmd)
-                except:
-                    pass
+                if fpath != "caches":
+                    removal_path = os.path.join(workdir, fpath)
+                    cmd = ['rm', '-rf', removal_path]
+                    try:
+                        subprocess.run(cmd)
+                    except:
+                        pass
 

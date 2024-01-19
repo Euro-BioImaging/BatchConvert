@@ -90,13 +90,14 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
-#    cd $SCRIPTPATH/bin && \
 
     pythonexe $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
     chmod +x $BINPATH/batchconvert_cli.sh && \
+    cd $TEMPPATH && \
     pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py && \
+    cd - && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
-#    cd -;
+
 fi
 
 if [[ -f $TEMPPATH/.process ]];
@@ -118,11 +119,14 @@ if [[ -f $TEMPPATH/.afterrun ]];
   rm $TEMPPATH/.afterrun
 fi
 
+if [[ -d $TEMPPATH/.nextflow ]];
+  then
+  rm -rf $TEMPPATH/.nextflow
+fi
+
 pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
-
-# This runs the nextflow workflow which will consume the updated command line in the bin:
 
 
 
