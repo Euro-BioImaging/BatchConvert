@@ -2,7 +2,7 @@
   "in_path": "placehold",
   "out_path": "placehold",
   "pattern": "",
-  "profile": "conda",
+  "profile": "manual",
   "source_type": "local",
   "dest_type": "local",
   "S3REMOTE": "<yours3remote>",
