@@ -8,7 +8,7 @@ source $SCRIPTPATH/bin/utils.sh
 mkdir -p $HOMEPATH
 
 set -f && \
-pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $TEMPPATH/.stderr ]];
   then
@@ -91,10 +91,10 @@ elif [[ $process == "default_param_set" ]];
 elif [[ $process == 'converted' ]];
   then
 
-    pythonexe $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
+    python $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
     chmod +x $BINPATH/batchconvert_cli.sh && \
     cd $TEMPPATH && \
-    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py && \
+    python $SCRIPTPATH/bin/run_nextflow_cli.py && \
     cd - && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
 
@@ -110,7 +110,7 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
     if [[ $afterrun != "noclean" ]];
       then
         # echo $afterrun
-        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
+        python $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
 
@@ -124,7 +124,7 @@ if [[ -d $TEMPPATH/.nextflow ]];
   rm -rf $TEMPPATH/.nextflow
 fi
 
-pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
+python $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
