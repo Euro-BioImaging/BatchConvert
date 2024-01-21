@@ -9,18 +9,22 @@ import re
 intlist = lambda s: [int(x) for x in re.findall(r'\b\d+\b', s)]
 
 if __name__ == '__main__':
-    scriptpath = os.path.dirname(os.path.realpath(__file__)) # /home/oezdemir/PycharmProjects/nfprojects/bftools/modules/templates
-    os.chdir(scriptpath) #
-    os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects/bftools ### note that this is the execution directory.
+    scriptpath = os.path.dirname(os.path.realpath(__file__))
+
+    homepath = os.environ.get('HOMEPATH')
+    temppath = os.environ.get('TEMPPATH')
+    parampath = os.environ.get('PARAMPATH')
+    defparamfile = os.path.join(parampath, 'params.json.default')
+    backupparamfile = os.path.join(parampath, 'params.json.backup')
+    paramfile = os.path.join(parampath, 'params.json')
+
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     # print("args are %s" % args)
-    with open('./params/params.json', 'rt') as f:
+    with open(paramfile, 'rt') as f:
         t_args = argparse.Namespace()
         t_args.__dict__.update(json.load(f))
         args = parser.parse_args(namespace=t_args)
-        # print(args)
-    # keys = args.__dict__.keys()
     cmd = ["#!/usr/bin/env bash\n"]
     keys = args.__dict__.keys()
     if args.output_type == 'ometiff':
@@ -64,12 +68,12 @@ if __name__ == '__main__':
             cmd += [" --target-min-size", ' %s' % args.min_xy_size]
         if "resolutions_zarr" in keys:
             cmd += [" --resolutions", ' %s' % args.resolutions_zarr]
-        if "chunk_h" in keys:
-            cmd += [" --tile_height", ' %s' % args.chunk_h]
-        if "chunk_w" in keys:
-            cmd += [" --tile_width", ' %s' % args.chunk_w]
-        if "chunk_d" in keys:
-            cmd += [" --chunk_depth", ' %s' % args.chunk_d]
+        if "chunk_y" in keys:
+            cmd += [" --tile_height", ' %s' % args.chunk_y]
+        if "chunk_x" in keys:
+            cmd += [" --tile_width", ' %s' % args.chunk_x]
+        if "chunk_z" in keys:
+            cmd += [" --chunk_depth", ' %s' % args.chunk_z]
         if "downsample_type" in keys:
             cmd += [" --downsample-type", ' %s' % args.downsample_type]
         if "compression_zarr" in keys:

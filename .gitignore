@@ -1,0 +1,4 @@
+pythonexe
+.*[Cc]ache/
+.condaCache
+_pff2ometiff.nf
