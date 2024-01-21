@@ -9,6 +9,8 @@ if __name__ == '__main__':
     parser.add_argument('--concatenation_order', default = 'auto')
     parser.add_argument('--select_by', default = None)
     parser.add_argument('--reject_by', default = None)
+    parser.add_argument('--use_list', default = None)
+    parser.add_argument('--colname', default = None)
 
     args = parser.parse_args()
 
@@ -16,12 +18,16 @@ if __name__ == '__main__':
     conc_order = args.concatenation_order
     selby = args.select_by
     rejby = args.reject_by
+    use_list = args.use_list
+    colname = args.colname
 
     conc_order = conc_order.split(',')
     grouper = FilelistGrouper(rootDir,
                               concatenation_order = conc_order,
                               selby = selby,
-                              rejby = rejby
+                              rejby = rejby,
+                              use_list = use_list,
+                              colname = colname
                               )
     grps = grouper.group_files()
     grouper.find_patterns()
