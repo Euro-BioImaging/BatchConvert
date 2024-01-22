@@ -26,7 +26,7 @@ if __name__ == "__main__":
         try:
             removal = os.path.join(inpath, '*pattern')
             pattern_files = glob.glob(removal)
-            print(pattern_files)
+            # print(pattern_files)
             for item in pattern_files:
                 os.remove(item)
         except:
