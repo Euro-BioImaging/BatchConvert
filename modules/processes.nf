@@ -1,6 +1,8 @@
 #!/usr/bin/env nflow
 nextflow.enable.dsl=2
 import groovy.io.FileType
+include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
+
 // Note that you can move the parameterise python scripts as a beforeScript directive
 
 // Conversion processes
@@ -20,8 +22,8 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         path "${inpath.baseName}.ome.tiff", emit: conv
 
     script:
-    template 'makedirs.sh "${params.out_path}"'
-    // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN HIC "${params.binpath}/batchconvert_cli.sh OLARAK KAYDETMESIN
+//     template 'makedirs.sh "${params.out_path}"'
+    // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN. SU AN "${params.binpath}/batchconvert_cli.sh OLARAK ALIYOR
     """
     if echo "$root" | grep -q "*";
         then
@@ -77,7 +79,6 @@ process Convert_Concatenate2SingleOMETIFF {
     # rm -rf ${inpath}/*pattern &> /dev/null
     """
 }
-
 
 process Convert_EachFileFromRoot2SeparateOMEZARR {
     if ("${params.dest_type}"=="local") {
@@ -174,16 +175,17 @@ process Transfer_Local2S3Storage {
     output:
         path "./transfer_report.txt", emit: tfr
     script:
+    def out_path = parse_path_for_remote(params.out_path)
     """
     sleep 5;
     localname="\$(basename $local)" && \
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
     if [ -f $local ];then
-        mc -C "./mc" cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" cp $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${out_path}"/"\$localname";
     elif [ -d $local ];then
-        mc -C "./mc" mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/"\$localname";
+        mc -C "./mc" mirror $local "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${out_path}"/"\$localname";
     fi
-    echo "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${params.out_path}"/$local > "./transfer_report.txt";
+    echo "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${out_path}"/$local > "./transfer_report.txt";
     """
 }
 
@@ -221,9 +223,10 @@ process Transfer_Local2PrivateBiostudies {
     output:
         path "./transfer_report.txt", emit: tfr
     script:
+    def out_path = parse_path_for_remote(params.out_path)
     """
-    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d $local bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/${params.out_path};
-    echo "${params.BIA_REMOTE}"/"${params.out_path}" > "./transfer_report.txt";
+    ascp -P33001 -l 500M -k 2 -i $BIA_SSH_KEY -d $local bsaspera_w@hx-fasp-1.ebi.ac.uk:${params.BIA_REMOTE}/${out_path};
+    echo "${params.BIA_REMOTE}"/"${out_path}" > "./transfer_report.txt";
     """
 }
 
@@ -251,107 +254,7 @@ process Transfer_PublicBiostudies2Local {
     """
 }
 
-
-// Other utilities
-
-def verify_axes(axes) {
-    truth = true
-    for (i in 0 .. axes.length() - 1) {
-        if (axes[i] == "x") {
-            truth = true
-        }
-        else if (axes[i] == "a") {
-            truth = true
-        }
-        else if (axes[i] == ",") {
-            truth = true
-        }
-        else if (axes == "auto") {
-            truth = true
-        }
-        else {
-            truth = false
-        }
-    }
-    return truth
-}
-
-def verify_filenames_fromPath(directory, selby, rejby) {
-	def files = []
-	def dir = new File(directory)
-	dir.eachFileRecurse(FileType.FILES) { file ->
-		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
-			files << file
-		}
-	}
-	truth = true
-	files.each {
-		if (it.toString().contains(" ")) {
-			truth = false
-		}
-	}
-	return truth
-}
-
-def verify_filenames_fromCsv(fpath, selby, rejby, root_column, input_column) {
-	def files = []
-    ch_ = Channel.fromPath(fpath.toString()).
-            splitCsv(header:true)
-    if (params.root_column == 'auto'){
-        ch0 = ch_.map { row-> file( row[params.input_column] ) }
-    }
-    else {
-        ch0 = ch_.map { row-> file( row[root_column] + '/' + row[input_column] ) }
-    }
-    files = ch0.collect()
-	truth = true
-	files.each {
-		if (it.toString().contains(" ")) {
-			truth = false
-		}
-	}
-	return truth
-}
-
-def verify_filenames_fromList(files, selby, rejby) {
-	truth = true
-	files.each {
-		if (it.toString().contains(" ")) {
-			truth = false
-		}
-	}
-	return truth
-}
-
-def is_csv(fpath) {
-    if (fpath instanceof File) {
-        fpth = fpath.toString()
-    }
-    else if (fpath instanceof String) {
-        fpth = fpath
-    }
-    else {
-        println("'is_csv': fpath must be either of types File or String.")
-        println( "fpath: " + fpath.toString() )
-        return
-    }
-    return ( fpth.endsWith('.csv') || fpth.endsWith('.txt') )
-}
-
-def get_filenames_fromCSV(csvfile, selby, rejby) {
-}
-
-def get_filenames_fromList(files, selby, rejby) {
-	def filtered = []
-	files.each {
-		if (it.toString().contains(selby) && !(it.toString().contains(rejby))) {
-		    filtered << it
-		}
-	}
-	return filtered
-}
-
-process createPatternFile1 {
+process CreatePatternFile1 {
     input:
         path inpath
     output:
@@ -370,7 +273,7 @@ process createPatternFile1 {
     """
 }
 
-process createPatternFile2 {
+process CreatePatternFile2 {
     input:
         path inpath
     output:
@@ -389,7 +292,7 @@ process createPatternFile2 {
     """
 }
 
-process createPatternFileFromCsv {
+process CreatePatternFileFromCsv {
     input:
         path inpath //
     input:
@@ -411,27 +314,6 @@ process createPatternFileFromCsv {
     fi
     """
 }
-
-// process createPatternFileFromCsv2 {
-//     input:
-//         path inpath
-//     input:
-//         val use_list
-//     output:
-//         path "${inpath}/tempdir/*"
-//     script:
-//     """
-//     if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
-//         create_hyperstack --concatenation_order ${params.concatenation_order} --use_list use_list ${inpath}
-//     elif [[ "${params.reject_pattern}" == '' ]];then
-//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --use_list use_list ${inpath}
-//     elif [[ "${params.pattern}" == '' ]];then
-//         create_hyperstack --concatenation_order ${params.concatenation_order} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
-//     else
-//         create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} --reject_by ${params.reject_pattern} --use_list use_list ${inpath}
-//     fi
-//     """
-// }
 
 process Csv2Symlink2 {
     input:
@@ -493,10 +375,12 @@ process ParseCsv {
 }
 
 process UpdateCsv {
-    publishDir(
-        path: "${params.out_path}",
-        mode: 'copy'
-    )
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
     input:
         path csv_path
     input:
@@ -523,84 +407,86 @@ process UpdateCsv {
 
 
 // EXPERIMENTAL PROCESSES THAT ARE CURRENTLY NOT NEEDED
-process cleanup {
-    input:
-        path inpath
-    script:
-    """
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/*pattern" &> /dev/null
-    """
-}
 
-process mirror2local {
-    input:
-        val source
-    output:
-        path "transferred"
-    script:
-    """
-    mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
-    mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred";
-    """
-}
-
-process stageLocal {
-    input:
-        path filepath
-    output:
-        path "${filepath.baseName}"
-    """
-    """
-}
-
-process stageLocalPublish {
-    if ("${params.dest_type}"=="local") {
-        publishDir(
-            path: "${params.out_path}",
-            mode: 'copy'
-        )
-    }
-    input:
-        path filepath
-    output:
-        path "${filepath.baseName}"
-    """
-    """
-}
-
-process bioformats2raw_experimental {
-    if ("${params.dest_type}"=="local") {
-        publishDir(
-            path: "${params.out_path}",
-            mode: 'copy'
-        )
-    }
-    input:
-        path inpath
-    output:
-        path "${inpath.baseName}.ome.zarr", emit: conv
-    script:
-    template 'makedirs.sh "${params.out_path}"'
-    """
-    if [[ "${params.merge_files}" == "True" ]];
-        then
-            create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath};
-            if [[ "${params.concatenation_order}" == "auto" ]];
-                then
-                    ${params.binpath}/batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
-            elif ! [[ "${params.concatenation_order}" == "auto" ]];
-                then
-                    ${params.binpath}/batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
-            fi
-    elif [[ "${params.merge_files}" == "False" ]];
-        then
-            ${params.binpath}/batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
-    fi
-    rm -rf "${inpath}/tempdir" &> /dev/null
-    rm -rf "${inpath}/*pattern" &> /dev/null
-    """
-}
-
-
-
+//
+// process cleanup {
+//     input:
+//         path inpath
+//     script:
+//     """
+//     rm -rf "${inpath}/tempdir" &> /dev/null
+//     rm -rf "${inpath}/*pattern" &> /dev/null
+//     """
+// }
+//
+// process mirror2local {
+//     input:
+//         val source
+//     output:
+//         path "transferred"
+//     script:
+//     """
+//     mc alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}";
+//     mc mirror "${params.S3REMOTE}"/"${params.S3BUCKET}"/"${source}" "transferred";
+//     """
+// }
+//
+// process stageLocal {
+//     input:
+//         path filepath
+//     output:
+//         path "${filepath.baseName}"
+//     """
+//     """
+// }
+//
+// process stageLocalPublish {
+//     if ("${params.dest_type}"=="local") {
+//         publishDir(
+//             path: "${params.out_path}",
+//             mode: 'copy'
+//         )
+//     }
+//     input:
+//         path filepath
+//     output:
+//         path "${filepath.baseName}"
+//     """
+//     """
+// }
+//
+// process bioformats2raw_experimental {
+//     if ("${params.dest_type}"=="local") {
+//         publishDir(
+//             path: "${params.out_path}",
+//             mode: 'copy'
+//         )
+//     }
+//     input:
+//         path inpath
+//     output:
+//         path "${inpath.baseName}.ome.zarr", emit: conv
+//     script:
+//     template 'makedirs.sh "${params.out_path}"'
+//     """
+//     if [[ "${params.merge_files}" == "True" ]];
+//         then
+//             create_hyperstack --concatenation_order ${params.concatenation_order} --select_by ${params.pattern} ${inpath};
+//             if [[ "${params.concatenation_order}" == "auto" ]];
+//                 then
+//                     ${params.binpath}/batchconvert_cli.sh $inpath/*pattern "${inpath.baseName}.ome.zarr"
+//             elif ! [[ "${params.concatenation_order}" == "auto" ]];
+//                 then
+//                     ${params.binpath}/batchconvert_cli.sh $inpath/tempdir/*pattern "${inpath.baseName}.ome.zarr"
+//             fi
+//     elif [[ "${params.merge_files}" == "False" ]];
+//         then
+//             ${params.binpath}/batchconvert_cli.sh $inpath "${inpath.baseName}.ome.zarr"
+//     fi
+//     rm -rf "${inpath}/tempdir" &> /dev/null
+//     rm -rf "${inpath}/*pattern" &> /dev/null
+//     """
+// }
+//
+//
+//
