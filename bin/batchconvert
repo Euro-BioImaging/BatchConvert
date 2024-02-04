@@ -493,12 +493,15 @@ if __name__ == "__main__":
         if args.in_path.startswith('/'):
             pass
         elif not args.in_path.startswith('/'):
-            if args.source_type == 's3':
-                pass
-            elif args.source_type == 'bia':
-                pass
+            if args.source_type in ['s3', 'bia']:
+                local_inp = False
             else:
+                local_inp = True
+            is_csv = ( args.in_path.endswith('.csv') or (args.in_path.endswith('.txt')) )
+            if is_csv or local_inp:
                 args.in_path = os.path.join(relpath, args.in_path)
+            else:
+                pass
         ###
         if args.out_path.startswith('/'):
             pass
