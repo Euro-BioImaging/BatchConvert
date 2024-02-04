@@ -90,14 +90,9 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
-
-    python $SCRIPTPATH/bin/construct_cli.py > $BINPATH/batchconvert_cli.sh && \
-    chmod +x $BINPATH/batchconvert_cli.sh && \
-    cd $TEMPPATH && \
+    chmod +x $BINPATH/run_conversion.py && \
     python $SCRIPTPATH/bin/run_nextflow_cli.py && \
-    cd - && \
     printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
-
 fi
 
 if [[ -f $TEMPPATH/.process ]];
@@ -109,7 +104,6 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
   then
     if [[ $afterrun != "noclean" ]];
       then
-        # echo $afterrun
         python $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi

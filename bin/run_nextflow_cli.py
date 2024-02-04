@@ -49,8 +49,11 @@ if __name__ == '__main__':
     # print(cmd0)
     # print(cmd1)
     # cmd += ["cd - && \\\n"]
+    curpath = os.getcwd()
+    os.chdir(temppath)
     subprocess.run(cmd0, check = True, shell = False)
     subprocess.run(cmd1, check = True, shell = False)
+    os.chdir(curpath)
 
 
 
