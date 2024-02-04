@@ -29,11 +29,18 @@ def verify_axes(axes) {
 def verify_filenames_fromPath(directory, selby, rejby) {
 	def files = []
 	def dir = new File(directory)
+// 	println(dir)
+
 	dir.eachFileRecurse(FileType.FILES) { file ->
-		if (file.toString().contains(selby) && !(file.toString().contains(rejby))) {
+    	bool0 = (selby == "") || (file.toString().contains(selby))
+    	bool1 = (rejby == "") || (!(file.toString().contains(rejby)))
+		if (bool0 && bool1) {
 			files << file
 		}
+// 		println((file.toString().contains(selby)))
+// 		println(!(file.toString().contains(rejby)))
 	}
+	println(files)
 	truth = true
 	files.each {
 		if (it.toString().contains(" ")) {
