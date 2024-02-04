@@ -13,7 +13,7 @@ if __name__ == '__main__':
         s3path = s3path[:-1]
     # s3path = "test01/*.jpg"
     s3path = s3path.replace(" ", "*")
-    p = subprocess.Popen(['/home/oezdemir/executables/bin/mc', "-C", "./mc", "find", s3path],
+    p = subprocess.Popen(['mc', "-C", "./mc", "find", s3path],
                          stdout = subprocess.PIPE,
                          stderr=subprocess.PIPE,
                          text=True
