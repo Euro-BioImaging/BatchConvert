@@ -24,7 +24,7 @@ if __name__ == '__main__':
     if len(llist[0]) == 0:
         basename = os.path.basename(s3path)
         dirname = os.path.dirname(s3path)
-        p = subprocess.Popen(['/home/oezdemir/executables/bin/mc', "-C", "./mc", "find", dirname, "--name", basename],
+        p = subprocess.Popen(['mc', "-C", "./mc", "find", dirname, "--name", basename],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
                              text=True
