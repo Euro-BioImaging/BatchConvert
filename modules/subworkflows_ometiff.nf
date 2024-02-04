@@ -48,31 +48,25 @@ workflow Convert2OMETIFF_FromLocal {
 
 workflow Convert2OMETIFF_FromS3 {
     main:
-    if ( params.in_path.toString().contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+    ch000 = Channel.of(params.in_path)
+    Inspect_S3Path(ch000)
+    ch00 = Inspect_S3Path.out.filelist
+    ch0 = ch00.flatMap { it.toString().split('\n') }
+    ch1 = ch0.filter { it.toString().contains(params.pattern) }
+    if ( params.reject_pattern.size() > 0 ) {
+        ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
     }
-    else {
-        ch000 = Channel.of(params.in_path)
-        Inspect_S3Path(ch000)
-        ch00 = Inspect_S3Path.out.filelist
-        ch0 = ch00.flatMap { it.toString().split('\n') }
-        ch1 = ch0.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        ch1f = ch1.flatMap { file(it).Name }
-        ch = Transfer_S3Storage2Local(ch1, ch1f)
-        output = Convert_EachFile2SeparateOMETIFF(ch)
+    ch1f = ch1.flatMap { file(it).Name }
+    ch = Transfer_S3Storage2Local(ch1, ch1f)
+    output = Convert_EachFile2SeparateOMETIFF(ch)
+    if (params.dest_type == "s3") {
         Transfer_Local2S3Storage(output)
-        if (params.dest_type == "s3") {
-            Transfer_Local2S3Storage(output)
-        }
-        else if ( params.dest_type == "bia" ) {
-            Transfer_Local2PrivateBiostudies(output)
-        }
-        emit:
-        output
     }
+    else if ( params.dest_type == "bia" ) {
+        Transfer_Local2PrivateBiostudies(output)
+    }
+    emit:
+    output
 }
 
 workflow Convert2OMETIFF_FromLocal_Merged { // local && merged &! CSV
@@ -93,6 +87,7 @@ workflow Convert2OMETIFF_FromLocal_Merged { // local && merged &! CSV
             }
             else if ( is_auto && is_correctNames ) {
                 pattern_files = CreatePatternFile1(fpath).flatten()
+//                 pattern_files.view()
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             else {
@@ -118,8 +113,8 @@ workflow Convert2OMETIFF_FromLocal_Merged { // local && merged &! CSV
 
 workflow Convert2OMETIFF_FromS3_Merged { // s3 && merged &! CSV
     main:
-    if ( params.in_path.toString().contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+    if ( params.in_path.toString().contains( "**" ) ) {
+        println( "\u001B[31m"+"Error: Globbing cannot be used with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
     }
     else {
@@ -148,9 +143,9 @@ workflow Convert2OMETIFF_FromS3_Merged { // s3 && merged &! CSV
         else if ( params.dest_type == "bia" ) {
             Transfer_Local2PrivateBiostudies(output)
         }
+    }
     emit:
     output
-    }
 }
 
 workflow Convert2OMETIFF_FromLocal_CSV { // s3 &! merged && CSV
@@ -181,9 +176,9 @@ workflow Convert2OMETIFF_FromLocal_CSV { // s3 &! merged && CSV
             Transfer_Local2PrivateBiostudies(output)
             Transfer_CSV2S3Storage(UpdateCsv.out)
         }
-        emit:
-        output
     }
+    emit:
+    output
 }
 
 workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
@@ -191,11 +186,12 @@ workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
     /// Consider another subworkflow, which uses mirroring for data transfer.
     main:
     if ( params.in_path.toString().contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used with remote files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+        println( "\u001B[31m"+"Error: Globbing cannot be used with CSV input. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
     }
     else {
         def fpath = file(params.in_path)
+        println(fpath)
         parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' ) // CAREFUL!
         ch_ = Channel.fromPath(fpath.toString()).
                         splitCsv(header:true)
@@ -221,9 +217,9 @@ workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
             Transfer_Local2PrivateBiostudies(output)
             Transfer_CSV2PrivateBiostudies(UpdateCsv.out)
         }
-        emit:
-        output
     }
+    emit:
+    output
 }
 
 workflow Convert2OMETIFF_FromLocal_Merged_CSV {

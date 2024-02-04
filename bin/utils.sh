@@ -44,3 +44,4 @@ export TEMPPATH=$HOMEPATH/tmp
 export BINPATH=$HOMEPATH/bin
 export PARAMPATH=$HOMEPATH/params
 export CONFIGPATH=$HOMEPATH/configs
+
