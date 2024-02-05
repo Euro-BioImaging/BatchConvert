@@ -37,6 +37,9 @@ if __name__ == "__main__":
         if not os.path.exists(destpath):
             shutil.copy(fpath, destpath)
 
+    # Transfer the conversion script to the execution folder:
+    shutil.copy(f"{scriptpath}/run_conversion.py", f"{binpath}/run_conversion.py")
+
     cmd = [os.path.join(scriptpath, "batchconvert"), *sys.argv[1:]]
     interactive_commands = ['configure_s3_remote', 'configure_ometiff', 'configure_omezarr', 'configure_slurm']
     if len(cmd) == 2 and cmd[1] in interactive_commands:
