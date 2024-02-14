@@ -11,5 +11,6 @@ echo 'SCRIPTPATH=$( dirname -- ${BASH_SOURCE[0]}; );' >> $PREFIX/bin/batchconver
 part1="\$SCRIPTPATH/../share/${PKG_NAME}-${PKG_VERSION}/batchconvert.sh"
 part2=$'\x22$@\x22';
 script=$part1' '$part2
-echo $script >> $PREFIX/bin/batchconvert; 
+echo $script >> $PREFIX/bin/batchconvert;
 chmod +x $PREFIX/bin/batchconvert
+chmod -R 777 $PREFIX/share/${PKG_NAME}-${PKG_VERSION}
