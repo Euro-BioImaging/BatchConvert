@@ -13,3 +13,4 @@ part2=$'\x22$@\x22';
 script=$part1' '$part2
 echo $script >> $PREFIX/bin/batchconvert; 
 chmod +x $PREFIX/bin/batchconvert
+chmod -R 777 $PREFIX/share/${PKG_NAME}-${PKG_VERSION}

@@ -1,6 +1,6 @@
 package:
   name: batchconvert
-  version: 0.0.2
+  version: 0.0.4
 
 source:
   git_url: https://github.com/Euro-BioImaging/BatchConvert.git
@@ -16,4 +16,4 @@ requirements:
     - python>=3.9
   run:
     - conda-forge::python>=3.9
-    - bioconda::nextflow>=22.10.1
+    - bioconda::nextflow>=23.10.1
