@@ -34,6 +34,7 @@ if __name__ == '__main__':
         relpath = dictitem[namecol]
         filename = os.path.basename(relpath)
         pretext = os.path.dirname(relpath)
+        if pretext.startswith('/'): pretext = pretext[1:]
         newroot = os.path.join(rootpath, pretext)
 
         fnameok = True
