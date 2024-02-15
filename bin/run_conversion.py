@@ -89,13 +89,24 @@ if __name__ == '__main__':
         if "max_workers" in keys:
             cmd += ["--max_workers", '%s' % args.max_workers]
         if "no_nested" in keys:
-            cmd += ["--no-nested"]
+            if args.no_nested in (True, "True"):
+                cmd += ["--no-nested"]
+            elif args.no_nested in (False, "False", None, "None"):
+                pass
+            else:
+                raise ValueError(f"--no-nested cannot have the value {args.no_nested}")
         if "drop_series" in keys:
-            cmd += ["--scale-format-string", '%s' % "'%2$d'"]
+            if args.drop_series in (True, "True"):
+                val = '%2$d'
+                cmd += ["--scale-format-string", val]
+            elif args.drop_series in (False, "False", None, "None"):
+                pass
+            else:
+                raise ValueError(f"--drop_series cannot have the value {args.drop_series}")
         if "overwrite" in keys:
             cmd += ["--overwrite"]
-        cmd.append(f'{inps}')
-        cmd.append(f'{outs}')
+        cmd.append(f"{inps}")
+        cmd.append(f"{outs}")
         # cmdstr = ''.join(cmd)
         print(cmd)
         # sys.stdout.write(cmdstr)
