@@ -191,7 +191,7 @@ workflow Convert2OMEZARR_FromS3_CSV { // s3 &! merged && CSV
     }
     else {
         def fpath = file(params.in_path)
-        println(fpath)
+//         println(fpath)
         parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' ) // CAREFUL!
         ch_ = Channel.fromPath(fpath.toString()).
                         splitCsv(header:true)
