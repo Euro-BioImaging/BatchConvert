@@ -209,7 +209,8 @@ workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
         ch1f = ch1.flatMap { file(it).Name }
         ch = Transfer_S3Storage2Local(ch1, ch1f)
         output = Convert_EachFile2SeparateOMETIFF(ch)
-        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff")
+        mock = output.collect().flatten().first()
+        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
             Transfer_CSV2S3Storage(UpdateCsv.out)
