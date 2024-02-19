@@ -157,7 +157,7 @@ workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
     }
     else {
         def fpath = file(params.in_path)
-        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' ) // CAREFUL!
+        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' )
         ch0 = Csv2Symlink1( parsedCsv, "RootOriginal", "ImageNameOriginal", 'symlinks' ).flatten()
         ch1 = ch0.filter { it.toString().contains(params.pattern) }
         if ( params.reject_pattern.size() > 0 ) {
@@ -167,8 +167,9 @@ workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
             ch = ch1
         }
         output = Convert_EachFile2SeparateOMEZARR(ch)
-        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff")
-        if (params.dest_type == "s3") {
+        mock = output.collect().flatten().first()
+        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
+        if ( params.dest_type == "s3" ) {
             Transfer_Local2S3Storage(output)
             Transfer_CSV2S3Storage(UpdateCsv.out)
         }
