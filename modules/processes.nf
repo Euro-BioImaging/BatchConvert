@@ -8,6 +8,9 @@ include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get
 // Conversion processes
 
 process Convert_EachFileFromRoot2SeparateOMETIFF {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -35,6 +38,9 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
 }
 
 process Convert_EachFile2SeparateOMETIFF {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -54,6 +60,9 @@ process Convert_EachFile2SeparateOMETIFF {
 }
 
 process Convert_Concatenate2SingleOMETIFF {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -81,6 +90,9 @@ process Convert_Concatenate2SingleOMETIFF {
 }
 
 process Convert_EachFileFromRoot2SeparateOMEZARR {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -107,6 +119,9 @@ process Convert_EachFileFromRoot2SeparateOMEZARR {
 }
 
 process Convert_EachFile2SeparateOMEZARR {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -125,6 +140,9 @@ process Convert_EachFile2SeparateOMEZARR {
 }
 
 process Convert_Concatenate2SingleOMEZARR{
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     // This process will be probably changed completely. Create hyperstack will probably be a different process
     if ("${params.dest_type}"=="local") {
         publishDir(
@@ -155,6 +173,9 @@ process Convert_Concatenate2SingleOMEZARR{
 // Processes for inspecting a remote location:
 
 process Inspect_S3Path {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         val source
     output:
@@ -170,6 +191,9 @@ process Inspect_S3Path {
 // Transfer processes:
 
 process Transfer_Local2S3Storage {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path local
     output:
@@ -190,6 +214,9 @@ process Transfer_Local2S3Storage {
 }
 
 process Mirror_S3Storage2Local {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         val source
     output:
@@ -204,6 +231,9 @@ process Mirror_S3Storage2Local {
 
 
 process Transfer_S3Storage2Local {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         val s3path
         val s3name
@@ -218,6 +248,9 @@ process Transfer_S3Storage2Local {
 }
 
 process Transfer_Local2PrivateBiostudies {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path local
     output:
@@ -231,6 +264,9 @@ process Transfer_Local2PrivateBiostudies {
 }
 
 process Transfer_PrivateBiostudies2Local {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         val source
     output:
@@ -243,6 +279,9 @@ process Transfer_PrivateBiostudies2Local {
 }
 
 process Transfer_PublicBiostudies2Local {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         val source
     output:
@@ -255,6 +294,9 @@ process Transfer_PublicBiostudies2Local {
 }
 
 process CreatePatternFile1 {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path inpath
     output:
@@ -274,6 +316,9 @@ process CreatePatternFile1 {
 }
 
 process CreatePatternFile2 {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path inpath
     output:
@@ -293,6 +338,9 @@ process CreatePatternFile2 {
 }
 
 process CreatePatternFileFromCsv {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path inpath //
     input:
@@ -316,6 +364,9 @@ process CreatePatternFileFromCsv {
 }
 
 process Csv2Symlink2 {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path csv_path
     input:
@@ -333,6 +384,9 @@ process Csv2Symlink2 {
 }
 
 process Csv2Symlink1 {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path csv_path
     input:
@@ -350,6 +404,9 @@ process Csv2Symlink1 {
 }
 
 process ParseCsv {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     input:
         path csv_path
     input:
@@ -375,6 +432,9 @@ process ParseCsv {
 }
 
 process UpdateCsv {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -389,6 +449,8 @@ process UpdateCsv {
         val input_column
     input:
         val conversion_type
+    input:
+        path proof_of_files
     output:
         path "FileList.csv"
     script:
