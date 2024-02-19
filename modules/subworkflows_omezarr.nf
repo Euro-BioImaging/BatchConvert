@@ -157,7 +157,7 @@ workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
     }
     else {
         def fpath = file(params.in_path)
-        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' ) // CAREFUL!
+        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' )
         ch0 = Csv2Symlink1( parsedCsv, "RootOriginal", "ImageNameOriginal", 'symlinks' ).flatten()
         ch1 = ch0.filter { it.toString().contains(params.pattern) }
         if ( params.reject_pattern.size() > 0 ) {
@@ -167,8 +167,9 @@ workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
             ch = ch1
         }
         output = Convert_EachFile2SeparateOMEZARR(ch)
-        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff")
-        if (params.dest_type == "s3") {
+        mock = output.collect().flatten().first()
+        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
+        if ( params.dest_type == "s3" ) {
             Transfer_Local2S3Storage(output)
             Transfer_CSV2S3Storage(UpdateCsv.out)
         }
@@ -191,7 +192,7 @@ workflow Convert2OMEZARR_FromS3_CSV { // s3 &! merged && CSV
     }
     else {
         def fpath = file(params.in_path)
-        println(fpath)
+//         println(fpath)
         parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt' ) // CAREFUL!
         ch_ = Channel.fromPath(fpath.toString()).
                         splitCsv(header:true)
@@ -208,7 +209,8 @@ workflow Convert2OMEZARR_FromS3_CSV { // s3 &! merged && CSV
         ch1f = ch1.flatMap { file(it).Name }
         ch = Transfer_S3Storage2Local(ch1, ch1f)
         output = Convert_EachFile2SeparateOMEZARR(ch)
-        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff")
+        mock = output.collect().flatten().first()
+        UpdateCsv(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
             Transfer_CSV2S3Storage(UpdateCsv.out)

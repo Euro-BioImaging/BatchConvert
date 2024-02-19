@@ -40,7 +40,7 @@ def verify_filenames_fromPath(directory, selby, rejby) {
 // 		println((file.toString().contains(selby)))
 // 		println(!(file.toString().contains(rejby)))
 	}
-	println(files)
+// 	println(files)
 	truth = true
 	files.each {
 		if (it.toString().contains(" ")) {
