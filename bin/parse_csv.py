@@ -23,9 +23,6 @@ def validate_path(ref_dir, pth): # ref_dir is where the csv file is located.
                 raise ValueError(f"The path {jnpth} is not valid.")
     return pth
 
-# os.chdir("test_csv")
-# validate_rootpath(rootpath)
-
 def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextflow_convert/test_csv/testimages.csv",
                      csv_destpath: str = "/home/oezdemir/PycharmProjects/nextflow_convert/test_csv/testimages_parsed.csv",
                      colname_parent: str = "RootPath",
@@ -39,9 +36,17 @@ def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextf
 
     dictlist = []
     with open(csv_sourcepath, 'r') as csv_file:
-        csv_reader = csv.DictReader(csv_file)
+        dialect = csv.Sniffer().sniff(csv_file.read(1024))
+        csv_file.seek(0)
+        csv_reader = csv.DictReader(csv_file, dialect=dialect)
         for row in csv_reader:
             dictlist.append(row)
+
+    # dictlist = []
+    # with open(csv_sourcepath, 'r') as csv_file:
+    #     csv_reader = csv.DictReader(csv_file)
+    #     for row in csv_reader:
+    #         dictlist.append(row)
 
     newlist = []
     for dictitem in dictlist:
@@ -66,15 +71,10 @@ def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextf
         else:
             raise ValueError(f"{colname_relative} could not be found in the column names.")
 
-        # os.path.dirname("test_csv/testimages.csv")
-        # print(f"source: {csv_sourcepath}")
-        # print(f"source: {os.path.dirname(csv_sourcepath)}")
         if endpoint == "local":
             rootpath = validate_path(os.path.dirname(csv_sourcepath), rootpath)
         if relpath.startswith('/'): relpath = relpath[1:]
         fullpath = os.path.join(rootpath, relpath)
-        # print(f"fullpath: {fullpath, os.path.exists(fullpath)}")
-        # print(f"abspath: {os.path.abspath(fullpath)}")
 
         newroot = os.path.dirname(fullpath)
         filename = os.path.basename(fullpath)
