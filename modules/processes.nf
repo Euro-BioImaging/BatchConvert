@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 import groovy.io.FileType
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
 
-// Note that you can move the parameterise python scripts as a beforeScript directive
+// Note that you can update parameterisation steps as beforeScript directives
 
 // Conversion processes
 
@@ -25,7 +25,6 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         path "${inpath.baseName}.ome.tiff", emit: conv
 
     script:
-//     template 'makedirs.sh "${params.out_path}"'
     // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN. SU AN "${params.binpath}/run_conversion.py OLARAK ALIYOR
     """
     if echo "$root" | grep -q "*";
@@ -368,7 +367,7 @@ process Csv2Symlink2 {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
     input:
-        path csv_path
+        val csv_path
     input:
         val root_column
     input:
@@ -388,7 +387,7 @@ process Csv2Symlink1 {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
     input:
-        path csv_path
+        val csv_path
     input:
         val root_column
     input:
@@ -408,25 +407,27 @@ process ParseCsv {
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
     input:
-        path csv_path
+        val csv_path
     input:
         val root_column
     input:
         val input_column
     input:
         val dest_path
+    input:
+        val endpoint
     output:
         path "${dest_path}"
     script:
     """
     if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
-        parseCsv.py $csv_path $root_column $input_column "${dest_path}"
+        parse_csv.py $csv_path "${dest_path}" $root_column $input_column --endpoint $endpoint
     elif [[ "${params.reject_pattern}" == '' ]];then
-        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -p "${params.pattern}"
+        parse_csv.py $csv_path "${dest_path}"  $root_column $input_column -p "${params.pattern}" --endpoint $endpoint
     elif [[ "${params.pattern}" == '' ]];then
-        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -rp "${params.reject_pattern}"
+        parse_csv.py $csv_path "${dest_path}" $root_column $input_column -rp "${params.reject_pattern}" --endpoint $endpoint
     else
-        parseCsv.py $csv_path $root_column $input_column "${dest_path}" -p "${params.pattern}" -rp "${params.reject_pattern}"
+        parse_csv.py $csv_path "${dest_path}" $root_column $input_column -p "${params.pattern}" -rp "${params.reject_pattern}" --endpoint $endpoint
     fi
     """
 }
@@ -458,6 +459,35 @@ process UpdateCsv {
     updateCsv.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv" --conversion_type $conversion_type
     """
 }
+
+process UpdateCsvForConversion {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        val conversion_type
+    input:
+        path proof_of_files
+    output:
+        path "FileList.csv"
+    script:
+    """
+    update_csv_for_conversion.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv" --conversion_type $conversion_type
+    """
+}
+
 
 // EXPERIMENTAL PROCESSES THAT ARE CURRENTLY NOT NEEDED
 

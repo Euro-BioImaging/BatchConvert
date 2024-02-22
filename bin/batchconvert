@@ -516,6 +516,8 @@ if __name__ == "__main__":
         # print(args.input_column)
         # print(args.root_column)
         if ( args.in_path.endswith('.csv') or (args.in_path.endswith('.txt')) ):
+            if args.root_column in ("None", None, '', ""):
+                args.__dict__['root_column'] = "null"
             assert len(args.input_column) > 0, 'The csv file must contain at least one input_column.'
         os.chdir(scriptpath)
         if args.keep_workdir == True:

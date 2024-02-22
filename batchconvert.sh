@@ -8,7 +8,7 @@ source $SCRIPTPATH/bin/utils.sh
 mkdir -p $HOMEPATH
 
 set -f && \
-python $SCRIPTPATH/bin/parameterise_conversion.py "$@";
+pythonexe $SCRIPTPATH/bin/parameterise_conversion.py "$@";
 
 if [[ -f $TEMPPATH/.stderr ]];
   then
@@ -90,9 +90,9 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
+    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}" && \
     chmod +x $BINPATH/run_conversion.py && \
-    python $SCRIPTPATH/bin/run_nextflow_cli.py && \
-    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
+    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py
 fi
 
 if [[ -f $TEMPPATH/.process ]];
@@ -104,7 +104,7 @@ if [[ $1 == "ometiff" ]] || [[ $1 == "omezarr" ]];
   then
     if [[ $afterrun != "noclean" ]];
       then
-        python $SCRIPTPATH/bin/clean_workdir.py;
+        pythonexe $SCRIPTPATH/bin/clean_workdir.py;
     fi
 fi
 
@@ -118,7 +118,7 @@ if [[ -d $TEMPPATH/.nextflow ]];
   rm -rf $TEMPPATH/.nextflow
 fi
 
-python $SCRIPTPATH/bin/cleanup.py &> /dev/null
+pythonexe $SCRIPTPATH/bin/cleanup.py &> /dev/null
 
 
 
