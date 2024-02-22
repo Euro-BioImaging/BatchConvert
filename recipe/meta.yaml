@@ -1,0 +1,24 @@
+package:
+  name: batchconvert
+  version: 0.0.5
+
+source:
+  git_url: https://github.com/Euro-BioImaging/BatchConvert.git
+  git_tag: conda_version_with_projection
+
+build:
+  number: 1
+
+requirements:
+  build:
+    - python>=3.9
+  host:
+    - python>=3.9
+  run:
+    - conda-forge::python>=3.9
+    - bioconda::nextflow>=23.10.1
+    - ome::bftools=6.7.0
+    - ome::bioformats2raw=0.7.0
+    - hcc::aspera-cli>=3.9
+    - joshmoore::go-mc>=2020.11
+
