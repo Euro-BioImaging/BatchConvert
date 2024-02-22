@@ -118,3 +118,20 @@ def parse_path_for_remote(path) {
     }
     return path
 }
+
+def splitPath(string) {
+    splitted = string.toString().split('\\.')
+    def basename = splitted[0]
+    def extension = splitted.drop(1).join('.')
+    return [basename, extension]
+}
+
+def getBaseName(string) {
+    def basename = splitPath(string)[0]
+    return basename
+}
+
+def getExtension(string) {
+    def extension = splitPath(string)[1]
+    return extension
+}

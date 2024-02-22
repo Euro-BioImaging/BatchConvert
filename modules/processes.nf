@@ -2,8 +2,9 @@
 nextflow.enable.dsl=2
 import groovy.io.FileType
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
+include { getBaseName; getExtension; splitPath} from "./functions.nf"
 
-// Note that you can move the parameterise python scripts as a beforeScript directive
+// Note that you can update parameterisation steps as beforeScript directives
 
 // Conversion processes
 
@@ -462,6 +463,9 @@ process UpdateCsv {
 }
 
 process UpdateCsvForConversion {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
@@ -486,6 +490,58 @@ process UpdateCsvForConversion {
     """
 }
 
+process UpdateCsvForProjection {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
+    if ("${params.dest_type}"=="local") {
+        publishDir(
+            path: "${params.out_path}",
+            mode: 'copy'
+        )
+    }
+    input:
+        path csv_path
+    input:
+        val root_column
+    input:
+        val input_column
+    input:
+        path proof_of_files
+    output:
+        path "FileList.csv"
+    script:
+    """
+    update_csv_for_projection.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv"
+    """
+}
+
+process ApplyProjection {
+    sleep 10000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
+//     maxForks 9
+    publishDir(
+        path: "${params.out_path}",
+        mode: 'copy',
+//         enabled: "${params.apply_projection.publish_dir}"
+    )
+    input:
+        path input_path
+    output:
+        path "${getBaseName(input_path)}_apply_projection.${getExtension(input_path)}", emit: proj
+    script:
+    """
+    apply_projection \
+    --output_name "${input_path.baseName}_apply_projection" \
+    --resolutions None \
+    --axis ${params.projection_axis} \
+    --projection_type ${params.projection_type} \
+    --drop_singlet_axes ${params.drop_singlet_axes} \
+    "$input_path" \
+    "${getBaseName(input_path)}_apply_projection.${getExtension(input_path)}"
+    """
+}
 
 // EXPERIMENTAL PROCESSES THAT ARE CURRENTLY NOT NEEDED
 

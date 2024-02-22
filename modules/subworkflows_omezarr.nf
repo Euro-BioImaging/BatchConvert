@@ -6,7 +6,7 @@ include { CreatePatternFile1; CreatePatternFile2; CreatePatternFileFromCsv;
           Convert_Concatenate2SingleOMEZARR; Convert_EachFile2SeparateOMEZARR; Convert_EachFileFromRoot2SeparateOMEZARR;
           Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Inspect_S3Path;
           Transfer_Local2S3Storage; Transfer_Local2S3Storage as Transfer_CSV2S3Storage; Transfer_Local2PrivateBiostudies; Transfer_Local2PrivateBiostudies as Transfer_CSV2PrivateBiostudies;
-          Csv2Symlink1; Csv2Symlink2; ParseCsv; UpdateCsv; UpdateCsvForConversion } from "./processes.nf"
+          Csv2Symlink1; Csv2Symlink2; ApplyProjection; ParseCsv; UpdateCsv; UpdateCsvForConversion; UpdateCsvForProjection } from "./processes.nf"
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
 
 workflow Convert2OMEZARR_FromLocal {
@@ -35,6 +35,10 @@ workflow Convert2OMEZARR_FromLocal {
         }
         output = Convert_EachFile2SeparateOMEZARR(ch)
     }
+    if ( params.projection_type.size() > 0 ) {
+        proj = ApplyProjection( output )
+        output = output.concat(proj)
+    }
     // ch1 must be acquired by this point based on the 3 cases above, now apply reject_pattern filter
     if (params.dest_type == "s3") {
         Transfer_Local2S3Storage(output)
@@ -59,6 +63,10 @@ workflow Convert2OMEZARR_FromS3 {
     ch1f = ch1.flatMap { file(it).Name }
     ch = Transfer_S3Storage2Local(ch1, ch1f)
     output = Convert_EachFile2SeparateOMEZARR(ch)
+    if ( params.projection_type.size() > 0 ) {
+        proj = ApplyProjection( output )
+        output = output.concat(proj)
+    }
     if (params.dest_type == "s3") {
         Transfer_Local2S3Storage(output)
     }
@@ -95,6 +103,10 @@ workflow Convert2OMEZARR_FromLocal_Merged { // local && merged &! CSV
                 ch = pattern_files.filter { it.toString().contains(".pattern") }
             }
             output = Convert_Concatenate2SingleOMEZARR(ch, params.in_path)
+            if ( params.projection_type.size() > 0 ) {
+                proj = ApplyProjection( output )
+                output = output.concat(proj)
+            }
             if (params.dest_type == "s3") {
                 Transfer_Local2S3Storage(output)
             }
@@ -137,6 +149,10 @@ workflow Convert2OMEZARR_FromS3_Merged { // s3 && merged &! CSV
         }
         val = Mirror_S3Storage2Local.out.first()
         output = Convert_Concatenate2SingleOMEZARR(ch, val)
+        if ( params.projection_type.size() > 0 ) {
+            proj = ApplyProjection( output )
+            output = output.concat(proj)
+        }
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
         }
@@ -148,7 +164,7 @@ workflow Convert2OMEZARR_FromS3_Merged { // s3 && merged &! CSV
     output
 }
 
-workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
+workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV && has projection option
     main:
     if ( params.in_path.contains( "*" ) ) {
         println( "\u001B[31m"+"Error: Globbing cannot be used together with CSV input."+"\u001B[30m" )
@@ -167,15 +183,21 @@ workflow Convert2OMEZARR_FromLocal_CSV { // s3 &! merged && CSV
             ch = ch1
         }
         output = Convert_EachFile2SeparateOMEZARR(ch)
-        mock = output.collect().flatten().first()
-        UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "omezarr", mock)
+        mock_conversion = output.collect().flatten().first()
+        updated_csv = UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "omezarr", mock_conversion)
+        if ( params.projection_type.size() > 0 ) {
+            proj = ApplyProjection( output )
+            mock_proj = proj.collect().flatten().first()
+            updated_csv = UpdateCsvForProjection( UpdateCsvForConversion.out, "RootConverted", "ImageNameConverted", mock_proj )
+            output = output.concat(proj)
+        }
+        output = output.concat(updated_csv)
         if ( params.dest_type == "s3" ) {
             Transfer_Local2S3Storage(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
         }
         else if ( params.dest_type == "bia" ) {
             Transfer_Local2PrivateBiostudies(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
+//             Transfer_CSV2S3Storage(UpdateCsvForConversion.out) # TODO: fix this (and other instances of this) also in other branches
         }
     }
     emit:
@@ -210,14 +232,21 @@ workflow Convert2OMEZARR_FromS3_CSV { // s3 &! merged && CSV
         ch = Transfer_S3Storage2Local(ch1, ch1f)
         output = Convert_EachFile2SeparateOMEZARR(ch)
         mock = output.collect().flatten().first()
-        UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "omezarr", mock)
+        updated_csv = UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "omezarr", mock)
+        if ( params.projection_type.size() > 0 ) {
+            proj = ApplyProjection( output )
+            mock_proj = proj.collect().flatten().first()
+            updated_csv = UpdateCsvForProjection( UpdateCsvForConversion.out, "RootConverted", "ImageNameConverted", mock_proj )
+            output = output.concat(proj)
+        }
+        output = output.concat(updated_csv)
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
+//             Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
         }
         else if ( params.dest_type == "bia" ) {
             Transfer_Local2PrivateBiostudies(output)
-            Transfer_CSV2PrivateBiostudies(UpdateCsvForConversion.out)
+//             Transfer_CSV2PrivateBiostudies(UpdateCsvForConversion.out)
         }
     }
     emit:

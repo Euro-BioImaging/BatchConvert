@@ -11,3 +11,6 @@ dependencies:
   - bftools
   - go-mc
   - aspera-cli
+  - pip
+  - pip:
+    - git+https://github.com/Euro-BioImaging/ome_zarr_pyramid.git
