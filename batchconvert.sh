@@ -90,9 +90,9 @@ elif [[ $process == "default_param_set" ]];
     printf "${GREEN}Default parameter updated.\n${NORMAL}";
 elif [[ $process == 'converted' ]];
   then
+    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}" && \
     chmod +x $BINPATH/run_conversion.py && \
-    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py && \
-    printf "${GREEN}Nextflow script has been created. Workflow is beginning.\n${NORMAL}"
+    pythonexe $SCRIPTPATH/bin/run_nextflow_cli.py
 fi
 
 if [[ -f $TEMPPATH/.process ]];

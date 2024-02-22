@@ -462,6 +462,9 @@ process UpdateCsv {
 }
 
 process UpdateCsvForConversion {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
     if ("${params.dest_type}"=="local") {
         publishDir(
             path: "${params.out_path}",
