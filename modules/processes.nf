@@ -26,7 +26,6 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         path "${inpath.baseName}.ome.tiff", emit: conv
 
     script:
-//     template 'makedirs.sh "${params.out_path}"'
     // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN. SU AN "${params.binpath}/run_conversion.py OLARAK ALIYOR
     """
     if echo "$root" | grep -q "*";
