@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 import groovy.io.FileType
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
 
-// Note that you can move the parameterise python scripts as a beforeScript directive
+// Note that you can update parameterisation steps as beforeScript directives
 
 // Conversion processes
 
@@ -25,7 +25,6 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         path "${inpath.baseName}.ome.tiff", emit: conv
 
     script:
-//     template 'makedirs.sh "${params.out_path}"'
     // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN. SU AN "${params.binpath}/run_conversion.py OLARAK ALIYOR
     """
     if echo "$root" | grep -q "*";
