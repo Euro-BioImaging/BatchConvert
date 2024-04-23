@@ -21,4 +21,7 @@ requirements:
     - ome::bioformats2raw=0.7.0
     - hcc::aspera-cli>=3.9
     - joshmoore::go-mc>=2020.11
+    - pip
+    - pip:
+      - git+https://github.com/Euro-BioImaging/ome_zarr_pyramid.git
 

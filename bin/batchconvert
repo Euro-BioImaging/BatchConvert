@@ -485,13 +485,15 @@ if __name__ == "__main__":
                 writer.write('default_param_set')
     elif (prompt == 'ometiff') | (prompt == 'omezarr'):
         if prompt == 'omezarr':
-            if args.projection_type in (None, 'None', '', 'null'):
-                assert args.drop_series is True, f"Projection can currently only be applied to individual pyramids."
-            # print(keys)
-        # print(args.__dict__.keys())
-        # print(len(args.workdir))
-        os.chdir(relpath)
+            if 'projection_type' in args.__dict__.keys():
+                if args.projection_type in (None, 'None', '', 'null'):
+                    args.projection_type = ''
+                if args.drop_series in (True, "True"):
+                    pass
+                else:
+                    assert len(args.projection_type) == 0, f"Projection can currently only be applied to individual pyramids."
 
+        os.chdir(relpath)
         if len(args.workdir) == 0:
             if os.path.exists('/scratch'):
                 os.makedirs(scratchpath, exist_ok = True)
