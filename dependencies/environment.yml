@@ -3,10 +3,9 @@ channels:
   - ome
   - conda-forge
   - joshmoore
-  - defaults
-  - hcc
+  - bioconda
 dependencies:
-  - python ~= 3.9.0
+  - python >= 3.9.0
   - bioformats2raw
   - bftools
   - go-mc
