@@ -352,7 +352,7 @@ However, this command would fail to create a single OME-Zarr folder due to the n
 lengths of the filenames. Instead, the files would be split into two groups based on the
 filename length, leading to two separate OME-Zarrs with names:
 
-`test_img_TRange{2-8-2}.ome.zarr` and `test_img_TRange{10-12-2}.ome.zarr`
+`test_img_Ts2to8step2.ome.zarr` and `test_img_Ts10to12step2.ome.zarr`
 
 Here is the corrected version of the folder for the above example-
 ```
@@ -365,7 +365,7 @@ time-series/test_img_T12
 ```
 
 Executing the same command on this folder would result in a single OME-Zarr with the name:
-`test_img_TRange{02-12-2}.ome.zarr`
+`test_img_Ts02to12step2.ome.zarr`
 
 **Example 2**- 
 
@@ -383,7 +383,7 @@ A typical command to convert this folder to a single OME-Zarr would look like: \
 However, the command would fail to assume these files as a single group due to the
 non-uniform incrementation in the variable field of the filenames. Instead, the dataset 
 would be split into two groups, leading to two separate OME-Zarrs with the following names:
-`test_img_TRange{2-4-2}.ome.zarr` and `test_img_TRange{5-7-2}.ome.zarr`  
+`test_img_Ts2to4step2.ome.zarr` and `test_img_Ts5to7step2.ome.zarr`  
 
 
 **Example 3**
@@ -405,8 +405,8 @@ BatchConvert will fail to assume these two channels as part of the same series a
 will instead split the two channels into two separate OME-Zarrs. 
 
 The output would look like: \
-`test_img_C1-TRange{1-3-1}.ome.zarr` \
-`test_img_C2-TRange{1-2-1}.ome.zarr`
+`test_img_C1-Ts1to3step1.ome.zarr` \
+`test_img_C2-Ts1to2step1.ome.zarr`
 
 To be able to really incorporate all files into a single OME-Zarr, the folder should have equal
 number of images corresponding to both channels, as shown below:
@@ -420,7 +420,7 @@ multichannel_time-series/test_img_C2-T3
 ```
 The same conversion command on this version of the input folder would result in a single 
 OME-Zarr with the name: \
-`test_img_CRange{1-2-1}-TRange{1-3-1}.ome.zarr`
+`test_img_Cs1to2step1-Ts1to3step1.ome.zarr`
 
 
 **Example 4**
@@ -444,8 +444,8 @@ One can convert this folder with- \
 `batchconvert omezarr --merge_files "input_dir/folder_with_multiple_groups" "output_path"`
  
 BatchConvert will detect the two patterns in this folder and perform two grouped conversions. 
-The output folders will be named as `test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and 
-`test_img_TRange{1-2-1}-ZRange{1-3-1}.ome.zarr`. 
+The output folders will be named as `test_img_Cs1to2step1-Ts1to2step1.ome.zarr` and 
+`test_img_Ts1to2step1-Zs1to3step1.ome.zarr`. 
 
 
 **Example 5**
@@ -478,8 +478,8 @@ So the following line can be used to convert this folder: \
 `batchconvert omezarr --merge_files --concatenation_order ct,aa "input_dir/folder_with_multiple_groups" "output_path"`
 
 The resulting OME-Zarrs will have the names:
-`test_img_CRange{1-2-1}-TRange{1-2-1}.ome.zarr` and
-`test_img_TRange{1-2-1}-ZRange{1-3-1}.ome.zarr`
+`test_img_Cs1to2step1-Ts1to2step1.ome.zarr` and
+`test_img_Ts1to2step1-Zs1to3step1.ome.zarr`
 
 Note that `--concatenation_order` will override any dimension specifiers already
 existing in the filenames.
@@ -512,7 +512,7 @@ One may try the following command to convert this folder:
 `batchconvert omezarr --merge_files "input_dir/filenames_with_dates" "output_path"`
 
 Since the concatenation axes are not specified, this command would try to create
-a single OME-Zarr with name: `test_data_dateRange{03-04-1}.03.2023_imageZRange{1-2-1}-TRange{1-3-1}`.
+a single OME-Zarr with name: `test_data_dates03to04step1.03.2023_imageZs1to2step1-Ts1to3step1`.
 
 In order to force BatchConvert to ignore the date field, the user can restrict the concatenation 
 axes to the last two numeric fields. This can be done by using a command such as: \
@@ -533,15 +533,6 @@ specifying `--concatenation_order a`.
 All the examples given above can also be run on slurm by specifying `-pf cluster` option. 
 Note that this option automatically uses the singularity profile:\
 `batchconvert omezarr -pf cluster -p .oir "input_path" "output_path"`
-
-
-
-
-
-
-
-
-
 
 
 
