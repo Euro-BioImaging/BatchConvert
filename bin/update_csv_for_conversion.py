@@ -11,7 +11,7 @@ parser.add_argument('relpath_column')
 parser.add_argument('csv_dest_path')
 parser.add_argument('csv_file_name')
 
-parser.add_argument('--conversion_type', choices = ['ometiff', 'omezarr'], default = 'ometiff')
+parser.add_argument('--conversion_type', choices = ['ometiff', 'omezarr', 'OMETIFF', 'OMEZARR'], default = 'ometiff')
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -19,7 +19,7 @@ if __name__ == '__main__':
     csv_file_path = args.csv_file_path
     dircol = args.root_column
     namecol = args.relpath_column
-    conv_type = args.conversion_type
+    conv_type = args.conversion_type.lower()
     destpath = args.csv_dest_path
     csvname = args.csv_file_name
 

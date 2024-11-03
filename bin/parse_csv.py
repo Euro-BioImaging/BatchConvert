@@ -23,10 +23,10 @@ def validate_path(ref_dir, pth): # ref_dir is where the csv file is located.
                 raise ValueError(f"The path {jnpth} is not valid.")
     return pth
 
-def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextflow_convert/test_csv/testimages.csv",
-                     csv_destpath: str = "/home/oezdemir/PycharmProjects/nextflow_convert/test_csv/testimages_parsed.csv",
-                     colname_parent: str = "RootPath",
-                     colname_relative: str = "RelativePath_Result.Image_IMG",
+def robust_parse_csv(csv_sourcepath: str = "",
+                     csv_destpath: str = "",
+                     colname_parent: str = "",
+                     colname_relative: str = "",
                      pattern: str = None,
                      rpattern: str = None,
                      endpoint: str = "local"
@@ -42,12 +42,6 @@ def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextf
         for row in csv_reader:
             dictlist.append(row)
 
-    # dictlist = []
-    # with open(csv_sourcepath, 'r') as csv_file:
-    #     csv_reader = csv.DictReader(csv_file)
-    #     for row in csv_reader:
-    #         dictlist.append(row)
-
     newlist = []
     for dictitem in dictlist:
         if fieldnames is None:
@@ -55,7 +49,6 @@ def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextf
         else:
             assert fieldnames == list(dictitem.keys())
 
-        # print(f"parent: {colname_parent}")
         if colname_parent == '' or colname_parent =="null" or colname_parent is None:
             rootpath = ''
         elif colname_parent in dictitem.keys():
@@ -95,9 +88,6 @@ def robust_parse_csv(csv_sourcepath: str = "/home/oezdemir/PycharmProjects/nextf
 
     new_fieldnames = list(newlist[0].keys())
     os.makedirs(os.path.dirname(f'./{csv_destpath}'), exist_ok = True)
-
-    # print(f"newlist: {newlist}")
-    # print(f"new_fieldnames: {new_fieldnames}")
 
     with open(csv_destpath, 'w', newline='') as csv_file:
         csv_writer = csv.DictWriter(csv_file, fieldnames = new_fieldnames)

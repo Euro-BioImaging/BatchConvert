@@ -1,52 +1,19 @@
 #!/usr/bin/env nflow
 nextflow.enable.dsl=2
 import groovy.io.FileType
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import org.apache.commons.io.FileUtils
 
 include { CreatePatternFile1; CreatePatternFile2; CreatePatternFileFromCsv;
           Convert_Concatenate2SingleOMETIFF; Convert_EachFile2SeparateOMETIFF; Convert_EachFileFromRoot2SeparateOMETIFF;
           Transfer_PrivateBiostudies2Local; Transfer_PublicBiostudies2Local; Transfer_S3Storage2Local; Mirror_S3Storage2Local; Inspect_S3Path;
           Transfer_Local2S3Storage; Transfer_Local2S3Storage as Transfer_CSV2S3Storage; Transfer_Local2PrivateBiostudies; Transfer_Local2PrivateBiostudies as Transfer_CSV2PrivateBiostudies;
-          Csv2Symlink1; Csv2Symlink2; ParseCsv; UpdateCsv; UpdateCsvForConversion } from "./processes.nf"
+          Csv2Symlink1; Csv2Symlink2; ParseCsv; UpdateCsv; UpdateCsvForConversion; InputPath2Symlink } from "./processes.nf"
 include { verify_axes; verify_filenames_fromPath; verify_filenames_fromList; get_filenames_fromList; verify_filenames_fromCsv; is_csv; parse_path_for_remote} from "./functions.nf"
 
-workflow Convert2OMETIFF_FromLocal {
-    main:
-    def fpath = file(params.in_path)
-    if  ( fpath instanceof List ){
-        ch = Channel.fromPath(params.in_path).filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch = ch.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        output = Convert_EachFileFromRoot2SeparateOMETIFF(params.in_path, ch)
-    }
-    else if ( fpath.isDirectory() ) { // local && ! csv && ! merge_files
-        ch0 = Channel.of(fpath.listFiles()).flatten()
-        ch = ch0.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch = ch.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        output = Convert_EachFileFromRoot2SeparateOMETIFF(params.in_path, ch)
-    }
-    else if ( fpath.isFile() ) { // local && ! csv && ! merge_files
-        ch0 = Channel.of(fpath).collect().flatten()
-        ch = ch0.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch = ch.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        output = Convert_EachFile2SeparateOMETIFF(ch)
-    }
-    // ch1 must be acquired by this point based on the 3 cases above, now apply reject_pattern filter
-    if (params.dest_type == "s3") {
-        Transfer_Local2S3Storage(output)
-    }
-    else if ( params.dest_type == "bia" ) {
-        Transfer_Local2PrivateBiostudies(output)
-    }
-    emit:
-    output
-}
-
-workflow Convert2OMETIFF_FromS3 {
+workflow GetS3Directory_AsChannel {
     main:
     ch000 = Channel.of(params.in_path)
     Inspect_S3Path(ch000)
@@ -58,7 +25,95 @@ workflow Convert2OMETIFF_FromS3 {
     }
     ch1f = ch1.flatMap { file(it).Name }
     ch = Transfer_S3Storage2Local(ch1, ch1f)
-    output = Convert_EachFile2SeparateOMETIFF(ch)
+    emit:
+    ch1f
+    ch
+}
+
+workflow GetS3PathsFromCSV_AsChannel {
+    main:
+    ch_ = Channel.fromPath(params.in_path).splitCsv( header:true )
+    if (params.root_column == 'auto') {
+        ch0 = ch_.map { row-> params.S3REMOTE + '/' + params.S3BUCKET + '/' + row[params.input_column] }
+    }
+    else {
+        ch0 = ch_.map { row-> params.S3REMOTE + '/' + params.S3BUCKET + '/' + row[params.root_column] + '/' + row[params.input_column] }
+    }
+    ch1 = ch0.filter { it.toString().contains(params.pattern) }
+    if ( params.reject_pattern.size() > 0 ) {
+        ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
+    }
+    ch1f = ch1.flatMap { file(it).Name }
+    ch = Transfer_S3Storage2Local(ch1, ch1f)
+    emit:
+    ch1f
+    ch
+}
+
+workflow FromS3ToSymlinks { // This subworkflow is not to be directly incorporated in the main workflows
+    // TODO: This workflow should be integrated with the InputPath2Symlink process
+    main:
+    if ( ( is_csv(params.in_path) ) ) {
+        GetS3PathsFromCSV_AsChannel()
+        ch1f = GetS3PathsFromCSV_AsChannel.out.ch1f
+        ch = GetS3PathsFromCSV_AsChannel.out.ch
+    } else {
+        GetS3Directory_AsChannel()
+        ch1f = GetS3Directory_AsChannel.out.ch1f
+        ch = GetS3Directory_AsChannel.out.ch
+    }
+    localImages = ch.flatten().map { it -> file(it.toString()) }.unique()
+    // Select a tempdir location
+    parent = localImages.flatten().map { it -> file(it.parent.parent.parent.toString()) }.unique()
+    ch_s = parent.first().map { dir -> dir.toString() + '/temp' }
+    //
+    ch_s.subscribe { targetDir ->
+        // Ensure the tempdir is freshly created before creating symlinks
+        new File(targetDir).mkdirs()
+        if ( file(targetDir).isDirectory() ) {
+            FileUtils.cleanDirectory(new File(targetDir))
+            file(targetDir).mkdirs()
+        }
+        else {
+            new File(targetDir).mkdirs()
+        }
+        // Subscribe to `localImages` channel to create symlinks for each file
+        localImages.subscribe { fileDir ->
+            symlinkPath = file(targetDir + '/' + fileDir.Name) // Path for the symlink
+            // println("Creating symlink for ${fileDir} -> ${symlinkPath}")
+            Files.createSymbolicLink(symlinkPath, fileDir)
+        }
+    }
+    ch_f = ch_s.map { it ->
+        file(it)
+    }
+    emit:
+    ch_f
+    localImages
+}
+
+workflow Convert2OMETIFF_FromLocal {
+    main:
+    InputPath2Symlink()
+    ch_s = InputPath2Symlink.out.symlinkpath
+    ch = ch_s.listFiles().flatten().filter{ it.isFile() }
+    output = Convert_EachFileFromRoot2SeparateOMETIFF(ch_s, ch)
+    if (params.dest_type == "s3") {
+        Transfer_Local2S3Storage(output)
+    }
+    else if ( params.dest_type == "bia" ) {
+        Transfer_Local2PrivateBiostudies(output)
+    }
+    emit:
+    output
+}
+
+workflow Convert2OMETIFF_FromS3 { // s3 &! merged &! CSV
+    main:
+    FromS3ToSymlinks()
+    fpath = FromS3ToSymlinks.out.ch_f
+    ch = FromS3ToSymlinks.out.localImages
+    output = Convert_EachFileFromRoot2SeparateOMETIFF(fpath, ch)
     if (params.dest_type == "s3") {
         Transfer_Local2S3Storage(output)
     }
@@ -71,72 +126,52 @@ workflow Convert2OMETIFF_FromS3 {
 
 workflow Convert2OMETIFF_FromLocal_Merged { // local && merged &! CSV
     main:
-    if ( params.in_path.contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used together with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
-        println( "Workflow being killed." )
-        return
+    InputPath2Symlink()
+    ch_f = InputPath2Symlink.out.symlinkpath
+    fpath = ch_f.map { it ->
+        file(it).toString()
+    }
+    is_auto = verify_axes(params.concatenation_order)
+    if ( params.metafile.size() > 0 ) { // TODO for csv !!!
+        pattern_files = Channel.fromPath( params.metafile ).flatten()
+        ch = pattern_files
+    }
+    else if ( is_auto ) {
+        pattern_files = CreatePatternFile1(fpath).flatten()
+        ch = pattern_files.filter { it.toString().contains(".pattern") }
     }
     else {
-        def fpath = file(params.in_path)
-        is_auto = verify_axes(params.concatenation_order)
-        if ( fpath.isDirectory() ) {
-            is_correctNames = verify_filenames_fromPath(fpath.toString(), params.pattern, params.reject_pattern)
-            if ( params.metafile.size() > 0 ) { // TODO for csv !!!
-                pattern_files = Channel.fromPath( params.metafile ).flatten()
-                ch = pattern_files
-            }
-            else if ( is_auto && is_correctNames ) {
-                pattern_files = CreatePatternFile1(fpath).flatten()
-//                 pattern_files.view()
-                ch = pattern_files.filter { it.toString().contains(".pattern") }
-            }
-            else {
-                pattern_files = CreatePatternFile2(params.in_path).flatten()
-                ch = pattern_files.filter { it.toString().contains(".pattern") }
-            }
-            output = Convert_Concatenate2SingleOMETIFF(ch, params.in_path)
-            if (params.dest_type == "s3") {
-                Transfer_Local2S3Storage(output)
-            }
-            else if ( params.dest_type == "bia" ) {
-                Transfer_Local2PrivateBiostudies(output)
-            }
-        }
-        else {
-            println(" Convert2OMETIFF_Input path must be either a directory or a csv file. ")
-            return
-        }
+        pattern_files = CreatePatternFile2(fpath).flatten()
+        ch = pattern_files.filter { it.toString().contains(".pattern") }
     }
-    emit:
-    output
+    output = Convert_Concatenate2SingleOMETIFF(ch, fpath)
+    if (params.dest_type == "s3") {
+        Transfer_Local2S3Storage(output)
+    }
+    else if ( params.dest_type == "bia" ) {
+        Transfer_Local2PrivateBiostudies(output)
+    }
 }
 
 workflow Convert2OMETIFF_FromS3_Merged { // s3 && merged &! CSV
     main:
-    if ( params.in_path.toString().contains( "**" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
-        println( "Workflow being killed." )
-    }
-    else {
-        ch00 = Channel.of(params.in_path)
-        ch0 = Mirror_S3Storage2Local(ch00)
-        is_auto = verify_axes(params.concatenation_order)
-        chlist = ch0.collect()
-        is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-        if ( params.metafile.size() > 0 ) {
+    FromS3ToSymlinks()
+    fpath = FromS3ToSymlinks.out.ch_f
+    is_auto = verify_axes(params.concatenation_order)
+    if ( fpath.isDirectory() ) {
+        if ( params.metafile.size() > 0 ) { // TODO for csv !!!
             pattern_files = Channel.fromPath( params.metafile ).flatten()
             ch = pattern_files
         }
-        else if ( is_auto && is_correctNames ) {
-            pattern_files = CreatePatternFile1(Mirror_S3Storage2Local.out).flatten()
+        else if ( is_auto ) {
+            pattern_files = CreatePatternFile1(fpath).flatten()
             ch = pattern_files.filter { it.toString().contains(".pattern") }
         }
         else {
-            pattern_files = CreatePatternFile2(Mirror_S3Storage2Local.out).flatten()
+            pattern_files = CreatePatternFile2(fpath).flatten()
             ch = pattern_files.filter { it.toString().contains(".pattern") }
         }
-        val = Mirror_S3Storage2Local.out.first()
-        output = Convert_Concatenate2SingleOMETIFF(ch, val)
+        output = Convert_Concatenate2SingleOMETIFF(ch, fpath)
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
         }
@@ -144,38 +179,29 @@ workflow Convert2OMETIFF_FromS3_Merged { // s3 && merged &! CSV
             Transfer_Local2PrivateBiostudies(output)
         }
     }
+    else {
+        output = null
+        println(" Convert2OMETIFF_Input path must be either a directory or a csv file. ")
+    }
     emit:
     output
 }
 
-workflow Convert2OMETIFF_FromLocal_CSV { // s3 &! merged && CSV
+workflow Convert2OMETIFF_FromLocal_CSV { // local &! merged && CSV
     main:
     if ( params.in_path.contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used together with CSV input."+"\u001B[30m" )
+        println( "\u001B[31m"+"Error: Wildcards cannot be applied to csv files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
         return
     }
     else {
-        def fpath = file(params.in_path)
-        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt', params.source_type )
-        ch0 = Csv2Symlink1( parsedCsv, "RootOriginal", "ImageNameOriginal", 'symlinks' ).flatten()
-        ch1 = ch0.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        else {
-            ch = ch1
-        }
+        ch = Csv2Symlink1( params.in_path, params.root_column, params.input_column, 'symlinks' ).flatten()
         output = Convert_EachFile2SeparateOMETIFF(ch)
-        mock = output.collect().flatten().first()
-        UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
         if ( params.dest_type == "s3" ) {
             Transfer_Local2S3Storage(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
         }
         else if ( params.dest_type == "bia" ) {
             Transfer_Local2PrivateBiostudies(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
         }
     }
     emit:
@@ -187,37 +213,19 @@ workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
     /// Consider another subworkflow, which uses mirroring for data transfer.
     main:
     if ( params.in_path.toString().contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used with CSV input. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+        println( "\u001B[31m"+"Error: Wildcards cannot be applied to csv files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
     }
     else {
-        def fpath = file(params.in_path)
-//         println(fpath)
-        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt', params.source_type )
-        ch_ = Channel.fromPath(fpath.toString()).
-                        splitCsv(header:true)
-        if (params.root_column == 'auto'){
-            ch0 = ch_.map { row-> params.S3REMOTE + '/' + params.S3BUCKET + '/' + row[params.input_column] }
-        }
-        else {
-            ch0 = ch_.map { row-> params.S3REMOTE + '/' + params.S3BUCKET + '/' + row[params.root_column] + '/' + row[params.input_column] }
-        }
-        ch1 = ch0.filter { it.toString().contains(params.pattern) }
-        if ( params.reject_pattern.size() > 0 ) {
-            ch1 = ch1.filter { !(it.toString().contains(params.reject_pattern)) }
-        }
-        ch1f = ch1.flatMap { file(it).Name }
-        ch = Transfer_S3Storage2Local(ch1, ch1f)
+        GetS3PathsFromCSV_AsChannel()
+        ch = GetS3PathsFromCSV_AsChannel.out.ch
         output = Convert_EachFile2SeparateOMETIFF(ch)
         mock = output.collect().flatten().first()
-        UpdateCsvForConversion(parsedCsv, "RootOriginal", "ImageNameOriginal", "ometiff", mock)
         if (params.dest_type == "s3") {
             Transfer_Local2S3Storage(output)
-            Transfer_CSV2S3Storage(UpdateCsvForConversion.out)
         }
         else if ( params.dest_type == "bia" ) {
             Transfer_Local2PrivateBiostudies(output)
-            Transfer_CSV2PrivateBiostudies(UpdateCsvForConversion.out)
         }
     }
     emit:
@@ -227,7 +235,7 @@ workflow Convert2OMETIFF_FromS3_CSV { // s3 &! merged && CSV
 workflow Convert2OMETIFF_FromLocal_Merged_CSV {
     main:
     if ( params.in_path.contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used together with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+        println( "\u001B[31m"+"Error: Wildcards cannot be applied to csv files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
         return
     }
@@ -261,46 +269,42 @@ workflow Convert2OMETIFF_FromLocal_Merged_CSV {
 workflow Convert2OMETIFF_FromS3_Merged_CSV { // S3 && CSV && MERGE_FILES
     main:
     if ( params.in_path.contains( "*" ) ) {
-        println( "\u001B[31m"+"Error: Globbing cannot be used together with '--merge_files' option. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
+        println( "\u001B[31m"+"Error: Wildcards cannot be applied to csv files. Try using '--pattern' or '-p' argument to filter input files with patterns."+"\u001B[30m" )
         println( "Workflow being killed." )
         return
     }
     else {
-        def fpath = file(params.in_path)
-        parsedCsv = ParseCsv( fpath.toString(), params.root_column, params.input_column, 'parsed.txt', params.source_type )
-        ch_ = ParseCsv.out.
-                      splitCsv(header:true)
-        ch00 = ch_.map { row -> row["RootOriginal"] }.unique()
-        ch0 = Mirror_S3Storage2Local(ch00)
-
+        FromS3ToSymlinks()
+        fpath = FromS3ToSymlinks.out.ch_f
         is_auto = verify_axes(params.concatenation_order)
-        chlist = ch0.collect()
-        is_correctNames = verify_filenames_fromList(chlist, params.pattern, params.reject_pattern)
-        // println(params.metafile.size())
-        if ( params.metafile.size() > 0 ) {
-            pattern_files = Channel.fromPath( params.metafile ).flatten()
-            ch = pattern_files
-        }
-        else if ( is_auto && is_correctNames ) {
-            pattern_files = CreatePatternFileFromCsv(ch0, parsedCsv, "ImageNameOriginal").flatten()
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
+        if ( fpath.isDirectory() ) {
+            if ( params.metafile.size() > 0 ) { // TODO for csv !!!
+                pattern_files = Channel.fromPath( params.metafile ).flatten()
+                ch = pattern_files
+            }
+            else if ( is_auto ) {
+                pattern_files = CreatePatternFile1(fpath).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
+            }
+            else {
+                pattern_files = CreatePatternFile2(fpath).flatten()
+                ch = pattern_files.filter { it.toString().contains(".pattern") }
+            }
+            output = Convert_Concatenate2SingleOMETIFF(ch, fpath)
+            if (params.dest_type == "s3") {
+                Transfer_Local2S3Storage(output)
+            }
+            else if ( params.dest_type == "bia" ) {
+                Transfer_Local2PrivateBiostudies(output)
+            }
         }
         else {
-            pattern_files = CreatePatternFileFromCsv(ch0, parsedCsv, "ImageNameOriginal").flatten()
-            ch = pattern_files.filter { it.toString().contains(".pattern") }
-        }
-        val = Mirror_S3Storage2Local.out.first()
-        output = Convert_Concatenate2SingleOMETIFF(ch, val)
-        if (params.dest_type == "s3") {
-            Transfer_Local2S3Storage(output)
-        }
-        else if ( params.dest_type == "bia" ) {
-            Transfer_Local2PrivateBiostudies(output)
+            output = null
+            println(" Convert2OMETIFF_Input path must be either a directory or a csv file. ")
         }
     }
     emit:
     output
 }
-
 
 

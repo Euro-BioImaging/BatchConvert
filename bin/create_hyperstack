@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from PatternHandler import FilelistGrouper
+from pattern_manager import FilelistGrouper
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

@@ -16,7 +16,7 @@ if [[ -f $TEMPPATH/.stderr ]];
     rm $TEMPPATH/.stderr;
 fi;
 
-if [[ ${#error} > 0 ]];
+if [[ ${#error} -gt 0 ]];
   then
     printf "${RED}$error${NORMAL}\n"
     printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
@@ -40,7 +40,7 @@ if [[ $result == "inputpatherror" ]];
   then
     printf "${RED}Error: The input path does not exist.\n${NORMAL}"
     exit
-elif [[ ${#result} > 0 ]];
+elif [[ ${#result} -gt 0 ]];
   then
     if [[ $process == 'parameters_shown' ]];
       then

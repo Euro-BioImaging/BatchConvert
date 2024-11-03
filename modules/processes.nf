@@ -25,14 +25,8 @@ process Convert_EachFileFromRoot2SeparateOMETIFF {
         path "${inpath.baseName}.ome.tiff", emit: conv
 
     script:
-    // BUNU DEGISTIR, DIREK PYTHON CONSTRUCT_CLI NIN STANDARD OUTPUTUNDAN ALSIN. SU AN "${params.binpath}/run_conversion.py OLARAK ALIYOR
     """
-    if echo "$root" | grep -q "*";
-        then
-            ${params.binpath}/run_conversion.py "\$(dirname "$root")/$inpath" "${inpath.baseName}.ome.tiff"
-        else
-            ${params.binpath}/run_conversion.py "$root/$inpath" "${inpath.baseName}.ome.tiff"
-    fi
+    ${params.binpath}/run_conversion.py "$root/$inpath" "${inpath.baseName}.ome.tiff"
     """
 }
 
@@ -172,6 +166,7 @@ process Convert_Concatenate2SingleOMEZARR{
 // Processes for inspecting a remote location:
 
 process Inspect_S3Path {
+    // TODO: add pattern filtering to this process and remove it from the relevant subworkflows
     sleep 1000
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
     maxRetries 5
@@ -180,10 +175,12 @@ process Inspect_S3Path {
     output:
         stdout emit: filelist
     script:
+    contains = (!params.containsKey('pattern') || params.pattern == null || params.pattern == 'None') ? "\"\"" : params.pattern
+    ignores = (!params.containsKey('reject_pattern') || params.reject_pattern == null || params.reject_pattern == 'None') ? "\"\"" : params.reject_pattern
     """
     sleep 5;
     mc -C "./mc" alias set "${params.S3REMOTE}" "${params.S3ENDPOINT}" "${params.S3ACCESS}" "${params.S3SECRET}" &> /dev/null;
-    parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/"
+    parse_s3_filenames.py "${params.S3REMOTE}/${params.S3BUCKET}/${source}/" --contains "${contains}" --excludes "${ignores}"
     """
 }
 
@@ -362,6 +359,28 @@ process CreatePatternFileFromCsv {
     """
 }
 
+process InputPath2Symlink {
+    sleep 1000
+    errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
+    maxRetries 5
+    output:
+        path "symlinks", emit: symlinkpath
+    script:
+    contains = (!params.containsKey('pattern') || params.pattern == null || params.pattern == 'None') ? "\"\"" : params.pattern
+    ignores = (!params.containsKey('reject_pattern') || params.reject_pattern == null || params.reject_pattern == 'None') ? "\"\"" : params.reject_pattern
+    if ( params.containsKey('merge_files') ) {
+        files_only = params.merge_files
+    } else {
+        files_only = 'False'
+    }
+    """
+    directory2symlink.py "${params.in_path}" \
+    --contains "${contains}" \
+    --ignores "${ignores}" \
+    --files_only $files_only
+    """
+}
+
 process Csv2Symlink2 {
     sleep 1000
     errorStrategy { sleep(Math.pow(2, task.attempt) * 200 as long); return 'retry' }
@@ -377,8 +396,12 @@ process Csv2Symlink2 {
     output:
         path "${dest_path}"
     script:
+    contains = (!params.containsKey('pattern') || params.pattern == null || params.pattern == 'None') ? "\"\"" : params.pattern
+    ignores = (!params.containsKey('reject_pattern') || params.reject_pattern == null || params.reject_pattern == 'None') ? "\"\"" : params.reject_pattern
     """
-    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    csv2symlink.py $csv_path $root_column $input_column $dest_path \
+    --contains "${contains}" \
+    --ignores "${ignores}"
     """
 }
 
@@ -397,8 +420,12 @@ process Csv2Symlink1 {
     output:
         path "${dest_path}/*"
     script:
+    contains = (!params.containsKey('pattern') || params.pattern == null || params.pattern == 'None') ? "\"\"" : params.pattern
+    ignores = (!params.containsKey('reject_pattern') || params.reject_pattern == null || params.reject_pattern == 'None') ? "\"\"" : params.reject_pattern
     """
-    csv2Symlink.py $csv_path $root_column $input_column $dest_path
+    csv2symlink.py $csv_path $root_column $input_column $dest_path \
+    --contains "${contains}" \
+    --ignores "${ignores}"
     """
 }
 
@@ -419,16 +446,13 @@ process ParseCsv {
     output:
         path "${dest_path}"
     script:
+    contains = (!params.containsKey('pattern') || params.pattern == null || params.pattern == 'None') ? "\"\"" : params.pattern
+    ignores = (!params.containsKey('reject_pattern') || params.reject_pattern == null || params.reject_pattern == 'None') ? "\"\"" : params.reject_pattern
     """
-    if [[ "${params.pattern}" == '' ]] && [[ "${params.reject_pattern}" == '' ]];then
-        parse_csv.py $csv_path "${dest_path}" $root_column $input_column --endpoint $endpoint
-    elif [[ "${params.reject_pattern}" == '' ]];then
-        parse_csv.py $csv_path "${dest_path}"  $root_column $input_column -p "${params.pattern}" --endpoint $endpoint
-    elif [[ "${params.pattern}" == '' ]];then
-        parse_csv.py $csv_path "${dest_path}" $root_column $input_column -rp "${params.reject_pattern}" --endpoint $endpoint
-    else
-        parse_csv.py $csv_path "${dest_path}" $root_column $input_column -p "${params.pattern}" -rp "${params.reject_pattern}" --endpoint $endpoint
-    fi
+    parse_csv.py $csv_path "${dest_path}" $root_column $input_column \
+    -p "${contains}" \
+    -rp "${ignores}" \
+    --endpoint $endpoint
     """
 }
 
@@ -456,7 +480,7 @@ process UpdateCsv {
         path "FileList.csv"
     script:
     """
-    updateCsv.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv" --conversion_type $conversion_type
+    update_csv.py $csv_path $root_column $input_column "${params.out_path}" "FileList.csv" --conversion_type $conversion_type
     """
 }
 

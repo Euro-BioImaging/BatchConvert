@@ -1,12 +1,44 @@
 #!/usr/bin/env python
 import subprocess
 import argparse
-import json
-import os
-import sys
+import os, sys, argparse, glob, shutil, json
+from pathlib import Path
+
+# def makelinks(inpath,
+#               outpath,
+#               contains = None,
+#               ignores = None
+#               ):
+#     if isinstance(inpath, Path):
+#         inpath = inpath.as_posix()
+#     if isinstance(outpath, Path):
+#         outpath = outpath.as_posix()
+#     if '**' in inpath:
+#         paths = glob.glob(inpath, recursive = True)
+#     elif '*' in inpath:
+#         paths = glob.glob(inpath)
+#     else:
+#         paths = glob.glob(os.path.join(inpath, '*'))
+#
+#     if os.path.exists(outpath):
+#         shutil.rmtree(outpath)
+#     os.makedirs(outpath)
+#
+#     for path in paths:
+#         if os.path.isfile(path):
+#             if contains is None and ignores is None:
+#                 os.symlink(path, os.path.join(outpath, os.path.basename(path)))
+#             elif ignores is not None:
+#                 if ignores not in path:
+#                     os.symlink(path, os.path.join(outpath, os.path.basename(path)))
+#             elif contains is not None:
+#                 if contains in path:
+#                     os.symlink(path, os.path.join(outpath, os.path.basename(path)))
+#
+#     return outpath
 
 if __name__ == '__main__':
-    scriptpath = os.path.dirname(os.path.realpath(__file__)) # /home/oezdemir/PycharmProjects/nfprojects/bftools/modules/templates
+    scriptpath = os.path.dirname(os.path.realpath(__file__))
     homepath = os.environ.get('HOMEPATH')
     temppath = os.environ.get('TEMPPATH')
     parampath = os.environ.get('PARAMPATH')
@@ -25,8 +57,6 @@ if __name__ == '__main__':
     if not os.path.exists(homepath):
         os.makedirs(homepath)
 
-    # os.chdir(scriptpath) #
-    # os.chdir('..') # /home/oezdemir/PycharmProjects/nfprojects ### note that this is the execution directory.
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
 
@@ -34,8 +64,7 @@ if __name__ == '__main__':
         t_args = argparse.Namespace()
         t_args.__dict__.update(json.load(f))
         args = parser.parse_args(namespace = t_args)
-        # print(args)
-    # keys = args.__dict__.keys()
+
     logdir = os.path.join(args.workdir, 'logs/.nextflow.log')
 
     cmd0 = []
@@ -46,9 +75,7 @@ if __name__ == '__main__':
         cmd0 += ["run", f"{scriptpath}/../pff2omezarr.nf"]
     cmd0 += [f"-params-file", paramfile, "-profile", args.profile]
     cmd1 = ["nextflow", "clean", "but", "none", "-n", "-f"]
-    # print(cmd0)
-    # print(cmd1)
-    # cmd += ["cd - && \\\n"]
+
     curpath = os.getcwd()
     os.chdir(temppath)
     subprocess.run(cmd0, check = True, shell = False)
