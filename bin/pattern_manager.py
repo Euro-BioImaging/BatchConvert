@@ -254,7 +254,7 @@ def parse_axes(axes, nfields):
         newaxes = [axes]
     if len(newaxes) == 1:
         newaxes = newaxes * len(nfieldsize)
-    print(f"newaxes: {newaxes}")
+    # print(f"newaxes: {newaxes}")
     ####################################################################
     if len(newaxes) != len(nfieldsize):
         raise ValueError("Length of the axes list %s does not match the number of groups, which is %s." % (len(newaxes), len(nfieldsize)))
@@ -268,7 +268,7 @@ def parse_axes(axes, nfields):
         while len(axitem) != size: axitem = 'x' + axitem
         final.append(axitem)
     is_auto = check_if_auto(final)
-    print(f"final: {final} and is_auto: {is_auto}")
+    # print(f"final: {final} and is_auto: {is_auto}")
     return final, is_auto
 
 class FilelistGrouper:
@@ -283,7 +283,7 @@ class FilelistGrouper:
             with open(use_list, 'r') as csv_file:
                 csv_reader = csv.DictReader(csv_file)
                 for row in csv_reader:
-                    print(f'column: {row[colname]}')
+                    # print(f'column: {row[colname]}')
                     filelist.append(row[colname])
         self.rootDir = rootDir
         fl = copy.deepcopy(filelist)
@@ -294,7 +294,7 @@ class FilelistGrouper:
         if rejby is not None:
             fl = [item for item in fl if not rejby in item]
         self.fl = sorted(fl)
-        print(self.fl)
+        # print(self.fl)
         self.fname_is_repaired = False
         self.__group_by_alpha()
         self.__get_numeric_fields()
@@ -306,7 +306,7 @@ class FilelistGrouper:
         self.__setup_filenames()
     def __group_by_alpha(self):
         filelist = copy.deepcopy(self.fl)
-        print(f'group_alpha: {filelist}')
+        # print(f'group_alpha: {filelist}')
         self.alphagrps = group_preliminary(filelist)
         self.grps = copy.deepcopy(self.alphagrps)
     def __get_numeric_fields(self):
@@ -371,9 +371,9 @@ class FilelistGrouper:
                 pass
             for i, grp in enumerate(self.grps):
                 newgrp = newgrps[i]
-                print(f'newgrp: {newgrp}')
+                # print(f'newgrp: {newgrp}')
                 newnames = _insert_dimension_specifiers(newgrp, axes[i])
-                print(f'newnames: {newnames}')
+                # print(f'newnames: {newnames}')
                 for olditem, newitem in zip(grp, newnames):
                     oldpath = os.path.join(oldDir, olditem)
                     newpath = os.path.join(newDir, newitem)
@@ -381,7 +381,7 @@ class FilelistGrouper:
                     # print(oldpath)
                     # print(newpath)
                     os.symlink(oldpath_abs, newpath)
-        print(f'newdir: {newDir}')
+        # print(f'newdir: {newDir}')
         filelist = os.listdir(newDir)
         # assert all([item in filelist for item in self.fl]), f'The filenames in the newDir do not match the original filenames. Wrong csv file?'
         fl = copy.deepcopy(filelist)
@@ -541,7 +541,7 @@ class FilelistGrouper:
         for grp_no in patterns:
             grp = grps[grp_no]
             intervals = self.nf_intervals[grp_no]
-            print(f"intervals: {intervals}")
+            # print(f"intervals: {intervals}")
             reg = copy.deepcopy(grp[-1])
             pgrp = patterns[grp_no]
             reconst = [reg[:intervals[0][0]]]
@@ -549,7 +549,7 @@ class FilelistGrouper:
             if len(intervals) == 1:
                 idx3 = intervals[0][1]
             for i in range(1, len(intervals)):
-                print(f"intervals1:{intervals}")
+                # print(f"intervals1:{intervals}")
                 idx0, idx1 = intervals[i - 1]; idx2, idx3 = intervals[i]
                 if pgrp[i - 1] is None:
                     reconst.append(reg[idx0:idx1])
@@ -557,9 +557,9 @@ class FilelistGrouper:
                     reconst.append(pgrp[i - 1])
                 reconst.append(reg[idx1:idx2])
 
-            print(f"reconst: {reconst}")
-            print(f"reg: {reg}")
-            print(f"pgrp: {pgrp}")
+            # print(f"reconst: {reconst}")
+            # print(f"reg: {reg}")
+            # print(f"pgrp: {pgrp}")
             reconst.append(pgrp[i])
             reconst.append(reg[idx3:])
             reg = ''.join(tuple(reconst))
@@ -596,7 +596,7 @@ class FilelistGrouper:
             raise ValueError("No pattern files were generated.")
         for fname, reg in zip(self.regex_filenames, self.regexes):
             fpath = os.path.join(newDir, fname)
-            print(f"fpath: {fpath}")
+            # print(f"fpath: {fpath}")
             with open(fpath, 'w') as writer:
                 writer.write(reg)
 

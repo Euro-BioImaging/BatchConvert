@@ -16,7 +16,7 @@ def makelinks(inpath,
     if isinstance(outpath, Path):
         outpath = outpath.as_posix()
 
-    print(inpath)
+    # print(inpath)
 
     if isinstance(inpath, (list, tuple)):
         paths = inpath
@@ -28,22 +28,22 @@ def makelinks(inpath,
             paths = glob.glob(inpath, recursive = True)
         elif '*' in inpath:
             paths = glob.glob(inpath)
-            print(inpath, paths)
+            # print(inpath, paths)
         else:
             paths = glob.glob(os.path.join(inpath, '*'))
-    print(paths)
+    # print(paths)
 
     if files_only in ('True', True):
         paths = [path for path in paths if os.path.isfile(path)]
 
     fpaths = copy.deepcopy(paths)
-    print(fpaths)
+    # print(fpaths)
     fpaths_s = [fpath.split('/') for fpath in fpaths]
-    print(fpaths_s)
+    # print(fpaths_s)
     for i, path in enumerate(fpaths_s):
         fpath = ['/' if item == '' else item for item in path]
         fpaths_s[i] = fpath
-    print(fpaths_s)
+    # print(fpaths_s)
     l = len(fpaths_s[0])
     shortest = fpaths_s[0]
     for fpath in fpaths_s:
@@ -65,7 +65,7 @@ def makelinks(inpath,
         names = copy.deepcopy(fnames)
         names.pop(i)
         fname = fnames[i]
-        print(fname)
+        # print(fname)
         if fname in names:
             outfiles.append(os.path.join(outpath, basename).replace(' ', '_'))
         else:
