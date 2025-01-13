@@ -3,8 +3,6 @@ import os, sys, argparse, glob, json, copy
 import shutil
 from pathlib import Path
 
-
-
 def makelinks(inpath,
               outpath,
               contains = None,
@@ -18,6 +16,8 @@ def makelinks(inpath,
     if isinstance(outpath, Path):
         outpath = outpath.as_posix()
 
+    print(inpath)
+
     if isinstance(inpath, (list, tuple)):
         paths = inpath
     elif os.path.isfile(inpath):
@@ -28,17 +28,22 @@ def makelinks(inpath,
             paths = glob.glob(inpath, recursive = True)
         elif '*' in inpath:
             paths = glob.glob(inpath)
+            print(inpath, paths)
         else:
             paths = glob.glob(os.path.join(inpath, '*'))
+    print(paths)
 
     if files_only in ('True', True):
         paths = [path for path in paths if os.path.isfile(path)]
 
     fpaths = copy.deepcopy(paths)
+    print(fpaths)
     fpaths_s = [fpath.split('/') for fpath in fpaths]
+    print(fpaths_s)
     for i, path in enumerate(fpaths_s):
         fpath = ['/' if item == '' else item for item in path]
         fpaths_s[i] = fpath
+    print(fpaths_s)
     l = len(fpaths_s[0])
     shortest = fpaths_s[0]
     for fpath in fpaths_s:

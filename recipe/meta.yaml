@@ -1,0 +1,22 @@
+package:
+  name: batchconvert-minimal
+  version: 0.0.6
+
+source:
+  path: .. # [unix]
+
+build:
+  noarch: generic
+  number: 0
+
+requirements:
+  build:
+    - python>=3.9
+  host:
+    - python>=3.9
+  run:
+    - conda-forge::python>=3.9
+    - bioconda::nextflow>=24.0
+    - bioconda::bftools>=7.0
+    - ome::bioformats2raw>=0.8
+

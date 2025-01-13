@@ -254,7 +254,7 @@ def parse_axes(axes, nfields):
         newaxes = [axes]
     if len(newaxes) == 1:
         newaxes = newaxes * len(nfieldsize)
-    print(newaxes)
+    print(f"newaxes: {newaxes}")
     ####################################################################
     if len(newaxes) != len(nfieldsize):
         raise ValueError("Length of the axes list %s does not match the number of groups, which is %s." % (len(newaxes), len(nfieldsize)))
@@ -268,7 +268,7 @@ def parse_axes(axes, nfields):
         while len(axitem) != size: axitem = 'x' + axitem
         final.append(axitem)
     is_auto = check_if_auto(final)
-    print(final, is_auto)
+    print(f"final: {final} and is_auto: {is_auto}")
     return final, is_auto
 
 class FilelistGrouper:
@@ -541,16 +541,25 @@ class FilelistGrouper:
         for grp_no in patterns:
             grp = grps[grp_no]
             intervals = self.nf_intervals[grp_no]
+            print(f"intervals: {intervals}")
             reg = copy.deepcopy(grp[-1])
             pgrp = patterns[grp_no]
             reconst = [reg[:intervals[0][0]]]
+
+            if len(intervals) == 1:
+                idx3 = intervals[0][1]
             for i in range(1, len(intervals)):
+                print(f"intervals1:{intervals}")
                 idx0, idx1 = intervals[i - 1]; idx2, idx3 = intervals[i]
                 if pgrp[i - 1] is None:
                     reconst.append(reg[idx0:idx1])
                 elif pgrp[i - 1] is not None:
                     reconst.append(pgrp[i - 1])
                 reconst.append(reg[idx1:idx2])
+
+            print(f"reconst: {reconst}")
+            print(f"reg: {reg}")
+            print(f"pgrp: {pgrp}")
             reconst.append(pgrp[i])
             reconst.append(reg[idx3:])
             reg = ''.join(tuple(reconst))
@@ -587,13 +596,15 @@ class FilelistGrouper:
             raise ValueError("No pattern files were generated.")
         for fname, reg in zip(self.regex_filenames, self.regexes):
             fpath = os.path.join(newDir, fname)
-            print(fpath)
+            print(f"fpath: {fpath}")
             with open(fpath, 'w') as writer:
                 writer.write(reg)
 
 
-
-
+# fpath = f"/home/oezdemir/ome_zarr_course/data/tiff/tiff_series"
+# gr = FilelistGrouper(fpath)
+# gr.find_patterns()
+# gr.write()
 
 
 # ''.join(('a', 'b'))
