@@ -384,7 +384,7 @@ if __name__ == "__main__":
                 try:
                     current = jsonfile[key]
                 except:
-                    current = "<bfconvert defaults>"
+                    current = parser.get_default(key)
                 # print(value)
                 if value is None:
                     keyprompt = input('Please enter value for %s\nClick enter to set the parameter to the initial defaults\nEnter "skip" or "s" if you would like to keep the parameter´s current value, which is %s\n' % (key, current))
@@ -421,7 +421,7 @@ if __name__ == "__main__":
                 try:
                     current = jsonfile[key]
                 except:
-                    current = "<bioformats2raw defaults>"
+                    current = parser.get_default(key)
                 # print(value)
                 if value is None:
                     keyprompt = input('Please enter value for %s\n'
