@@ -163,15 +163,15 @@ configuration, the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
 Please enter value for noflat
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for series
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for timepoint
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 ...
 ...
@@ -195,15 +195,15 @@ the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
 Please enter value for resolutions_zarr
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for chunk_h
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for chunk_w
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 ...
 ...
 ...
