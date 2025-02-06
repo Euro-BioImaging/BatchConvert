@@ -317,7 +317,7 @@ input directory in the conversion command. BatchConvert also has the option of s
 concatenation axes in the command line, which is especially useful in cases where the filenames 
 may not contain dimension information.  
 
-To be able to use the `--merge files` flag, the input file names must obey certain rules:
+To be able to use the `--merge_files` flag, the input file names must obey certain rules:
 1. File names in the same group must be uniform, except for one or more **numeric field(s)**, which
 should show incremental change across the files. These so-called **variable fields** 
 will be detected and used as the dimension(s) of concatenation.
