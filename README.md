@@ -197,11 +197,11 @@ Please enter value for resolutions_zarr
 Click enter if this parameter is not applicable
 Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
-Please enter value for chunk_h
+Please enter value for chunk_y
 Click enter if this parameter is not applicable
 Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
-Please enter value for chunk_w
+Please enter value for chunk_x
 Click enter if this parameter is not applicable
 Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 ...
@@ -221,10 +221,10 @@ defaults by running the following command.
 `batchconvert reset_defaults`
 
 Another important point is that any of these configured parameters can be overridden by passing a value to that
-parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_h` parameter 
+parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_y` parameter 
 even if the value for the same parameter might be different in the configuration file. 
 
-`batchconvert omezarr --chunk_h 20 "path/to/input" "path/to/output"`
+`batchconvert omezarr --chunk_y 20 "path/to/input" "path/to/output"`
 
 
 ## Examples
