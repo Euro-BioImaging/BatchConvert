@@ -163,15 +163,15 @@ configuration, the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_ometiff
 Please enter value for noflat
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for series
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 Please enter value for timepoint
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bfconvert defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
 ...
 ...
@@ -195,15 +195,15 @@ the sequence of commands should look similar to:
 oezdemir@pc-ellenberg108:~$ batchconvert configure_omezarr
 Please enter value for resolutions_zarr
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
-Please enter value for chunk_h
+Please enter value for chunk_y
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 s
-Please enter value for chunk_w
+Please enter value for chunk_x
 Click enter if this parameter is not applicable
-Enter "skip" or "s" if you would like to keep the parameter´s current value, which is "bioformats2raw defaults"
+Enter "skip" or "s" if you would like to keep the parameter´s current value, which is None
 ...
 ...
 ...
@@ -221,10 +221,10 @@ defaults by running the following command.
 `batchconvert reset_defaults`
 
 Another important point is that any of these configured parameters can be overridden by passing a value to that
-parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_h` parameter 
+parameter in the commandline. For instance, in the following command, the value of 20 will be assigned to `chunk_y` parameter 
 even if the value for the same parameter might be different in the configuration file. 
 
-`batchconvert omezarr --chunk_h 20 "path/to/input" "path/to/output"`
+`batchconvert omezarr --chunk_y 20 "path/to/input" "path/to/output"`
 
 
 ## Examples
@@ -317,7 +317,7 @@ input directory in the conversion command. BatchConvert also has the option of s
 concatenation axes in the command line, which is especially useful in cases where the filenames 
 may not contain dimension information.  
 
-To be able to use the `--merge files` flag, the input file names must obey certain rules:
+To be able to use the `--merge_files` flag, the input file names must obey certain rules:
 1. File names in the same group must be uniform, except for one or more **numeric field(s)**, which
 should show incremental change across the files. These so-called **variable fields** 
 will be detected and used as the dimension(s) of concatenation.

@@ -19,7 +19,7 @@ fi;
 if [[ ${#error} -gt 0 ]];
   then
     printf "${RED}$error${NORMAL}\n"
-    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+    printf "${RED}The batchconvert command is invalid. Please try again.${NORMAL}\n"
     exit
 fi
 
@@ -33,7 +33,7 @@ if [[ -f $TEMPPATH/.process ]];
   then
     process=$(cat $TEMPPATH/.process)
   else
-    printf "${RED}The batchonvert command is invalid. Please try again.${NORMAL}\n"
+    printf "${RED}The batchconvert command is invalid. Please try again.${NORMAL}\n"
 fi
 
 if [[ $result == "inputpatherror" ]];
