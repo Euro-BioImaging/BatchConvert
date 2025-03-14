@@ -21,7 +21,7 @@ A conda package for BatchConvert exists: https://anaconda.org/Euro-BioImaging/ba
 
 Conda installation of BatchConvert to a new conda environment is recommended. Simply run the following command:
 
-`conda install -c euro-bioimaging -c conda-forge -c bioconda batchconvert`
+`conda install -c euro-bioimaging -c conda-forge -c bioconda -c ome batchconvert`
 
 ### Installation from the source
 
